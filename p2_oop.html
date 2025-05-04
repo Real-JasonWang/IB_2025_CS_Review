@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB CS 复习小测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px);
+         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0);
+         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed;
+         opacity: 0.7;
+         }
+         .correct-answer {
+         background-color: #22c55e !important;
+         color: white !important;
+         border-color: #16a34a !important;
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important;
+         color: white !important;
+         border-color: #dc2626 !important;
+         }
+         .explanation {
+         background-color: #e2e8f0;
+         border-left: 4px solid #4f46e5;
+         padding: 1rem;
+         border-radius: 0.375rem;
+         color: #475569;
+         font-size: 0.875rem;
+         margin-top: 1rem;
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb;
+         border-radius: 9999px;
+         overflow: hidden;
+         height: 1rem;
+         margin-bottom: 1.5rem;
+         }
+         .progress-bar {
+         background-color: #4f46e5;
+         height: 100%;
+         transition: width 0.3s ease-in-out;
+         text-align: center;
+         color: white;
+         font-size: 0.75rem;
+         line-height: 1rem;
+         border-radius: 9999px;
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(20px);
+         transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         @keyframes celebrate {
+         0%, 100% { background-position: 0% 50%; }
+         50% { background-position: 100% 50%; }
+         }
+         .celebrate-bg {
+         background: linear-gradient(270deg, #a855f7, #ec4899, #f59e0b, #22c55e);
+         background-size: 800% 800%;
+         animation: celebrate 3s ease infinite;
+         }
+         #confetti-canvas {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none;
+         z-index: 9999;
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-2xl relative z-10">
+         <a href="index.html"
+            class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+         我要做P1的题目
+         </a>
+         <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">IB CS 复习小测验（P2 Java编程）</h1>
+         <div id="game-area">
+            <div class="flex justify-between items-center mb-4 text-gray-600">
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 50</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+            </div>
+            <div class="progress-bar-container">
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            <div id="question-container" class="mb-6">
+               <p id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed">正在加载题目...</p>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            </div>
+            <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
+            </div>
+            <div class="text-center">
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
+            </div>
+         </div>
+         <div id="results-area" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
+            <p id="final-score" class="text-xl text-gray-700 mb-6">你的最终得分是: 0 / 50 (0%)</p>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+            重新开始
+            </button>
+         </div>
+      </div>
+      <script>
+         const quizData = [
+         {
+         question: "在 Java 中，哪个修饰符用于定义常量 (constant)?",
+         options: ["static", "final", "private", "public"],
+         correctAnswer: "final",
+         explanation: "`final` 修饰符用于表示变量的值一旦赋值后不能被修改，常用于定义常量。"
+         },
+         {
+         question: "哪个修饰符表明属性或方法属于类 (Class) 本身，而不是类的实例 (Object)?",
+         options: ["public", "protected", "static", "final"],
+         correctAnswer: "static",
+         explanation: "`static` 修饰符表示成员属于类本身，可以通过类名直接访问，所有实例共享同一个静态成员。"
+         },
+         {
+         question: "哪个访问修饰符表示成员只能在定义它的类内部访问?",
+         options: ["public", "protected", "private", "static"],
+         correctAnswer: "private",
+         explanation: "`private` 提供了最严格的访问级别，私有成员只能被定义它们的类访问。"
+         },
+         {
+         question: "哪个访问修饰符提供了最宽松的访问级别，允许任何地方访问?",
+         options: ["private", "protected", "public", "final"],
+         correctAnswer: "public",
+         explanation: "`public` 修饰符允许成员从任何其他类访问。"
+         },
+         {
+         question: "哪个访问修饰符允许成员被同一个包内的类、定义它的类以及它的子类访问?",
+         options: ["private", "public", "final", "protected"],
+         correctAnswer: "protected",
+         explanation: "`protected` 成员可以被同一个包内的类、定义它的类以及它的子类（即使子类不在同一个包内）访问。"
+         },
+         {
+         question: "在面向对象编程中，'Class' 通常被描述为什么?",
+         options: ["类的实例 (Instance of Class)", "对象的模板或蓝图 (Template/Blueprint for objects)", "一个具体的数据项 (A specific data item)", "一个执行动作 (An action to be performed)"],
+         correctAnswer: "对象的模板或蓝图 (Template/Blueprint for objects)",
+         explanation: "类 (Class) 是创建对象的模板或蓝图，它定义了对象的属性和行为。"
+         },
+         {
+         question: "在面向对象编程中，'Object' 通常被描述为什么?",
+         options: ["对象的模板 (Template for objects)", "类的实例 (Instance of Class)", "一个抽象概念 (An abstract concept)", "一个方法集合 (A collection of methods)"],
+         correctAnswer: "类的实例 (Instance of Class)",
+         explanation: "对象 (Object) 是类 (Class) 的一个具体实例，拥有类定义的属性和行为。"
+         },
+         {
+         question: "术语 'Instantiation' 在 OOP 中指的是什么过程?",
+         options: ["定义一个类 (Defining a class)", "从类创建对象并初始化 (Creating an object from a class and initializing it)", "继承一个类 (Inheriting from a class)", "隐藏类的实现细节 (Hiding implementation details of a class)"],
+         correctAnswer: "从类创建对象并初始化 (Creating an object from a class and initializing it)",
+         explanation: "实例化 (Instantiation) 是根据类创建对象（实例）并为其属性赋初始值的过程。"
+         },
+         {
+         question: "在 UML 类图中，哪个关系表示 'has a' (拥有) 关系，其中一部分可以独立于整体存在?",
+         options: ["Dependency (依赖)", "Inheritance (继承)", "Aggregation (聚合)", "Composition (组合)"],
+         correctAnswer: "Aggregation (聚合)",
+         explanation: "聚合 (Aggregation) 是一种 'has a' 关系，表示整体拥有部分，但部分的生命周期独立于整体。"
+         },
+         {
+         question: "在 UML 类图中，哪个关系表示 'has a' (拥有) 关系，其中部分的生命周期依赖于整体?",
+         options: ["Aggregation (聚合)", "Dependency (依赖)", "Inheritance (继承)", "Composition (组合)"],
+         correctAnswer: "Composition (组合)",
+         explanation: "组合 (Composition) 是一种强 'has a' 关系，表示整体拥有部分，且部分的生命周期与整体绑定。"
+         },
+         {
+         question: "在 UML 类图中，表示 Aggregation (聚合) 关系的符号通常是什么?",
+         options: ["带空心菱形的实线 (Solid line with a hollow diamond)", "带实心菱形的实线 (Solid line with a filled diamond)", "带空心箭头的虚线 (Dashed line with a hollow arrow)", "带空心三角箭头的实线 (Solid line with a hollow triangle arrow)"],
+         correctAnswer: "带空心菱形的实线 (Solid line with a hollow diamond)",
+         explanation: "聚合关系在 UML 中用带空心菱形的实线表示，菱形指向整体。"
+         },
+         {
+         question: "在 UML 类图中，表示 Composition (组合) 关系的符号通常是什么?",
+         options: ["带空心菱形的实线 (Solid line with a hollow diamond)", "带实心菱形的实线 (Solid line with a filled diamond)", "带空心箭头的虚线 (Dashed line with a hollow arrow)", "带空心三角箭头的实线 (Solid line with a hollow triangle arrow)"],
+         correctAnswer: "带实心菱形的实线 (Solid line with a filled diamond)",
+         explanation: "组合关系在 UML 中用带实心菱形的实线表示，菱形指向整体。"
+         },
+         {
+         question: "在 UML 类图中，哪个关系表示一个类使用了另一个类 (use a)?",
+         options: ["Inheritance (继承)", "Aggregation (聚合)", "Composition (组合)", "Dependency (依赖)"],
+         correctAnswer: "Dependency (依赖)",
+         explanation: "依赖 (Dependency) 关系表示一个类（客户端）在某个时刻需要使用另一个类（供应端）的服务或实例。"
+         },
+         {
+         question: "在 UML 类图中，表示 Dependency (依赖) 关系的符号通常是什么?",
+         options: ["带空心菱形的实线 (Solid line with a hollow diamond)", "带实心菱形的实线 (Solid line with a filled diamond)", "带空心箭头的虚线 (Dashed line with a hollow arrow)", "带空心三角箭头的实线 (Solid line with a hollow triangle arrow)"],
+         correctAnswer: "带空心箭头的虚线 (Dashed line with a hollow arrow)",
+         explanation: "依赖关系在 UML 中通常用带空心箭头的虚线表示，箭头从依赖方指向被依赖方。"
+         },
+         {
+         question: "在 UML 类图中，哪个关系表示 'is a' (是一个) 关系，即子类是父类的一种特殊类型?",
+         options: ["Dependency (依赖)", "Aggregation (聚合)", "Inheritance (继承)", "Composition (组合)"],
+         correctAnswer: "Inheritance (继承)",
+         explanation: "继承 (Inheritance) 表示 'is a' 关系，子类继承父类的属性和方法，并可以添加或覆盖它们。"
+         },
+         {
+         question: "在 UML 类图中，表示 Inheritance (继承) 关系的符号通常是什么?",
+         options: ["带空心菱形的实线 (Solid line with a hollow diamond)", "带实心菱形的实线 (Solid line with a filled diamond)", "带空心箭头的虚线 (Dashed line with a hollow arrow)", "带空心三角箭头的实线 (Solid line with a hollow triangle arrow)"],
+         correctAnswer: "带空心三角箭头的实线 (Solid line with a hollow triangle arrow)",
+         explanation: "继承关系在 UML 中用带空心三角箭头的实线表示，箭头从子类指向父类。"
+         },
+         {
+         question: "在 Java 中，基本数据类型 (Primitive types like int, double, boolean) 作为参数传递给方法时，采用的是哪种传递方式?",
+         options: ["按引用传递 (Passed by reference)", "按值传递 (Passed by value)", "按名称传递 (Passed by name)", "按地址传递 (Passed by address)"],
+         correctAnswer: "按值传递 (Passed by value)",
+         explanation: "Java 中的基本数据类型总是按值传递。方法接收的是原始值的副本，在方法内修改副本不会影响原始变量。"
+         },
+         {
+         question: "在 Java 中，对象 (包括数组和类的实例) 作为参数传递给方法时，采用的是哪种传递方式?",
+         options: ["按值传递 (Passed by value)", "按引用传递 (Passed by reference)", "按副本传递 (Passed by copy)", "按类型传递 (Passed by type)"],
+         correctAnswer: "按值传递 (Passed by value)",
+         explanation: "严格来说，Java 总是按值传递。对于对象，传递的是引用的副本（地址的副本）。这意味着方法可以通过这个副本访问并修改原始对象的状态，但不能改变原始引用指向的对象。"
+         },
+         {
+         question: "当一个对象引用作为参数传递给方法时，如果在方法内部修改了该对象的属性，原始对象的属性会改变吗?",
+         options: ["会改变 (Yes, it will change)", "不会改变 (No, it will not change)", "取决于对象的类型 (Depends on the object type)", "取决于方法是否是 static (Depends on whether the method is static)"],
+         correctAnswer: "会改变 (Yes, it will change)",
+         explanation: "由于方法接收的是对象引用的副本，这个副本和原始引用指向同一个内存地址。因此，通过副本修改对象的属性会影响原始对象。"
+         },
+         {
+         question: "当一个对象引用作为参数传递给方法时，如果在方法内部将该参数重新赋值指向一个新的对象，原始的引用会改变吗?",
+         options: ["会改变 (Yes, it will change)", "不会改变 (No, it will not change)", "有时会改变 (Sometimes it changes)", "会抛出异常 (It throws an exception)"],
+         correctAnswer: "不会改变 (No, it will not change)",
+         explanation: "方法接收的是引用的副本。在方法内部将参数（副本）指向新对象，只会改变副本的指向，原始引用仍然指向原来的对象。"
+         },
+         {
+         question: "在类中定义，但在任何方法之外，并且没有 `static` 修饰符的变量称为什么?",
+         options: ["局部变量 (Local variable)", "静态变量 (Static variable)", "实例变量 (Instance variable)", "参数变量 (Parameter variable)"],
+         correctAnswer: "实例变量 (Instance variable)",
+         explanation: "实例变量属于类的每个实例（对象），每个对象都有自己的一份实例变量副本。"
+         },
+         {
+         question: "在方法内部定义的变量称为什么?",
+         options: ["实例变量 (Instance variable)", "全局变量 (Global variable)", "静态变量 (Static variable)", "局部变量 (Local variable)"],
+         correctAnswer: "局部变量 (Local variable)",
+         explanation: "局部变量只在定义它们的方法内部可见和有效，方法执行完毕后它们就会被销毁。"
+         },
+         {
+         question: "在 Java 中，严格意义上的 '全局变量' (像 C++ 那样在所有函数外部定义的变量) 是否存在?",
+         options: ["存在，使用 `global` 关键字 (Yes, using the `global` keyword)", "不存在 (No, it does not exist)", "存在，但必须是 `final` (Yes, but must be `final`)", "存在，但必须是 `public static` (Yes, but must be `public static`)"],
+         correctAnswer: "不存在 (No, it does not exist)",
+         explanation: "Java 没有传统意义上的全局变量。可以通过 `public static` 成员模拟全局访问，但它们仍然属于某个类。"
+         },
+         {
+         question: "在方法签名中定义的变量称为什么?",
+         options: ["实例变量 (Instance variable)", "局部变量 (Local variable)", "参数变量 (Parameter variable)", "常量 (Constant)"],
+         correctAnswer: "参数变量 (Parameter variable)",
+         explanation: "参数变量用于接收调用方法时传递进来的值（参数），它们的作用域仅限于该方法内部。"
+         },
+         {
+         question: "一个完整的方法头 (Method Header) 通常包含哪些部分?",
+         options: ["仅方法名和参数列表 (Only method name and parameter list)", "修饰符、返回类型、方法名和参数列表 (Modifiers, return type, method name, and parameter list)", "仅返回类型和方法名 (Only return type and method name)", "修饰符和方法名 (Modifiers and method name)"],
+         correctAnswer: "修饰符、返回类型、方法名和参数列表 (Modifiers, return type, method name, and parameter list)",
+         explanation: "方法头定义了方法的基本信息，包括访问权限、是否静态、返回值类型、方法名称以及它接受的参数。"
+         },
+         {
+         question: "方法签名 (Method Signature) 主要由哪两部分组成?",
+         options: ["方法名和返回类型 (Method name and return type)", "修饰符和方法名 (Modifiers and method name)", "方法名和参数列表 (类型、顺序、数量) (Method name and parameter list (type, order, number))", "返回类型和参数列表 (Return type and parameter list)"],
+         correctAnswer: "方法名和参数列表 (类型、顺序、数量) (Method name and parameter list (type, order, number))",
+         explanation: "方法签名用于区分不同的方法，它由方法名和参数列表（参数的类型、顺序和数量）唯一确定。返回类型不属于方法签名的一部分。"
+         },
+         {
+         question: "将数据（属性）和操作数据的方法捆绑到一个单元（类）中，并隐藏内部实现细节，这指的是 OOP 的哪个特性?",
+         options: ["继承 (Inheritance)", "封装 (Encapsulation)", "多态 (Polymorphism)", "抽象 (Abstraction)"],
+         correctAnswer: "封装 (Encapsulation)",
+         explanation: "封装是将数据和操作数据的方法结合在一起，并对外部隐藏对象的内部状态和实现细节，通常通过访问修饰符（如 `private`）和 getter/setter 方法实现。"
+         },
+         {
+         question: "允许一个类（子类）获取另一个类（父类）的属性和方法，这是 OOP 的哪个特性?",
+         options: ["封装 (Encapsulation)", "多态 (Polymorphism)", "继承 (Inheritance)", "聚合 (Aggregation)"],
+         correctAnswer: "继承 (Inheritance)",
+         explanation: "继承允许创建新类（子类）来重用、扩展和修改现有类（父类）的行为。"
+         },
+         {
+         question: "继承 (Inheritance) 的主要优点是什么?",
+         options: ["数据隐藏 (Data hiding)", "代码复杂性 (Code complexity)", "代码复用和可扩展性 (Code reusability and extensibility)", "减少对象数量 (Reducing the number of objects)"],
+         correctAnswer: "代码复用和可扩展性 (Code reusability and extensibility)",
+         explanation: "继承允许子类重用父类的代码，并且可以在不修改父类的情况下扩展或修改功能，提高了代码的可维护性和可扩展性。"
+         },
+         {
+         question: "允许不同类的对象对同一消息（方法调用）做出不同响应，或者同一个类中有多个同名但参数列表不同的方法，这指的是 OOP 的哪个特性?",
+         options: ["封装 (Encapsulation)", "继承 (Inheritance)", "多态 (Polymorphism)", "依赖 (Dependency)"],
+         correctAnswer: "多态 (Polymorphism)",
+         explanation: "多态意味着“多种形态”，它允许我们以统一的方式处理不同类型的对象，主要通过方法重载（Overloading）和方法覆盖（Overriding）实现。"
+         },
+         {
+         question: "在同一个类中定义多个同名但参数列表（类型、数量、顺序）不同的方法，这称为什么?",
+         options: ["方法覆盖 (Method Overriding)", "方法重载 (Method Overloading)", "方法隐藏 (Method Hiding)", "方法封装 (Method Encapsulation)"],
+         correctAnswer: "方法重载 (Method Overloading)",
+         explanation: "方法重载是静态多态的一种形式，编译器在编译时根据调用时提供的参数列表来决定执行哪个方法。"
+         },
+         {
+         question: "子类重新定义（实现）了父类中已有的同名同参数列表的方法，这称为什么?",
+         options: ["方法重载 (Method Overloading)", "方法覆盖 (Method Overriding)", "方法抽象 (Method Abstraction)", "方法继承 (Method Inheritance)"],
+         correctAnswer: "方法覆盖 (Method Overriding)",
+         explanation: "方法覆盖是动态多态的一种形式，运行时 JVM 根据对象的实际类型来决定调用子类还是父类的方法。"
+         },
+         {
+         question: "方法覆盖 (Overriding) 的优点之一是什么?",
+         options: ["减少代码量 (Reduces code volume)", "允许外部程序在不知道具体子类实现的情况下调用方法 (Allows external programs to call methods without knowing the specific subclass implementation)", "提高编译速度 (Improves compilation speed)", "强制使用父类方法 (Forces the use of the parent class method)"],
+         correctAnswer: "允许外部程序在不知道具体子类实现的情况下调用方法 (Allows external programs to call methods without knowing the specific subclass implementation)",
+         explanation: "通过方法覆盖和向上转型，可以编写更通用的代码，处理父类类型的引用，而实际执行的是具体子类的方法。"
+         },
+         {
+         question: "将一个大型复杂的程序分解成更小、更易于管理和独立的模块（如类或对象），这指的是什么概念?",
+         options: ["继承 (Inheritance)", "多态 (Polymorphism)", "模块化 (Modularity)", "封装 (Encapsulation)"],
+         correctAnswer: "模块化 (Modularity)",
+         explanation: "模块化是将复杂系统分解为独立、可交互的部分（模块）的过程，有助于降低复杂性、提高可维护性和可重用性。"
+         },
+         {
+         question: "模块化编程 (Modularity) 的主要优点不包括哪一项?",
+         options: ["降低程序复杂性 (Reduced program complexity)", "提高可测试性 (Improved testability)", "总是能提高程序运行效率 (Always improves program runtime efficiency)", "便于团队协作开发 (Facilitates team development)"],
+         correctAnswer: "总是能提高程序运行效率 (Always improves program runtime efficiency)",
+         explanation: "模块化主要关注代码结构、可维护性和开发效率。虽然有时可以通过优化模块来提高效率，但模块化本身并不保证运行效率的提升，有时接口调用可能带来微小的开销。"
+         },
+         {
+         question: "在类中，通常用于获取私有实例变量 (private instance variable) 值的公共方法 (public method) 被称为什么?",
+         options: ["构造器 (Constructor)", "设置器 (Setter / Mutator)", "访问器 (Getter / Accessor)", "析构器 (Destructor)"],
+         correctAnswer: "访问器 (Getter / Accessor)",
+         explanation: "访问器（Getter）方法提供了一种受控的方式来读取私有字段的值，通常命名为 `getVariableName()`。"
+         },
+         {
+         question: "在类中，通常用于修改私有实例变量 (private instance variable) 值的公共方法 (public method) 被称为什么?",
+         options: ["访问器 (Getter / Accessor)", "构造器 (Constructor)", "设置器 (Setter / Mutator)", "初始化器 (Initializer)"],
+         correctAnswer: "设置器 (Setter / Mutator)",
+         explanation: "设置器（Setter）方法提供了一种受控的方式来修改私有字段的值，通常命名为 `setVariableName(newValue)`，可以在设置前进行验证。"
+         },
+         {
+         question: "当类之间的关系是 'is a' (是一个) 时，通常使用哪种 OOP 机制?",
+         options: ["聚合 (Aggregation)", "组合 (Composition)", "依赖 (Dependency)", "继承 (Inheritance)"],
+         correctAnswer: "继承 (Inheritance)",
+         explanation: "继承最适合表示 'is a' 的关系，例如 'Dog is an Animal'。"
+         },
+         {
+         question: "当类之间的关系是 'has a' (拥有) 时，通常使用哪种 OOP 机制?",
+         options: ["继承 (Inheritance)", "多态 (Polymorphism)", "聚合/组合 (Aggregation/Composition)", "封装 (Encapsulation)"],
+         correctAnswer: "聚合/组合 (Aggregation/Composition)",
+         explanation: "聚合和组合都表示 'has a' 的关系，例如 'Car has an Engine'。选择聚合还是组合取决于部分与整体的生命周期关系。"
+         },
+         {
+         question: "相比继承，使用聚合/组合通常被认为在哪方面更有优势?",
+         options: ["代码复用性 (Code Reusability)", "灵活性和安全性 (Flexibility and Security)", "性能 (Performance)", "易于理解 (Ease of Understanding)"],
+         correctAnswer: "灵活性和安全性 (Flexibility and Security)",
+         explanation: "聚合/组合提供了更大的灵活性，因为可以在运行时更改关联的对象，并且它避免了继承带来的紧密耦合，有助于保护类的封装性。"
+         },
+         {
+         question: "使用 `static` 关键字修饰的成员变量（字段）有什么特点?",
+         options: ["每个对象都有自己独立的副本 (Each object has its own independent copy)", "只能在静态方法中访问 (Can only be accessed in static methods)", "属于类本身，所有对象共享同一个副本 (Belongs to the class itself, all objects share the same copy)", "必须在声明时初始化 (Must be initialized at declaration)"],
+         correctAnswer: "属于类本身，所有对象共享同一个副本 (Belongs to the class itself, all objects share the same copy)",
+         explanation: "静态变量是类级别的变量，它的值被该类的所有实例共享。修改静态变量会影响所有实例。"
+         },
+         {
+         question: "静态方法 (`static` method) 可以直接访问非静态的实例变量吗?",
+         options: ["可以 (Yes)", "不可以 (No)", "只能访问 public 的实例变量 (Only public instance variables)", "只能通过 `this` 关键字访问 (Only via the `this` keyword)"],
+         correctAnswer: "不可以 (No)",
+         explanation: "静态方法属于类，不依赖于任何特定对象实例。而非静态实例变量属于对象。因此，静态方法不能直接访问实例变量，需要通过对象引用来访问。"
+         },
+         {
+         question: "像 Java 这样的语言，编译后的字节码可以在任何安装了 JVM 的平台上运行，这体现了什么特性?",
+         options: ["封装性 (Encapsulation)", "平台独立性 (Platform independence)", "多态性 (Polymorphism)", "模块化 (Modularity)"],
+         correctAnswer: "平台独立性 (Platform independence)",
+         explanation: "Java 的“一次编写，到处运行”（Write Once, Run Anywhere）是其平台独立性的体现，有助于软件的国际化部署。"
+         },
+         {
+         question: "Unicode 是一个什么标准?",
+         options: ["编程语言规范 (Programming language specification)", "网络传输协议 (Network transfer protocol)", "字符编码标准 (Character encoding standard)", "数据库查询语言 (Database query language)"],
+         correctAnswer: "字符编码标准 (Character encoding standard)",
+         explanation: "Unicode 为世界上大多数书写系统中的每个字符提供了一个唯一的数字代码点，使得软件能够支持多种语言，是实现国际化的基础。"
+         },
+         {
+         question: "未经许可使用他人的代码或思想并声称是自己的，这在编程中被称为?",
+         options: ["开源 (Open source)", "重构 (Refactoring)", "剽窃 (Plagiarism)", "调试 (Debugging)"],
+         correctAnswer: "剽窃 (Plagiarism)",
+         explanation: "剽窃是一种不道德且常常非法的行为，侵犯了他人的知识产权。"
+         },
+         {
+         question: "Java 中的 `ArrayList` 是什么?",
+         options: ["固定大小的数组 (A fixed-size array)", "动态大小的数组实现 (A dynamic-size array implementation)", "一种链表 (A type of linked list)", "一种哈希表 (A type of hash table)"],
+         correctAnswer: "动态大小的数组实现 (A dynamic-size array implementation)",
+         explanation: "`ArrayList` 是 Java 集合框架的一部分，它提供了一个可以动态调整大小的数组实现。"
+         },
+         {
+         question: "向 `ArrayList` 添加元素通常使用哪个方法?",
+         options: ["`insert()`", "`put()`", "`add()`", "`append()`"],
+         correctAnswer: "`add()`",
+         explanation: "`add(element)` 方法用于在列表末尾添加元素，`add(index, element)` 用于在指定索引处插入元素。"
+         },
+         {
+         question: "获取 `ArrayList` 中指定索引处的元素使用哪个方法?",
+         options: ["`fetch()`", "`retrieve()`", "`element()`", "`get()`"],
+         correctAnswer: "`get()`",
+         explanation: "`get(index)` 方法返回列表中指定索引处的元素。"
+         },
+         {
+         question: "获取 `ArrayList` 中当前元素的数量使用哪个方法?",
+         options: ["`length()`", "`count()`", "`size()`", "`capacity()`"],
+         correctAnswer: "`size()`",
+         explanation: "`size()` 方法返回 `ArrayList` 中存储的元素数量。"
+         },
+         {
+         question: "如果需要在一个 `ArrayList` 中存储基本数据类型 `int` 的值，应该使用哪个包装类 (Wrapper Class) 作为泛型类型?",
+         options: ["`int`", "`Int`", "`Integer`", "`Number`"],
+         correctAnswer: "`Integer`",
+         explanation: "Java 的泛型不支持基本数据类型，需要使用对应的包装类。`int` 的包装类是 `Integer`。"
+         },
+         {
+         question: "在 Java 中，用于创建对象实例的特殊方法是什么?",
+         options: ["初始化器 (Initializer)", "构造器 (Constructor)", "设置器 (Setter)", "工厂方法 (Factory method)"],
+         correctAnswer: "构造器 (Constructor)",
+         explanation: "构造器是一个特殊的方法，用于在创建对象时初始化对象的状态。它的名称必须与类名相同，并且没有返回类型。"
+         },
+         {
+         question: "如果一个类没有显式定义任何构造器，Java 编译器会做什么?",
+         options: ["抛出编译错误 (Throws a compilation error)", "自动提供一个无参数的默认构造器 (Automatically provides a no-argument default constructor)", "不允许创建该类的对象 (Prevents object creation for that class)", "要求必须手动添加构造器 (Requires manual addition of a constructor)"],
+         correctAnswer: "自动提供一个无参数的默认构造器 (Automatically provides a no-argument default constructor)",
+         explanation: "如果类中没有定义任何构造器，编译器会自动添加一个公共的、无参数的默认构造器。"
+         },
+         {
+         question: "在一个类中定义多个具有不同参数列表的构造器，这称为什么?",
+         options: ["构造器覆盖 (Constructor Overriding)", "构造器继承 (Constructor Inheritance)", "构造器重载 (Constructor Overloading)", "构造器封装 (Constructor Encapsulation)"],
+         correctAnswer: "构造器重载 (Constructor Overloading)",
+         explanation: "与方法重载类似，构造器重载允许一个类有多个构造器，只要它们的参数列表（类型、数量、顺序）不同即可。"
+         },
+         {
+         question: "在 Java 中，`this` 关键字在实例方法或构造器中通常指代什么?",
+         options: ["当前类的 Class 对象 (The Class object of the current class)", "父类的实例 (The instance of the superclass)", "当前正在执行的对象实例 (The current object instance being executed)", "静态上下文 (The static context)"],
+         correctAnswer: "当前正在执行的对象实例 (The current object instance being executed)",
+         explanation: "`this` 关键字是对当前对象实例的引用，可用于区分实例变量和局部/参数变量，或在一个构造器中调用另一个构造器。"
+         },
+         {
+         question: "在子类的构造器中，用于调用父类构造器的关键字是什么?",
+         options: ["`this()`", "`super()`", "`parent()`", "`base()`"],
+         correctAnswer: "`super()`",
+         explanation: "`super()` 用于在子类构造器的第一行调用父类的构造器。如果不显式调用，编译器会自动插入对父类无参构造器的调用 `super();`。"
+         },
+         {
+         question: "如果子类构造器没有显式调用 `super()` 或 `this()`，并且父类没有无参数构造器，会发生什么?",
+         options: ["子类构造器正常执行 (The subclass constructor executes normally)", "自动调用父类的有参构造器 (Automatically calls the superclass's parameterized constructor)", "发生编译错误 (A compilation error occurs)", "运行时抛出异常 (A runtime exception is thrown)"],
+         correctAnswer: "发生编译错误 (A compilation error occurs)",
+         explanation: "如果子类构造器没有显式调用 `super()` 或 `this()`，编译器会尝试插入 `super();`。如果父类没有无参数构造器（无论是默认的还是显式定义的），则编译失败。"
+         },
+         {
+         question: "在子类的方法中，如何调用父类中被覆盖 (overridden) 的同名方法?",
+         options: ["使用 `this.methodName()`", "使用 `parent.methodName()`", "使用 `super.methodName()`", "不能调用 (Cannot be called)"],
+         correctAnswer: "使用 `super.methodName()`",
+         explanation: "`super.methodName()` 允许子类访问其直接父类中被覆盖的方法实现。"
+         },
+         {
+         question: "哪个关键字用于定义一个不能被继承的类?",
+         options: ["`static`", "`abstract`", "`private`", "`final`"],
+         correctAnswer: "`final`",
+         explanation: "使用 `final` 修饰的类不能被任何其他类继承。"
+         },
+         {
+         question: "哪个关键字用于定义一个不能在子类中被覆盖 (overridden) 的方法?",
+         options: ["`static`", "`abstract`", "`final`", "`private`"],
+         correctAnswer: "`final`",
+         explanation: "使用 `final` 修饰的方法不能被子类覆盖。"
+         },
+         {
+         question: "一个类如果包含一个或多个抽象方法，该类必须被声明为什么?",
+         options: ["`final` 类", "`static` 类", "`interface` (接口)", "`abstract` 类 (抽象类)"],
+         correctAnswer: "`abstract` 类 (抽象类)",
+         explanation: "包含抽象方法的类必须声明为抽象类。抽象类不能被实例化。"
+         },
+         {
+         question: "抽象方法 (Abstract Method) 的特点是什么?",
+         options: ["有方法体，但为空 (Has a method body, but it's empty)", "必须是 `static` (Must be `static`)", "只有方法签名，没有方法体，并以分号结尾 (Only has a method signature, no method body, and ends with a semicolon)", "必须返回 `void` (Must return `void`)"],
+         correctAnswer: "只有方法签名，没有方法体，并以分号结尾 (Only has a method signature, no method body, and ends with a semicolon)",
+         explanation: "抽象方法定义了一个方法的契约，但没有提供实现。具体的实现由继承该抽象类的非抽象子类提供。"
+         },
+         {
+         question: "Java 中的接口 (Interface) 可以包含什么?",
+         options: ["只有抽象方法 (Only abstract methods)", "只有常量和抽象方法 (Only constants and abstract methods)", "常量、抽象方法、默认方法和静态方法 (Constants, abstract methods, default methods, and static methods)", "实例变量和构造器 (Instance variables and constructors)"],
+         correctAnswer: "常量、抽象方法、默认方法和静态方法 (Constants, abstract methods, default methods, and static methods)",
+         explanation: "现代 Java 接口 (Java 8+) 可以包含常量（隐式 `public static final`）、抽象方法（隐式 `public abstract`）、默认方法（`default` 关键字，提供默认实现）和静态方法。"
+         },
+         {
+         question: "一个类实现 (implements) 一个接口时，必须做什么?",
+         options: ["覆盖接口中所有的静态方法 (Override all static methods in the interface)", "提供接口中所有抽象方法的具体实现 (Provide concrete implementations for all abstract methods in the interface)", "继承接口中的常量 (Inherit constants from the interface)", "调用接口的构造器 (Call the interface's constructor)"],
+         correctAnswer: "提供接口中所有抽象方法的具体实现 (Provide concrete implementations for all abstract methods in the interface)",
+         explanation: "除非该类本身也是抽象类，否则实现接口的类必须为接口中定义的所有抽象方法提供实现。"
+         },
+         {
+         question: "Java 是否支持多重继承 (Multiple Inheritance) 类?",
+         options: ["完全支持 (Yes, fully supported)", "不支持 (No, not supported)", "只支持继承两个父类 (Supports inheriting only two parent classes)", "通过接口实现间接支持 (Indirectly supported through interfaces)"],
+         correctAnswer: "通过接口实现间接支持 (Indirectly supported through interfaces)",
+         explanation: "Java 不支持一个类直接继承多个类（避免菱形问题），但一个类可以实现多个接口，从而达到类似多重继承的效果。"
+         },
+         {
+         question: "接口 (Interface) 和抽象类 (Abstract Class) 的主要区别之一是什么?",
+         options: ["接口不能包含任何实现代码，抽象类可以 (Interfaces cannot contain any implementation code, abstract classes can)", "抽象类不能被继承，接口可以 (Abstract classes cannot be inherited, interfaces can)", "一个类只能继承一个抽象类，但可以实现多个接口 (A class can only extend one abstract class, but implement multiple interfaces)", "接口可以有实例变量，抽象类不能 (Interfaces can have instance variables, abstract classes cannot)"],
+         correctAnswer: "一个类只能继承一个抽象类，但可以实现多个接口 (A class can only extend one abstract class, but implement multiple interfaces)",
+         explanation: "这是它们在继承体系中的核心区别。另外，抽象类可以有实例变量和构造器，而接口通常不能（接口变量隐式为 `public static final`）。"
+         },
+         {
+         question: "将子类对象赋值给父类类型的引用变量，这称为什么?",
+         options: ["向下转型 (Downcasting)", "向上转型 (Upcasting)", "类型擦除 (Type Erasure)", "自动装箱 (Autoboxing)"],
+         correctAnswer: "向上转型 (Upcasting)",
+         explanation: "向上转型是自动且安全的，因为子类对象 'is a' 父类对象。例如：`Animal myPet = new Dog();`"
+         },
+         {
+         question: "将父类类型的引用变量强制转换回其原始的子类类型，这称为什么?",
+         options: ["向上转型 (Upcasting)", "自动拆箱 (Auto-unboxing)", "向下转型 (Downcasting)", "泛型转换 (Generic casting)"],
+         correctAnswer: "向下转型 (Downcasting)",
+         explanation: "向下转型需要显式强制类型转换，并且可能在运行时抛出 `ClassCastException`，如果对象的实际类型与目标类型不兼容。例如：`Dog myDog = (Dog) myPet;`"
+         },
+         {
+         question: "为了安全地进行向下转型，通常在转换前使用哪个操作符进行检查?",
+         options: ["`typeof`", "`isinstance`", "`instanceof`", "`castable`"],
+         correctAnswer: "`instanceof`",
+         explanation: "`instanceof` 操作符用于检查一个对象是否是特定类或其子类的实例，或者是否实现了特定接口。例如：`if (myPet instanceof Dog) { Dog myDog = (Dog) myPet; }`"
+         },
+         {
+         question: "在 UML 类图中，表示接口实现的符号通常是什么?",
+         options: ["带空心三角箭头的实线 (Solid line with a hollow triangle arrow)", "带空心箭头的虚线 (Dashed line with a hollow arrow)", "带空心三角箭头的虚线 (Dashed line with a hollow triangle arrow)", "带实心菱形的实线 (Solid line with a filled diamond)"],
+         correctAnswer: "带空心三角箭头的虚线 (Dashed line with a hollow triangle arrow)",
+         explanation: "接口实现关系（类实现接口）在 UML 中用带空心三角箭头的虚线表示，箭头从实现类指向接口。"
+         },
+         {
+         question: "在 UML 类图中，类名或方法名使用斜体通常表示什么?",
+         options: ["静态成员 (Static member)", "最终成员 (Final member)", "抽象成员 (Abstract member)", "私有成员 (Private member)"],
+         correctAnswer: "抽象成员 (Abstract member)",
+         explanation: "按照 UML 规范，抽象类名和抽象方法名通常用斜体表示。"
+         },
+         {
+         question: "在 UML 类图中，属性或方法名前的 '+'、'-'、'#' 分别代表什么访问修饰符?",
+         options: ["public, private, static", "public, private, protected", "public, protected, private", "static, private, protected"],
+         correctAnswer: "public, private, protected",
+         explanation: "'+' 代表 public，'-' 代表 private，'#' 代表 protected。"
+         },
+         {
+         question: "在 UML 类图中，关联 (Association) 线段末端的数字（如 1, *, 0..1）表示什么?",
+         options: ["访问级别 (Access level)", "方法数量 (Number of methods)", "多重性 (Multiplicity)", "继承深度 (Inheritance depth)"],
+         correctAnswer: "多重性 (Multiplicity)",
+         explanation: "多重性表示一个类的实例可以与另一个类的多少个实例相关联。例如，`1` 表示一个，`*` 表示零个或多个，`0..1` 表示零个或一个。"
+         },
+         {
+         question: "从 `ArrayList` 中移除指定索引处的元素使用哪个方法?",
+         options: ["`delete(index)`", "`remove(index)`", "`erase(index)`", "`clear(index)`"],
+         correctAnswer: "`remove(index)`",
+         explanation: "`remove(index)` 方法移除并返回指定索引处的元素，后续元素会向前移动填补空位。"
+         },
+         {
+         question: "从 `ArrayList` 中移除第一次出现的指定元素使用哪个方法?",
+         options: ["`removeObject(object)`", "`delete(object)`", "`remove(object)`", "`findAndRemove(object)`"],
+         correctAnswer: "`remove(object)`",
+         explanation: "`remove(Object o)` 方法移除列表中第一次出现的指定元素（如果存在）。如果移除成功则返回 `true`。"
+         },
+         {
+         question: "检查 `ArrayList` 是否包含某个特定元素，通常使用哪个方法?",
+         options: ["`has(object)`", "`exists(object)`", "`contains(object)`", "`includes(object)`"],
+         correctAnswer: "`contains(object)`",
+         explanation: "`contains(Object o)` 方法检查列表是否包含指定的元素，如果包含则返回 `true`。"
+         },
+         {
+         question: "清空 `ArrayList` 中的所有元素使用哪个方法?",
+         options: ["`empty()`", "`reset()`", "`clear()`", "`removeAll()`"],
+         correctAnswer: "`clear()`",
+         explanation: "`clear()` 方法移除列表中的所有元素，使其变为空列表。"
+         },
+         {
+         question: "遍历 `ArrayList` 的常用方法不包括哪种?",
+         options: ["使用传统的 for 循环和 `get(index)` (Using traditional for loop and `get(index)`)", "使用增强型 for 循环 (for-each loop)", "使用迭代器 (Iterator)", "使用 `stream().forEach()`", "直接通过 `System.out.println(list)` 遍历 (Directly via `System.out.println(list)`)"],
+         correctAnswer: "直接通过 `System.out.println(list)` 遍历 (Directly via `System.out.println(list)`)",
+         explanation: "`System.out.println(list)` 会打印列表的字符串表示形式（调用 `toString()`），而不是逐个遍历元素执行操作。"
+         },
+         {
+         question: "Java 中的异常 (Exception) 是什么?",
+         options: ["编译时发生的语法错误 (A syntax error occurring at compile time)", "程序正常执行流程中的事件 (An event in the normal execution flow of a program)", "程序执行期间发生的、中断正常指令流程的事件 (An event occurring during program execution that disrupts the normal flow of instructions)", "一种特殊的数据类型 (A special data type)"],
+         correctAnswer: "程序执行期间发生的、中断正常指令流程的事件 (An event occurring during program execution that disrupts the normal flow of instructions)",
+         explanation: "异常是在运行时发生的非正常情况，例如试图除以零、访问空指针、数组越界等。"
+         },
+         {
+         question: "用于处理可能抛出异常的代码块的关键字是什么?",
+         options: ["`try`", "`catch`", "`finally`", "`throw`"],
+         correctAnswer: "`try`",
+         explanation: "将可能产生异常的代码放在 `try` 块中。"
+         },
+         {
+         question: "用于捕获并处理特定类型异常的代码块的关键字是什么?",
+         options: ["`try`", "`catch`", "`finally`", "`throws`"],
+         correctAnswer: "`catch`",
+         explanation: "`catch` 块紧跟在 `try` 块之后，用于捕获并处理 `try` 块中抛出的特定类型的异常。"
+         },
+         {
+         question: "无论 `try` 块中是否发生异常，都保证会执行的代码块使用哪个关键字?",
+         options: ["`try`", "`catch`", "`finally`", "`ensure`"],
+         correctAnswer: "`finally`",
+         explanation: "`finally` 块通常用于释放资源（如关闭文件、网络连接），因为它保证在 `try` 或 `catch` 块执行完毕后（即使有 `return` 语句）一定会执行。"
+         },
+         {
+         question: "在方法签名中使用哪个关键字来声明该方法可能抛出的受检异常 (Checked Exception)?",
+         options: ["`throw`", "`throws`", "`exception`", "`catch`"],
+         correctAnswer: "`throws`",
+         explanation: "`throws` 关键字用于在方法签名中列出该方法可能抛出并且不打算在内部处理的受检异常类型，强制调用者处理这些异常。"
+         },
+         {
+         question: "手动抛出一个异常对象使用哪个关键字?",
+         options: ["`throw`", "`throws`", "`raise`", "`new Exception()`"],
+         correctAnswer: "`throw`",
+         explanation: "`throw` 关键字用于在代码中显式地抛出一个异常对象（通常是 `new` 出来的异常实例）。"
+         },
+         {
+         question: "像 `NullPointerException`, `ArrayIndexOutOfBoundsException` 这样的异常属于哪种类型?",
+         options: ["受检异常 (Checked Exception)", "运行时异常 (Runtime Exception / Unchecked Exception)", "错误 (Error)", "自定义异常 (Custom Exception)"],
+         correctAnswer: "运行时异常 (Runtime Exception / Unchecked Exception)",
+         explanation: "运行时异常通常由程序逻辑错误引起，Java 编译器不强制要求处理它们（尽管处理它们通常是好的实践）。"
+         },
+         {
+         question: "像 `IOException`, `SQLException` 这样的异常属于哪种类型?",
+         options: ["受检异常 (Checked Exception)", "运行时异常 (Runtime Exception / Unchecked Exception)", "错误 (Error)", "逻辑异常 (Logical Exception)"],
+         correctAnswer: "受检异常 (Checked Exception)",
+         explanation: "受检异常通常是由外部因素（如文件不存在、网络问题）引起的，Java 编译器强制要求必须使用 `try-catch` 处理或使用 `throws` 声明抛出。"
+         },
+         {
+         question: "像 `OutOfMemoryError`, `StackOverflowError` 这样的问题属于什么?",
+         options: ["受检异常 (Checked Exception)", "运行时异常 (Runtime Exception)", "错误 (Error)", "可恢复异常 (Recoverable Exception)"],
+         correctAnswer: "错误 (Error)",
+         explanation: "错误 (Error) 通常表示 JVM 发生的严重问题，程序通常无法从中恢复，一般不建议捕获处理。"
+         },
+         {
+         question: "递归 (Recursion) 的基本思想是什么?",
+         options: ["使用循环迭代解决问题 (Solving a problem using iterative loops)", "将问题分解为独立的子模块 (Breaking down a problem into independent sub-modules)", "一个方法调用自身来解决更小版本的相同问题 (A method calling itself to solve smaller versions of the same problem)", "使用队列存储中间结果 (Using a queue to store intermediate results)"],
+         correctAnswer: "一个方法调用自身来解决更小版本的相同问题 (A method calling itself to solve smaller versions of the same problem)",
+         explanation: "递归是一种解决问题的方法，其中解决方案取决于对同一问题的较小实例的解决方案。"
+         },
+         {
+         question: "每个递归方法都必须包含什么，以防止无限递归?",
+         options: ["循环结构 (A loop structure)", "至少一个参数 (At least one parameter)", "基线条件 (Base case / Terminating condition)", "静态变量 (A static variable)"],
+         correctAnswer: "基线条件 (Base case / Terminating condition)",
+         explanation: "基线条件是一个或多个不再进行递归调用、可以直接返回结果的条件，它确保递归最终会停止。"
+         },
+         {
+         question: "递归方法调用时，每次调用的状态（如局部变量）存储在哪里?",
+         options: ["堆内存 (Heap memory)", "静态存储区 (Static storage area)", "调用栈 (Call stack)", "寄存器 (Registers)"],
+         correctAnswer: "调用栈 (Call stack)",
+         explanation: "每次递归调用都会在调用栈上创建一个新的栈帧 (stack frame) 来存储该次调用的参数、局部变量和返回地址。"
+         },
+         {
+         question: "递归可能导致的主要潜在问题是什么?",
+         options: ["编译错误 (Compilation errors)", "栈溢出错误 (Stack overflow error)", "内存泄漏 (Memory leak)", "死锁 (Deadlock)"],
+         correctAnswer: "栈溢出错误 (Stack overflow error)",
+         explanation: "如果递归深度过大（例如基线条件错误或问题规模太大），调用栈可能会耗尽内存，导致栈溢出错误。"
+         },
+         {
+         question: "计算阶乘 (Factorial) 或斐波那契数列 (Fibonacci sequence) 是哪种编程技术的经典示例?",
+         options: ["迭代 (Iteration)", "递归 (Recursion)", "动态规划 (Dynamic Programming)", "分治法 (Divide and Conquer)"],
+         correctAnswer: "递归 (Recursion)",
+         explanation: "虽然这些问题也可以用迭代解决，但它们的定义天然具有递归结构，常被用作递归教学的例子。"
+         },
+         {
+         question: "在面向对象设计中，优先使用组合/聚合而不是继承 (Favor Composition/Aggregation over Inheritance) 的原则主要是为了什么?",
+         options: ["提高运行速度 (Increase runtime speed)", "减少代码行数 (Reduce lines of code)", "增强灵活性和降低耦合度 (Enhance flexibility and reduce coupling)", "简化 UML 图 (Simplify UML diagrams)"],
+         correctAnswer: "增强灵活性和降低耦合度 (Enhance flexibility and reduce coupling)",
+         explanation: "组合/聚合创建了更松散的耦合关系，允许在运行时更改关联，并且不会将父类的实现细节暴露给子类，提高了代码的灵活性和可维护性。"
+         },
+         {
+         question: "软件开发中，确保代码符合特定标准、风格和最佳实践的过程称为什么?",
+         options: ["调试 (Debugging)", "测试 (Testing)", "代码审查 (Code Review)", "重构 (Refactoring)"],
+         correctAnswer: "代码审查 (Code Review)",
+         explanation: "代码审查是同行或资深开发者检查代码以发现错误、改进设计、确保一致性的过程。"
+         },
+         {
+         question: "在不改变软件外部行为的前提下，修改其内部结构以提高可读性、可维护性的过程称为什么?",
+         options: ["调试 (Debugging)", "优化 (Optimization)", "重构 (Refactoring)", "版本控制 (Version Control)"],
+         correctAnswer: "重构 (Refactoring)",
+         explanation: "重构旨在改善代码的设计，使其更易于理解和修改，而不是添加新功能或修复 bug。"
+         },
+         {
+         question: "用于跟踪和管理代码变更历史的系统（如 Git）属于什么范畴?",
+         options: ["集成开发环境 (IDE)", "编译器 (Compiler)", "版本控制系统 (Version Control System)", "构建工具 (Build Tool)"],
+         correctAnswer: "版本控制系统 (Version Control System)",
+         explanation: "版本控制系统对于团队协作、代码备份和历史追溯至关重要。"
+         },
+         {
+         question: "在编写代码时添加解释性文本，说明代码功能、逻辑或用法，这称为什么?",
+         options: ["文档化 (Documentation)", "注释 (Commenting)", "日志记录 (Logging)", "断言 (Assertion)"],
+         correctAnswer: "注释 (Commenting)",
+         explanation: "良好的注释有助于他人（以及未来的自己）理解代码。"
+         },
+         {
+         question: "为确保代码按预期工作而编写和执行的程序或步骤称为什么?",
+         options: ["调试 (Debugging)", "测试 (Testing)", "部署 (Deployment)", "分析 (Analysis)"],
+         correctAnswer: "测试 (Testing)",
+         explanation: "测试是软件开发生命周期中的关键环节，包括单元测试、集成测试、系统测试等。"
+         },
+         {
+         question: "只测试软件中最小的可测试单元（通常是方法或类）的测试类型是什么?",
+         options: ["集成测试 (Integration Testing)", "系统测试 (System Testing)", "单元测试 (Unit Testing)", "验收测试 (Acceptance Testing)"],
+         correctAnswer: "单元测试 (Unit Testing)",
+         explanation: "单元测试旨在独立地验证代码单元的正确性。"
+         },
+         {
+         question: "在 Java 中，`String` 对象是不可变的 (immutable)。这意味着什么?",
+         options: ["`String` 对象不能被继承 (String objects cannot be inherited)", "一旦创建，`String` 对象的值不能被改变 (Once created, the value of a String object cannot be changed)", "`String` 对象只能包含 ASCII 字符 (String objects can only contain ASCII characters)", "`String` 对象必须是 `final` (String objects must be `final`)"],
+         correctAnswer: "一旦创建，`String` 对象的值不能被改变 (Once created, the value of a String object cannot be changed)",
+         explanation: "对 `String` 的任何修改操作（如连接、替换）实际上都会创建一个新的 `String` 对象。"
+         },
+         {
+         question: "如果需要频繁修改字符串内容，使用哪个类通常比 `String` 更高效?",
+         options: ["`StringBuffer` 或 `StringBuilder`", "`Character`", "`CharSequence`", "`StringReader`"],
+         correctAnswer: "`StringBuffer` 或 `StringBuilder`",
+         explanation: "`StringBuilder` (非线程安全，更快) 和 `StringBuffer` (线程安全) 是可变字符序列，适合在循环中拼接或修改字符串。"
+         },
+         {
+         question: "比较两个 `String` 对象的内容是否相等，应该使用哪个方法?",
+         options: ["`==` 操作符", "`.equals()` 方法", "`.compareTo()` 方法", "`.equalsIgnoreCase()` 方法"],
+         correctAnswer: "`.equals()` 方法",
+         explanation: "`==` 操作符比较的是两个引用是否指向同一个内存地址，而 `.equals()` 方法比较的是字符串的内容是否相同。"
+         },
+         {
+         question: "Java 中的自动装箱 (Autoboxing) 是指什么?",
+         options: ["自动将对象打包成数组 (Automatically packing objects into an array)", "自动将基本数据类型转换为对应的包装类对象 (Automatically converting a primitive type to its corresponding wrapper class object)", "自动将包装类对象拆包 (Automatically unboxing a wrapper class object)", "自动管理内存分配 (Automatically managing memory allocation)"],
+         correctAnswer: "自动将基本数据类型转换为对应的包装类对象 (Automatically converting a primitive type to its corresponding wrapper class object)",
+         explanation: "例如，将 `int` 赋值给 `Integer` 变量时，编译器会自动进行装箱：`Integer i = 100;`"
+         },
+         {
+         question: "Java 中的自动拆箱 (Auto-unboxing) 是指什么?",
+         options: ["自动解压文件 (Automatically decompressing a file)", "自动将数组转换为列表 (Automatically converting an array to a list)", "自动将包装类对象转换为对应的基本数据类型 (Automatically converting a wrapper class object to its corresponding primitive type)", "自动释放不再使用的对象 (Automatically releasing unused objects)"],
+         correctAnswer: "自动将包装类对象转换为对应的基本数据类型 (Automatically converting a wrapper class object to its corresponding primitive type)",
+         explanation: "例如，将 `Integer` 对象用于需要 `int` 的运算时，编译器会自动进行拆箱：`Integer i = 100; int j = i + 5;`"
+         },
+         {
+         question: "在 UML 活动图中，用于表示并发执行路径的开始和结束的符号是什么?",
+         options: ["菱形 (Diamond)", "圆角矩形 (Rounded Rectangle)", "分叉和汇合条 (Fork and Join bars)", "实心圆 (Filled Circle)"],
+         correctAnswer: "分叉和汇合条 (Fork and Join bars)",
+         explanation: "分叉条 (Fork bar) 将一个控制流分成多个并发流，汇合条 (Join bar) 将多个并发流合并成一个控制流。"
+         },
+         {
+         question: "在 Java 中，哪个集合类提供了键值对 (key-value pair) 的存储方式?",
+         options: ["`ArrayList`", "`LinkedList`", "`HashSet`", "`HashMap`"],
+         correctAnswer: "`HashMap`",
+         explanation: "`HashMap` 实现了 `Map` 接口，允许根据唯一的键 (key) 快速存储和检索值 (value)。"
+         },
+         {
+         question: "在 Java 中，哪个集合类不允许存储重复元素，并且通常不保证元素的顺序?",
+         options: ["`ArrayList`", "`LinkedList`", "`HashSet`", "`TreeMap`"],
+         correctAnswer: "`HashSet`",
+         explanation: "`HashSet` 实现了 `Set` 接口，基于哈希表实现，用于存储唯一的元素。"
+         },
+         {
+         question: "下列哪个不是面向对象编程 (OOP) 的核心原则?",
+         options: ["封装 (Encapsulation)", "继承 (Inheritance)", "多态 (Polymorphism)", "并发 (Concurrency)"],
+         correctAnswer: "并发 (Concurrency)",
+         explanation: "虽然并发在现代软件开发中很重要，但它通常不被认为是 OOP 的四大核心支柱之一（封装、继承、多态、抽象）。"
+         },
+         {
+         question: "在设计类时，应该尽量减少类之间的相互依赖，这符合哪个设计原则?",
+         options: ["开闭原则 (Open/Closed Principle)", "单一职责原则 (Single Responsibility Principle)", "里氏替换原则 (Liskov Substitution Principle)", "迪米特法则 (Law of Demeter / Least Knowledge Principle)"],
+         correctAnswer: "迪米特法则 (Law of Demeter / Least Knowledge Principle)",
+         explanation: "迪米特法则建议一个对象应该尽可能少地了解其他对象，只与直接的朋友（成员变量、方法参数、方法内创建的对象）交谈，以降低耦合度。"
+         },
+         {
+         question: "“软件实体（类、模块、函数等）应该对扩展开放，对修改关闭”，这描述的是哪个设计原则?",
+         options: ["开闭原则 (Open/Closed Principle)", "接口隔离原则 (Interface Segregation Principle)", "依赖倒置原则 (Dependency Inversion Principle)", "单一职责原则 (Single Responsibility Principle)"],
+         correctAnswer: "开闭原则 (Open/Closed Principle)",
+         explanation: "这意味着在添加新功能时，应尽量通过扩展（如继承、实现接口）来实现，而不是修改现有代码。"
+         },
+         {
+         question: "“一个类只应该有一个引起它变化的原因”，这描述的是哪个设计原则?",
+         options: ["里氏替换原则 (Liskov Substitution Principle)", "单一职责原则 (Single Responsibility Principle)", "开闭原则 (Open/Closed Principle)", "迪米特法则 (Law of Demeter)"],
+         correctAnswer: "单一职责原则 (Single Responsibility Principle)",
+         explanation: "如果一个类承担的职责过多，就应该考虑将它分解成更小、更专注的类。"
+         },
+         {
+         question: "“所有引用基类（父类）的地方必须能透明地使用其子类的对象”，这描述的是哪个设计原则?",
+         options: ["接口隔离原则 (Interface Segregation Principle)", "依赖倒置原则 (Dependency Inversion Principle)", "里氏替换原则 (Liskov Substitution Principle)", "开闭原则 (Open/Closed Principle)"],
+         correctAnswer: "里氏替换原则 (Liskov Substitution Principle)",
+         explanation: "子类必须能够完全替代父类，而不影响程序的正确性。这是实现多态的基础。"
+         }
+         ];
+         
+         
+         
+         const quizContainer = document.getElementById('quiz-container');
+         const gameArea = document.getElementById('game-area');
+         const resultsArea = document.getElementById('results-area');
+         const questionCounter = document.getElementById('question-counter');
+         const scoreDisplay = document.getElementById('score-display');
+         const progressBar = document.getElementById('progress-bar');
+         const questionText = document.getElementById('question-text');
+         const optionsContainer = document.getElementById('options-container');
+         const feedbackArea = document.getElementById('feedback-area');
+         const feedbackText = document.getElementById('feedback-text');
+         const explanationText = document.getElementById('explanation-text');
+         const nextBtn = document.getElementById('next-btn');
+         const finalScore = document.getElementById('final-score');
+         const resultMessage = document.getElementById('result-message');
+         const restartBtn = document.getElementById('restart-btn');
+         const confettiCanvas = document.getElementById('confetti-canvas');
+         
+         const myConfetti = confetti.create(confettiCanvas, {
+             resize: true,
+             useWorker: true
+         });
+         
+         let currentQuestionIndex = 0;
+         let score = 0;
+         let questionsAnswered = 0;
+         let shuffledQuestions = [];
+         
+         function shuffleArray(array) {
+             for (let i = array.length - 1; i > 0; i--) {
+                 const j = Math.floor(Math.random() * (i + 1));
+                 [array[i], array[j]] = [array[j], array[i]];
+             }
+             return array;
+         }
+         
+         function updateScoreDisplay() {
+             const percentage = questionsAnswered === 0 ? 0 : Math.round((score / questionsAnswered) * 100);
+             scoreDisplay.textContent = `得分: ${score} / ${questionsAnswered} (${percentage}%)`;
+         }
+         
+         function updateProgressBar() {
+             const progressPercentage = Math.round(((currentQuestionIndex + 1) / shuffledQuestions.length) * 100);
+             progressBar.style.width = `${progressPercentage}%`;
+             progressBar.textContent = `${progressPercentage}%`;
+         }
+         
+         function startGame() {
+             currentQuestionIndex = 0;
+             score = 0;
+             questionsAnswered = 0;
+             shuffledQuestions = shuffleArray([...quizData]);
+             updateScoreDisplay();
+             progressBar.style.width = '0%';
+             progressBar.textContent = '0%';
+             resultsArea.classList.add('hidden');
+             resultsArea.classList.remove('results-enter', 'results-enter-active');
+             quizContainer.classList.remove('celebrate-bg');
+             gameArea.classList.remove('hidden');
+             nextBtn.classList.add('hidden');
+             feedbackArea.classList.add('hidden');
+             showQuestion();
+         }
+         
+         function showQuestion() {
+             optionsContainer.innerHTML = '';
+             feedbackArea.classList.add('hidden');
+             feedbackText.textContent = '';
+             explanationText.textContent = '';
+             feedbackText.className = 'text-lg font-semibold mb-2';
+         
+         
+             const currentQuestion = shuffledQuestions[currentQuestionIndex];
+             questionText.textContent = currentQuestion.question;
+             questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+         
+             const shuffledOptions = shuffleArray([...currentQuestion.options]);
+         
+             shuffledOptions.forEach(option => {
+                 const button = document.createElement('button');
+                 button.textContent = option;
+                 button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                 button.addEventListener('click', selectAnswer);
+                 optionsContainer.appendChild(button);
+             });
+         
+             nextBtn.classList.add('hidden');
+             updateProgressBar();
+         }
+         
+         function triggerConfetti() {
+             myConfetti({
+                 particleCount: 100,
+                 spread: 70,
+                 origin: { y: 0.6 }
+             });
+         }
+         
+         function selectAnswer(e) {
+             const selectedButton = e.target;
+             const correctAnswer = shuffledQuestions[currentQuestionIndex].correctAnswer;
+             const explanation = shuffledQuestions[currentQuestionIndex].explanation;
+             questionsAnswered++;
+         
+             Array.from(optionsContainer.children).forEach(button => {
+                 button.disabled = true;
+                 if (button.textContent === correctAnswer) {
+                     button.classList.add('correct-answer');
+                     button.classList.remove('wrong-answer');
+                 }
+             });
+         
+             if (selectedButton.textContent === correctAnswer) {
+                 score++;
+                 feedbackText.textContent = '✅ 回答正确!';
+                 feedbackText.className = 'text-lg font-semibold mb-2 text-green-600';
+                 selectedButton.classList.add('correct-answer');
+                 triggerConfetti();
+             } else {
+                 feedbackText.textContent = `❌ 回答错误!`;
+                 feedbackText.className = 'text-lg font-semibold mb-2 text-red-600';
+                 selectedButton.classList.add('wrong-answer');
+             }
+         
+             explanationText.innerHTML = `<strong>解释:</strong> ${explanation}`;
+             feedbackArea.classList.remove('hidden');
+         
+             updateScoreDisplay();
+             nextBtn.classList.remove('hidden');
+         }
+         
+         
+         function showNextQuestion() {
+             currentQuestionIndex++;
+             if (currentQuestionIndex < shuffledQuestions.length) {
+                 showQuestion();
+             } else {
+                 endGame();
+             }
+         }
+         
+         function endGame() {
+             gameArea.classList.add('hidden');
+             resultsArea.classList.remove('hidden');
+             requestAnimationFrame(() => {
+                 resultsArea.classList.add('results-enter');
+                 requestAnimationFrame(() => {
+                     resultsArea.classList.add('results-enter-active');
+                 });
+             });
+         
+             const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+             finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+         
+             let message = '';
+             quizContainer.classList.remove('celebrate-bg');
+         
+             if (finalPercentage === 100) {
+                 message = '💯 完美！你简直是 IB CS 大师！知识点掌握得炉火纯青！';
+                 quizContainer.classList.add('celebrate-bg');
+                 triggerConfetti();
+             } else if (finalPercentage >= 95) {
+                  message = '🌟 太出色了！离满分只有一步之遥，绝对的学霸！';
+                  quizContainer.classList.add('celebrate-bg');
+                  triggerConfetti();
+             } else if (finalPercentage >= 90) {
+                  message = '🏆 非常棒！知识掌握得非常扎实，优秀！';
+                  quizContainer.classList.add('celebrate-bg');
+                  triggerConfetti();
+             } else if (finalPercentage >= 85) {
+                  message = '🎉 很厉害！展现了很强的实力，继续保持！';
+             } else if (finalPercentage >= 80) {
+                  message = '👍 相当不错！大部分知识点都理解了，很棒！';
+             } else if (finalPercentage >= 75) {
+                  message = '😊 不错！掌握了核心内容，可以更有自信！';
+             } else if (finalPercentage >= 70) {
+                  message = '🙂 还好！基础知识掌握了，但细节需要加强。';
+             } else if (finalPercentage >= 60) {
+                  message = '🧐 及格了！有些概念需要再巩固一下哦。';
+             } else if (finalPercentage >= 50) {
+                  message = '🤔 加油！一半的题目都答对了，再努力一下！';
+             } else if (finalPercentage >= 40) {
+                  message = '😅 继续努力！还有不少提升空间，多花点时间复习吧！';
+             } else {
+                  message = '💪 不要灰心！失败是成功之母，从错误中学习，下次一定能进步！';
+             }
+             resultMessage.textContent = message;
+         }
+         
+         nextBtn.addEventListener('click', showNextQuestion);
+         restartBtn.addEventListener('click', startGame);
+         
+         startGame();
+         
+      </script>
+   </body>
+</html>
