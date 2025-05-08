@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB English B SL Paper 2 备考测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         overscroll-behavior-y: none; 
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px);
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0);
+         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(30px);
+         transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed;
+         opacity: 0.7;
+         }
+         .correct-answer {
+         background-color: #22c55e !important; 
+         color: white !important;
+         border-color: #16a34a !important; 
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important; 
+         color: white !important;
+         border-color: #dc2626 !important; 
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb; 
+         border-radius: 9999px;
+         overflow: hidden;
+         height: 1rem; 
+         margin-bottom: 1.5rem; 
+         }
+         .progress-bar {
+         background-color: #4f46e5; 
+         height: 100%;
+         transition: width 0.3s ease-in-out;
+         text-align: center;
+         color: white;
+         font-size: 0.75rem; 
+         line-height: 1rem; 
+         font-weight: 500;
+         border-radius: 9999px;
+         }
+         @keyframes celebrate {
+         0%, 100% { background-position: 0% 50%; }
+         50% { background-position: 100% 50%; }
+         }
+         .celebrate-bg {
+         background: linear-gradient(270deg, #a855f7, #ec4899, #f59e0b, #22c55e, #3b82f6);
+         background-size: 1000% 1000%;
+         animation: celebrate 5s ease infinite;
+         }
+         #confetti-canvas {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none;
+         z-index: 9999;
+         }
+         .explanation {
+         background-color: #f3f4f6; 
+         border-left: 4px solid #4f46e5; 
+         padding: 1rem; 
+         border-radius: 0.375rem; 
+         color: #374151; 
+         font-size: 0.875rem; 
+         margin-top: 1rem; 
+         line-height: 1.5; 
+         }
+         .option-btn, #next-btn, #restart-btn {
+         -webkit-tap-highlight-color: transparent;
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
+         <a href="index.html"
+            class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 mb-4">
+         👈 主页
+         </a>
+         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 mt-2">IB English B SL Paper 2 备考测验</h1>
+         <p class="text-center text-gray-600 mb-6">测试你对 Paper 2 (听力与阅读理解) 的了解程度！</p>
+         <div id="game-area">
+            <div class="flex justify-between items-center mb-4 text-gray-600">
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 50</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+            </div>
+            <div class="progress-bar-container">
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            <div id="question-container" class="mb-6">
+               <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[4.5em] md:min-h-[3em]">问题文本加载中...</h2>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+            </div>
+            <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
+            </div>
+            <div class="text-center">
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
+            </div>
+         </div>
+         <div id="results-area" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
+            <p id="final-score" class="text-xl text-gray-700 mb-6"></p>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+            重新开始
+            </button>
+         </div>
+         <p class="text-center text-xs text-gray-500 mb-1 mt-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+      </div>
+      <script>
+         const questions = [
+             {
+                 question: "What is the primary purpose of skimming a text in a reading comprehension exam?",
+                 options: ["To understand every detail", "To get a general overview quickly", "To analyze complex sentence structures", "To memorize vocabulary"],
+                 answer: "To get a general overview quickly",
+                 explanation: "Skimming involves reading quickly to grasp the main ideas and overall structure of a text, not to understand every detail or analyze grammar in depth."
+             },
+             {
+                 question: "When a question asks you to 'infer' something from a passage, what are you expected to do?",
+                 options: ["Find information explicitly stated in the text", "Use your prior knowledge unrelated to the text", "Draw a logical conclusion based on textual evidence", "Summarize the main idea of the passage"],
+                 answer: "Draw a logical conclusion based on textual evidence",
+                 explanation: "Inference requires you to read between the lines and make a logical deduction based on the information provided in the text, even if it's not directly stated."
+             },
+             {
+                 question: "Which of the following text types is LEAST likely to be found in the IB English B Paper 2 reading section?",
+                 options: ["A personal blog post about a travel experience", "A formal scientific research paper with dense jargon", "An interview with a social activist", "A set of instructions for assembling a product"],
+                 answer: "A formal scientific research paper with dense jargon",
+                 explanation: "While diverse texts are used, highly specialized scientific papers with very dense jargon are less common than texts like articles, blogs, interviews, or instructions, which are more accessible for language learners."
+             },
+             {
+                 question: "If a reading question asks about the 'author's tone', what should you focus on?",
+                 options: ["The factual accuracy of the information presented", "The author's attitude or feeling towards the subject", "The grammatical correctness of the sentences", "The number of paragraphs in the text"],
+                 answer: "The author's attitude or feeling towards the subject",
+                 explanation: "The author's tone refers to their attitude or emotional stance towards the topic, which can be conveyed through word choice, imagery, and sentence structure."
+             },
+             {
+                 question: "In a multiple-choice reading question, if two options seem correct, what is a good strategy?",
+                 options: ["Choose the shorter option", "Choose the option that appears first", "Re-read the relevant part of the text carefully to find the BEST fit", "Guess randomly"],
+                 answer: "Re-read the relevant part of the text carefully to find the BEST fit",
+                 explanation: "Often, distractors are designed to be plausible. Carefully re-reading the text and comparing the options against the textual evidence will help identify the most accurate answer."
+             },
+             {
+                 question: "What does 'vocabulary in context' mean in a reading exam?",
+                 options: ["Knowing the dictionary definition of every word", "Understanding the meaning of a word as it is used in the specific passage", "Being able to spell all words correctly", "Identifying parts of speech"],
+                 answer: "Understanding the meaning of a word as it is used in the specific passage",
+                 explanation: "Context is key. Many words have multiple meanings, so you need to understand how a particular word is functioning within the sentence and paragraph it appears in."
+             },
+             {
+                 question: "Which IB theme would a text discussing the impact of social media on teenage self-esteem most likely fall under?",
+                 options: ["Human ingenuity", "Sharing the planet", "Identities", "Experiences"],
+                 answer: "Identities",
+                 explanation: "The theme 'Identities' explores aspects of self, personality, relationships, and how individuals see themselves and are seen by others, making it relevant to discussions on self-esteem and social media."
+             },
+             {
+                 question: "A text describing a person's journey of immigrating to a new country and adapting to a new culture primarily relates to which IB theme?",
+                 options: ["Social organization", "Experiences", "Human ingenuity", "Sharing the planet"],
+                 answer: "Experiences",
+                 explanation: "The theme 'Experiences' covers significant life events, journeys, migration, and personal growth, which aligns with the scenario of immigration and cultural adaptation."
+             },
+             {
+                 question: "If a text is structured with a clear problem presented first, followed by several proposed solutions, this is an example of:",
+                 options: ["Chronological order", "Compare and contrast structure", "Problem-solution structure", "Cause and effect structure"],
+                 answer: "Problem-solution structure",
+                 explanation: "This describes a common way to organize informational or persuasive texts, where a problem is identified and then potential solutions are discussed."
+             },
+             {
+                 question: "What is the main purpose of a 'topic sentence' in a paragraph?",
+                 options: ["To provide a detailed example", "To introduce the main idea of the paragraph", "To conclude the entire text", "To define a difficult word"],
+                 answer: "To introduce the main idea of the paragraph",
+                 explanation: "The topic sentence usually appears at or near the beginning of a paragraph and states the central point that the rest ofathe paragraph will develop."
+             },
+              {
+                 question: "When reading an advertisement, what should you be particularly aware of regarding the author's purpose?",
+                 options: ["To provide unbiased factual information", "To persuade the reader to buy a product or service", "To entertain the reader with a story", "To present a balanced academic argument"],
+                 answer: "To persuade the reader to buy a product or service",
+                 explanation: "The primary purpose of most advertisements is persuasion – to convince the audience to take a specific action, usually related to a purchase."
+             },
+             {
+                 question: "A news report about a recent technological breakthrough would most likely connect to which IB theme?",
+                 options: ["Identities", "Experiences", "Human ingenuity", "Social organization"],
+                 answer: "Human ingenuity",
+                 explanation: "'Human ingenuity' explores how humans create, innovate, and solve problems, making it directly relevant to technological advancements."
+             },
+             {
+                 question: "If a reading passage presents two different viewpoints on a controversial issue, what skill is primarily being tested if you're asked to compare them?",
+                 options: ["Scanning for specific dates", "Identifying the main idea of one viewpoint only", "Understanding and comparing different perspectives", "Defining vocabulary words"],
+                 answer: "Understanding and comparing different perspectives",
+                 explanation: "This type of question requires you to identify, understand, and then compare or contrast the different arguments or viewpoints presented in the text."
+             },
+             {
+                 question: "What does 'scanning' a text involve in a reading exam?",
+                 options: ["Reading every word carefully", "Quickly looking for specific information like names, dates, or keywords", "Guessing the meaning of unknown words", "Analyzing the author's writing style"],
+                 answer: "Quickly looking for specific information like names, dates, or keywords",
+                 explanation: "Scanning is a rapid reading technique used to locate particular pieces of information without reading the entire text in detail."
+             },
+             {
+                 question: "A text discussing different forms of government and their impact on society is most relevant to which IB theme?",
+                 options: ["Sharing the planet", "Human ingenuity", "Social organization", "Experiences"],
+                 answer: "Social organization",
+                 explanation: "The theme 'Social organization' deals with how societies are structured, including systems like government, law, education, and community."
+             },
+             {
+                 question: "What is a 'distractor' in a multiple-choice question?",
+                 options: ["The correct answer", "An incorrect option designed to seem plausible", "An explanation of the question", "The question stem itself"],
+                 answer: "An incorrect option designed to seem plausible",
+                 explanation: "Distractors are incorrect answer choices that are intentionally written to be attractive to test-takers who may not fully understand the material, making the question more challenging."
+             },
+             {
+                 question: "If a question asks for the 'main idea' of a passage, what should your answer focus on?",
+                 options: ["A minor detail mentioned in the text", "The most important or central point the author is making", "Your personal opinion about the topic", "The first sentence of the passage only"],
+                 answer: "The most important or central point the author is making",
+                 explanation: "The main idea is the overall message or key concept of the entire passage, not just a supporting detail or an isolated part."
+             },
+             {
+                 question: "A review of a new restaurant is an example of what kind of text type?",
+                 options: ["Instructional", "Narrative", "Evaluative/Persuasive", "Descriptive (only)"],
+                 answer: "Evaluative/Persuasive",
+                 explanation: "Restaurant reviews typically evaluate the food, service, and ambiance, and often aim to persuade the reader to either visit or avoid the establishment."
+             },
+             {
+                 question: "The IB theme 'Sharing the Planet' would most likely cover topics such as:",
+                 options: ["The history of art", "Personal hobbies and interests", "Environmental issues and sustainability", "The development of new technologies"],
+                 answer: "Environmental issues and sustainability",
+                 explanation: "'Sharing the Planet' focuses on the relationship between humans and the environment, global issues, ethics, and sustainability."
+             },
+             {
+                 question: "When a text uses phrases like 'however', 'on the other hand', or 'in contrast', it signals:",
+                 options: ["An example is about to be given", "A shift or contrast in ideas", "A concluding statement", "The main idea of the paragraph"],
+                 answer: "A shift or contrast in ideas",
+                 explanation: "These are transition words or phrases that indicate a change in direction, a contrasting point, or an opposing idea is being introduced."
+             },
+             {
+                 question: "In an IB English B listening exam, how many times are you usually allowed to hear each audio passage?",
+                 options: ["Once only", "Twice", "Three times", "As many times as needed"],
+                 answer: "Twice",
+                 explanation: "Typically, in IB English B listening exams, audio passages are played twice to allow students to catch details and confirm understanding."
+             },
+             {
+                 question: "What is a good strategy to use *before* the audio for a listening task begins?",
+                 options: ["Start writing your answers immediately", "Read the questions carefully and predict possible answers or topics", "Close your eyes and relax", "Talk to your neighbor about the topic"],
+                 answer: "Read the questions carefully and predict possible answers or topics",
+                 explanation: "Previewing the questions helps you focus your listening and anticipate the information you need to identify in the audio."
+             },
+             {
+                 question: "If you miss a piece of information while listening, what should you do?",
+                 options: ["Panic and stop listening", "Leave the answer blank and move on, hoping to catch it on the second listening", "Guess immediately without thinking", "Ask the invigilator to repeat the audio"],
+                 answer: "Leave the answer blank and move on, hoping to catch it on the second listening",
+                 explanation: "Don't get stuck on one missed point. Continue listening for other answers and make a note to pay special attention to the missed part during the second playback."
+             },
+             {
+                 question: "Why is it important to pay attention to a speaker's intonation and stress in a listening comprehension task?",
+                 options: ["It helps determine the speaker's accent", "It can indicate the speaker's attitude, emotion, or emphasis", "It tells you the grammatical structure of sentences", "It is not important for comprehension"],
+                 answer: "It can indicate the speaker's attitude, emotion, or emphasis",
+                 explanation: "Intonation (rise and fall of the voice) and stress (emphasis on certain words) convey meaning beyond the literal words, such as sarcasm, excitement, or importance."
+             },
+             {
+                 question: "Which of these is a common text type in IB English B listening exams?",
+                 options: ["A complex philosophical debate", "A live sports commentary with fast-paced slang", "An interview or a dialogue between two or more people", "A Shakespearean play extract"],
+                 answer: "An interview or a dialogue between two or more people",
+                 explanation: "Interviews, dialogues, announcements, and short talks are common listening text types as they reflect real-world language use suitable for BSL learners."
+             },
+             {
+                 question: "What does 'listening for gist' mean?",
+                 options: ["Understanding every single word", "Identifying specific names and dates", "Getting the overall main idea or purpose of the audio", "Analyzing the speaker's grammar"],
+                 answer: "Getting the overall main idea or purpose of the audio",
+                 explanation: "Listening for gist is about understanding the general topic and main points, rather than focusing on minute details."
+             },
+             {
+                 question: "If a listening task involves filling in a table, what should you do while listening?",
+                 options: ["Try to write full sentences in the table", "Focus only on the first column of the table", "Listen for specific information that matches the table headings", "Ignore the table until the audio finishes"],
+                 answer: "Listen for specific information that matches the table headings",
+                 explanation: "The table structure guides your listening. Look for keywords in the headings and listen for the corresponding details to fill in the cells, often using short notes or phrases."
+             },
+             {
+                 question: "In a listening exam, if you hear unfamiliar vocabulary, what is the best approach?",
+                 options: ["Stop listening and look up the word", "Try to guess the meaning from the context and continue listening", "Assume the word is not important", "Ask the examiner for the definition"],
+                 answer: "Try to guess the meaning from the context and continue listening",
+                 explanation: "Rely on the surrounding words and the overall topic to infer the meaning of unfamiliar vocabulary. Don't let one word disrupt your comprehension of the rest."
+             },
+             {
+                 question: "What is the purpose of 'signposting language' (e.g., 'Firstly...', 'In conclusion...', 'However...') in a spoken text?",
+                 options: ["To make the speech longer", "To confuse the listener", "To help the listener follow the structure and argument of the speech", "To introduce irrelevant information"],
+                 answer: "To help the listener follow the structure and argument of the speech",
+                 explanation: "Signposting language acts as a guide, indicating transitions, new points, contrasts, or summaries, making the spoken text easier to understand."
+             },
+             {
+                 question: "Which of the following is a key receptive skill assessed in Paper 2?",
+                 options: ["Writing a persuasive essay", "Delivering an oral presentation", "Understanding spoken and written texts", "Participating in a debate"],
+                 answer: "Understanding spoken and written texts",
+                 explanation: "Paper 2 specifically assesses receptive skills, which are listening comprehension and reading comprehension."
+             },
+             {
+                 question: "If a listening passage is an announcement at a train station, what kind of information would you expect to hear?",
+                 options: ["A detailed historical account", "Platform changes, delays, or departure times", "A philosophical discussion", "A recipe for a local dish"],
+                 answer: "Platform changes, delays, or departure times",
+                 explanation: "Announcements in public places like train stations typically convey practical, timely information relevant to travelers."
+             },
+             {
+                 question: "Taking notes during a listening exam is most helpful for which type of question?",
+                 options: ["Multiple-choice questions with very short options", "Questions requiring you to identify the speaker's mood", "Questions that ask for specific details like names, numbers, or reasons", "True/False questions about general ideas"],
+                 answer: "Questions that ask for specific details like names, numbers, or reasons",
+                 explanation: "Note-taking helps capture specific details that might be hard to remember, especially when multiple pieces of information are presented."
+             },
+             {
+                 question: "What is a challenge when listening to a conversation between multiple speakers?",
+                 options: ["The language is always formal", "Distinguishing between the different voices and who said what", "There are never any interruptions", "The topic is always simple"],
+                 answer: "Distinguishing between the different voices and who said what",
+                 explanation: "Following a conversation with multiple speakers requires you to identify different voices and keep track of their individual contributions and interactions."
+             },
+             {
+                 question: "If the listening task asks you to identify the speaker's purpose, what are you trying to determine?",
+                 options: ["The speaker's age and occupation", "Why the speaker is saying what they are saying (e.g., to inform, persuade, entertain)", "The exact words the speaker used", "The grammatical accuracy of the speech"],
+                 answer: "Why the speaker is saying what they are saying (e.g., to inform, persuade, entertain)",
+                 explanation: "The speaker's purpose is their main reason or goal for communicating the message."
+             },
+             {
+                 question: "Exposure to various English accents is important for the listening exam because:",
+                 options: ["You will be tested on identifying specific accents", "The exam will only feature one standard accent", "The audio materials may feature speakers with diverse accents", "It improves your own pronunciation"],
+                 answer: "The audio materials may feature speakers with diverse accents",
+                 explanation: "IB English B aims to reflect the global nature of English, so listening materials can include a range of accents. Familiarity helps comprehension."
+             },
+             {
+                 question: "Which of the five IB themes would a listening passage about a community project to clean up a local park best fit into?",
+                 options: ["Identities", "Experiences", "Human ingenuity", "Sharing the planet / Social organization"],
+                 answer: "Sharing the planet / Social organization",
+                 explanation: "This could fit 'Sharing the Planet' (environmental action) or 'Social Organization' (community initiatives and collaboration)."
+             },
+             {
+                 question: "If a listening question is 'True/False/Not Given', what does 'Not Given' mean?",
+                 options: ["The statement is false according to the audio", "The statement is true according to the audio", "The information to confirm or deny the statement is not provided in the audio", "The statement is grammatically incorrect"],
+                 answer: "The information to confirm or deny the statement is not provided in the audio",
+                 explanation: "'Not Given' (or 'Information Not Provided') means you cannot determine the truth or falsity of the statement based solely on the audio content."
+             },
+             {
+                 question: "What is a good way to use the time between the first and second listening of an audio passage?",
+                 options: ["Relax and clear your mind completely", "Review your answers, fill in gaps, and focus on questions you found difficult", "Start working on the reading section", "Try to write down the entire script from memory"],
+                 answer: "Review your answers, fill in gaps, and focus on questions you found difficult",
+                 explanation: "This time is crucial for consolidating what you understood, identifying areas of uncertainty, and preparing to listen for specific missing information during the second playback."
+             },
+             {
+                 question: "A listening passage describing the rules and procedures for a new library membership system is primarily:",
+                 options: ["Narrative", "Persuasive", "Informative/Instructional", "Argumentative"],
+                 answer: "Informative/Instructional",
+                 explanation: "The main purpose of such a passage would be to inform listeners about the rules and instruct them on procedures."
+             },
+             {
+                 question: "Understanding idiomatic expressions in a listening context can be challenging because:",
+                 options: ["They always use very simple vocabulary", "Their literal meaning is often different from their intended figurative meaning", "They are only used in formal academic speech", "They are always explained by the speaker"],
+                 answer: "Their literal meaning is often different from their intended figurative meaning",
+                 explanation: "Idioms are phrases whose meaning cannot be deduced from the individual words. Understanding them requires familiarity or strong contextual clues."
+             },
+             {
+                 question: "Paper 2 of IB English B SL assesses which skills?",
+                 options: ["Writing and Speaking", "Reading and Writing", "Listening and Speaking", "Listening and Reading"],
+                 answer: "Listening and Reading",
+                 explanation: "Paper 2 is focused on receptive skills, which are listening comprehension and reading comprehension."
+             },
+             {
+                 question: "The five prescribed themes for IB Language B (Identities, Experiences, Human Ingenuity, Social Organization, Sharing the Planet) are relevant to:",
+                 options: ["Only the reading section", "Only the listening section", "Both the reading and listening sections, and other components of the course", "Only the oral exam"],
+                 answer: "Both the reading and listening sections, and other components of the course",
+                 explanation: "These five themes are integral to the entire IB Language B course, influencing the content of texts for reading, listening, writing, and speaking."
+             },
+             {
+                 question: "Time management in Paper 2 is crucial because:",
+                 options: ["You get bonus points for finishing early", "You have to complete both listening and reading tasks within the allocated time", "The listening audio can be paused if you need more time", "The reading texts are always very short"],
+                 answer: "You have to complete both listening and reading tasks within the allocated time",
+                 explanation: "Paper 2 has a set duration for both sections. Efficiently allocating your time between listening, reading, and answering questions is vital for success."
+             },
+             {
+                 question: "Being aware of different text types (e.g., blog, interview, advertisement) is helpful in Paper 2 because:",
+                 options: ["Each text type has the same structure and purpose", "It helps you anticipate the likely content, style, and purpose of the text", "You will be asked to write your own examples of these text types", "It is not relevant to comprehension"],
+                 answer: "It helps you anticipate the likely content, style, and purpose of the text",
+                 explanation: "Understanding the conventions of different text types allows you to approach them with appropriate expectations and strategies for comprehension."
+             },
+             {
+                 question: "A key difference between the reading and listening sections of Paper 2 is:",
+                 options: ["Reading texts are always easier than listening texts", "You have more control over the pace in the reading section", "Listening questions are always multiple choice", "Reading questions do not test vocabulary"],
+                 answer: "You have more control over the pace in the reading section",
+                 explanation: "In the reading section, you can re-read passages and manage your time per question more flexibly. In listening, you must follow the pace of the audio playback."
+             },
+             {
+                 question: "Understanding cultural context can be important in Paper 2 because:",
+                 options: ["All texts are about your own culture", "It can affect the meaning and interpretation of language and situations", "You need to translate texts into your first language", "It is only relevant for the Human Ingenuity theme"],
+                 answer: "It can affect the meaning and interpretation of language and situations",
+                 explanation: "Language is often culturally embedded. Awareness of cultural nuances can deepen understanding of texts from diverse backgrounds."
+             },
+             {
+                 question: "For both reading and listening in Paper 2, actively engaging with the material (e.g., predicting, questioning, summarizing) is generally:",
+                 options: ["A waste of time", "More effective than passive reception", "Only useful for HL students", "Likely to cause confusion"],
+                 answer: "More effective than passive reception",
+                 explanation: "Active engagement strategies enhance comprehension and retention of information in both reading and listening tasks."
+             },
+             {
+                 question: "If a Paper 2 question asks you to 'identify the main message' of a text, it is similar to asking for:",
+                 options: ["A specific statistic", "The author's biography", "The gist or main idea", "A list of all characters"],
+                 answer: "The gist or main idea",
+                 explanation: "The 'main message' refers to the central point or takeaway the author or speaker wants to convey."
+             },
+             {
+                 question: "The overall aim of IB Language B is to develop:",
+                 options: ["Fluency in multiple new languages simultaneously", "Skills in literary criticism only", "Communicative competence in the target language and intercultural understanding", "Perfect native-like pronunciation"],
+                 answer: "Communicative competence in the target language and intercultural understanding",
+                 explanation: "IB Language B focuses on developing students' ability to use the language effectively in various contexts and to appreciate different cultures."
+             },
+             {
+                 question: "In Paper 2, if you are unsure about an answer, it is generally better to:",
+                 options: ["Leave it blank to avoid losing marks", "Make an educated guess based on your understanding", "Copy an answer from a nearby question", "Spend a disproportionate amount of time on that one question"],
+                 answer: "Make an educated guess based on your understanding",
+                 explanation: "Unless there's a penalty for wrong answers (which is not typical for IB multiple choice), it's better to attempt every question. An educated guess is better than a blank."
+             }
+         ];         
+         const quizContainer = document.getElementById('quiz-container');
+         const gameArea = document.getElementById('game-area');
+         const resultsArea = document.getElementById('results-area');
+         const questionCounter = document.getElementById('question-counter');
+         const scoreDisplay = document.getElementById('score-display'); 
+         const progressBar = document.getElementById('progress-bar');
+         const questionText = document.getElementById('question-text');
+         const optionsContainer = document.getElementById('options-container');
+         const feedbackArea = document.getElementById('feedback-area'); 
+         const feedbackText = document.getElementById('feedback-text'); 
+         const explanationText = document.getElementById('explanation-text'); 
+         const nextBtn = document.getElementById('next-btn');
+         const finalScore = document.getElementById('final-score');
+         const resultMessage = document.getElementById('result-message');
+         const restartBtn = document.getElementById('restart-btn');
+         const confettiCanvas = document.getElementById('confetti-canvas');         
+         let myConfettiInstance = null;
+         if (confettiCanvas && typeof confetti !== 'undefined') {
+              myConfettiInstance = confetti.create(confettiCanvas, {
+                 resize: true,
+                 useWorker: true
+             });
+         }         
+         let currentQuestionIndex = 0;
+         let score = 0;
+         let questionsAnsweredInSession = 0;
+         let shuffledQuestions = [];         
+         function shuffleArray(array) {
+             for (let i = array.length - 1; i > 0; i--) {
+                 const j = Math.floor(Math.random() * (i + 1));
+                 [array[i], array[j]] = [array[j], array[i]];
+             }
+             return array;
+         }         
+         function updateScoreDisplay() {
+             const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
+             scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
+         }
+                  function updateProgressBar() {
+             const totalQuestionsToDisplay = shuffledQuestions.length;
+             const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
+             progressBar.style.width = `${progressPercentage}%`;
+             progressBar.textContent = `${progressPercentage}%`;
+         }
+                  function updateProgressBarAfterAnswer() {
+              const totalQuestionsToDisplay = shuffledQuestions.length;
+              const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+              progressBar.style.width = `${progressPercentage}%`;
+              progressBar.textContent = `${progressPercentage}%`;
+         }
+                  function startGame() {
+             currentQuestionIndex = 0;
+             score = 0;
+             questionsAnsweredInSession = 0;
+             shuffledQuestions = shuffleArray([...questions]); 
+                      updateScoreDisplay();
+             progressBar.style.width = '0%';
+             progressBar.textContent = '0%';
+             resultsArea.classList.add('hidden');
+             resultsArea.classList.remove('results-enter', 'results-enter-active');
+             quizContainer.classList.remove('celebrate-bg');
+             gameArea.classList.remove('hidden');
+             nextBtn.classList.add('hidden');
+             feedbackArea.classList.add('hidden'); 
+             explanationText.innerHTML = ''; 
+             showQuestion();
+         }
+                  function showQuestion() {
+             updateProgressBar(); 
+             optionsContainer.innerHTML = '';
+             feedbackArea.classList.add('hidden'); 
+             feedbackText.textContent = '';
+             explanationText.innerHTML = ''; 
+             feedbackText.className = 'text-lg font-semibold mb-2'; 
+                      const currentQuestion = shuffledQuestions[currentQuestionIndex];
+             questionText.innerHTML = currentQuestion.question; 
+             questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+                      const shuffledOptions = shuffleArray([...currentQuestion.options]);         
+             shuffledOptions.forEach(option => {
+                 const button = document.createElement('button');
+                 button.innerHTML = option; 
+                 button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                 button.addEventListener('click', selectAnswer);
+                 optionsContainer.appendChild(button);
+             });
+         
+             nextBtn.classList.add('hidden');
+         }
+         function triggerConfetti() {
+             if (myConfettiInstance) {
+                 myConfettiInstance({
+                     particleCount: 120, 
+                     spread: 80, 
+                     origin: { y: 0.6 },
+                     colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6'] 
+                 });
+             }
+         }
+         function selectAnswer(e) {
+             const selectedButton = e.target.closest('.option-btn'); 
+             if (!selectedButton) return;
+         
+             const currentQuestion = shuffledQuestions[currentQuestionIndex];
+             const correctAnswer = currentQuestion.answer;
+             const explanation = currentQuestion.explanation; 
+             questionsAnsweredInSession++;
+         
+             Array.from(optionsContainer.children).forEach(button => {
+                 button.disabled = true;
+                 if (button.innerHTML === correctAnswer) { 
+                     button.classList.add('correct-answer');
+                 }
+             });
+             if (selectedButton.innerHTML === correctAnswer) {
+                 score++;
+                 feedbackText.textContent = '✅ 回答正确!';
+                 feedbackText.className = 'text-lg font-semibold mb-2 text-green-600'; 
+                 selectedButton.classList.add('correct-answer'); 
+                 triggerConfetti(); 
+             } else {
+                 feedbackText.textContent = `❌ 回答错误!`; 
+                 feedbackText.className = 'text-lg font-semibold mb-2 text-red-600'; 
+                 selectedButton.classList.add('wrong-answer');
+             }
+         
+             explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`; 
+             feedbackArea.classList.remove('hidden'); 
+         
+             updateScoreDisplay();
+             updateProgressBarAfterAnswer(); 
+             nextBtn.classList.remove('hidden');
+         }
+         function showNextQuestion() {
+             currentQuestionIndex++;
+             if (currentQuestionIndex < shuffledQuestions.length) {
+                 showQuestion();
+             } else {
+                 endGame();
+             }
+         }
+         function endGame() {
+             gameArea.classList.add('hidden');
+             resultsArea.classList.remove('hidden');
+             requestAnimationFrame(() => {
+                  resultsArea.classList.add('results-enter');
+                  requestAnimationFrame(() => {
+                      resultsArea.classList.add('results-enter-active');
+                 });
+             });
+             const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+             finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+             let message = ''; 
+             quizContainer.classList.remove('celebrate-bg'); 
+             if (finalPercentage === 100) {
+                 message = '💯 完美！你简直是 IB English B Paper 2 大师！知识点掌握得炉火纯青！';
+                  if (myConfettiInstance) { myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.5 }}); myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.7 }}); } 
+             } else if (finalPercentage >= 90) {
+                  message = '🌟 太出色了！对 Paper 2 的理解非常深刻，绝对的学霸！';
+                  if (myConfettiInstance) { myConfettiInstance({particleCount: 150, spread: 100}); }
+             } else if (finalPercentage >= 80) {
+                 message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
+             } else if (finalPercentage >= 70) {
+                  message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
+             } else if (finalPercentage >= 60) {
+                 message = '👍 相当不错！大部分知识点都理解了，继续加油！';
+             } else if (finalPercentage >= 50) {
+                 message = '😊 不错！掌握了核心内容，可以更有自信！';
+             } else {
+                 message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
+             }
+             resultMessage.textContent = message;
+         }
+         nextBtn.addEventListener('click', showNextQuestion);
+         restartBtn.addEventListener('click', startGame);
+         startGame();
+      </script>
+   </body>
+</html>

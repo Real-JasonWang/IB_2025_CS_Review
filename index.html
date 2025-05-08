@@ -1,89 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason Wang's IB Revision Toys</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .quiz-launch-btn {
-            display: block;
-            text-decoration: none;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            transition: width 0.3s ease-in-out;
-            text-align: center;
-        }
-        .quiz-launch-btn:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .quiz-launch-btn .quiz-title {
-            font-size: 1.125rem;
-            line-height: 1.5rem;
-        }
-        .quiz-launch-btn .quiz-description {
-            font-size: 0.75rem;
-            opacity: 0.85;
-            margin-top: 0.125rem;
-            font-weight: 400;
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
-
-    <div id="launcher-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-2xl mx-auto">
-        <header class="text-center mb-6 md:mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">欢迎来到 IB Revision Toys</h1>
-            <p class="text-gray-600 mt-1 text-sm sm:text-base">AI预测最新热门知识点<br>与Jason Wang精心设计的UI<br>让您复习不枯燥，有趣且高效</p>
-        </header>
-
-        <div id="quiz-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-            
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Jason Wang's IB Revision Toys</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         }
+         .quiz-launch-btn {
+         display: block;
+         text-decoration: none;
+         color: white;
+         font-weight: 600;
+         padding: 0.75rem 1rem;
+         border-radius: 0.75rem;
+         transition: width 0.3s ease-in-out;
+         text-align: center;
+         }
+         .quiz-launch-btn:hover {
+         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+         }
+         .quiz-launch-btn .quiz-title {
+         font-size: 1.125rem;
+         line-height: 1.5rem;
+         }
+         .quiz-launch-btn .quiz-description {
+         font-size: 0.75rem;
+         opacity: 0.85;
+         margin-top: 0.125rem;
+         font-weight: 400;
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+      <div id="launcher-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-5xl mx-auto">
+         <header class="text-center mb-6 md:mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">欢迎来到IB Revision Toys🥳</h1>
+            <p class="text-gray-600 mt-5 text-sm sm:text-base">复习不枯燥,有趣且高效,难点轻松过,玩出新门道</p>
+         </header>
+         <div id="quiz-list" class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-2">
+            <a href="p2_eng_randl.html" class="quiz-launch-btn bg-indigo-600 hover:bg-indigo-700">
+            <span class="quiz-title">English B SL P2</span>
+            <span class="quiz-description">50题 v2505a</span>
+            </a>
             <a href="p1_eng_writing.html" class="quiz-launch-btn bg-indigo-600 hover:bg-indigo-700">
-                <span class="quiz-title">English B SL P1 </span>
-                <span class="quiz-description"> 50题 v2505a</span>
+            <span class="quiz-title">English B SL P1 </span>
+            <span class="quiz-description">120题 v2505b</span>
             </a>
-
             <a href="p2_oop.html" class="quiz-launch-btn bg-purple-600 hover:bg-purple-700">
-                <span class="quiz-title">CS SL P2 (仅OOP)</span>
-                <span class="quiz-description">110+题 v2505a</span>
+            <span class="quiz-title">CS SL P2 (仅OOP)</span>
+            <span class="quiz-description">110+题 v2505a</span>
             </a>
-
             <a href="p1_cs.html" class="quiz-launch-btn bg-purple-600 hover:bg-purple-700"">
-                <span class="quiz-title">CS SL P1</span>
-                <span class="quiz-description">150+题 v2505a</span>
+            <span class="quiz-title">CS SL P1</span>
+            <span class="quiz-description">180+题 v2504a</span>
             </a>
-            
             <a href="index.html" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700">
-                <span class="quiz-title">敬请期待</span>
-                <span class="quiz-description">新测验开发中</span>
+            <span class="quiz-title">敬请期待</span>
+            <span class="quiz-description">新测验开发中</span>
             </a>
-
-            <a href="index.html" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700">
-                <span class="quiz-title">敬请期待</span>
-                <span class="quiz-description">新测验开发中</span>
-            </a>
-
             <a href="index.html" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700"
-                <span class="quiz-title">敬请期待</span>
-                <span class="quiz-description">新测验开发中</span>
+            <span class="quiz-title">敬请期待</span>
+            <span class="quiz-description">新测验开发中</span>
             </a>
-        </div>
-        <p class="text-center text-gray-600 mt-1 text-sm sm:text-base">暂无更多</p>
-
-        <footer class="text-center mt-8 md:mt-12 text-gray-500 text-sm">
+         </div>
+         <p class="text-center text-gray-600 mt-5 text-sm sm:text-base">暂无更多</p>
+         <footer class="text-center mt-10 md-1 text-gray-500 text-xs">
             <p>&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
-            <p>Version 0.1.0</p>
-            <p>...</p>
-            <p>如需更多信息，请联系Jason Wang</p>
-        </footer>
-    </div>
-
-</body>
+            <p>>> Version 0.1.1 "Tiny Mouse"</p>
+            <p>Licensed under the MIT License. </p>
+         </footer>
+      </div>
+   </body>
 </html>

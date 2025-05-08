@@ -92,12 +92,12 @@
    </head>
    <body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex items-center justify-center p-4 relative">
       <canvas id="confetti-canvas"></canvas>
-      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-2xl relative z-10">
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
          <a href="index.html"
             class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
          👈主页
          </a>
-         <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">IB CS 复习小测验（P2 Java编程）</h1>
+         <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6 mt-2">IB CS 复习小测验（P2 Java编程）</h1>
          <div id="game-area">
             <div class="flex justify-between items-center mb-4 text-gray-600">
                <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 50</span>
@@ -129,7 +129,7 @@
             重新开始
             </button>
          </div>
-         <p class="text-center text-gray-600 mb-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+         <p class="text-center text-gray-600 mb-1 mt-6 text-xs">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
       </div>
       <script>
          const quizData = [
@@ -961,15 +961,12 @@
          
              if (finalPercentage === 100) {
                  message = '💯 完美！你简直是 IB CS 大师！知识点掌握得炉火纯青！';
-                 quizContainer.classList.add('celebrate-bg');
                  triggerConfetti();
              } else if (finalPercentage >= 95) {
                   message = '🌟 太出色了！离满分只有一步之遥，绝对的学霸！';
-                  quizContainer.classList.add('celebrate-bg');
                   triggerConfetti();
              } else if (finalPercentage >= 90) {
                   message = '🏆 非常棒！知识掌握得非常扎实，优秀！';
-                  quizContainer.classList.add('celebrate-bg');
                   triggerConfetti();
              } else if (finalPercentage >= 85) {
                   message = '🎉 很厉害！展现了很强的实力，继续保持！';

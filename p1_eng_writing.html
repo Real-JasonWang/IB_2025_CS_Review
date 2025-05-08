@@ -1,643 +1,1056 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IB English B SL Paper 1 备考测验 - By Jason Wang</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .option-btn:not([disabled]):hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .option-btn:not([disabled]):active {
-            transform: translateY(0);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .results-enter {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .results-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .option-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        .correct-answer {
-            background-color: #22c55e !important;
-            color: white !important;
-            border-color: #16a34a !important;
-        }
-        .wrong-answer {
-            background-color: #ef4444 !important;
-            color: white !important;
-            border-color: #dc2626 !important;
-        }
-        .progress-bar-container {
-            background-color: #e5e7eb;
-            border-radius: 9999px;
-            overflow: hidden;
-            height: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .progress-bar {
-            background-color: #4f46e5;
-            height: 100%;
-            transition: width 0.3s ease-in-out;
-            text-align: center;
-            color: white;
-            font-size: 0.75rem;
-            line-height: 1rem;
-            font-weight: 500;
-            border-radius: 9999px;
-        }
-        @keyframes celebrate {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        .celebrate-bg {
-            background: linear-gradient(270deg, #a855f7, #ec4899, #f59e0b, #22c55e, #3b82f6);
-            background-size: 1000% 1000%;
-            animation: celebrate 5s ease infinite;
-        }
-        #confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
-        }
-        .explanation {
-            background-color: #e2e8f0;
-            border-left: 4px solid #4f46e5;
-            padding: 1rem;
-            border-radius: 0.375rem;
-            color: #475569;
-            font-size: 0.875rem;
-            margin-top: 1rem;
-        }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
-    <canvas id="confetti-canvas"></canvas>
-    <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-2xl relative z-10">
-        <a href="index.html"
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB English B SL Paper 1 备考测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px);
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0);
+         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(30px);
+         transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed;
+         opacity: 0.7;
+         }
+         .correct-answer {
+         background-color: #22c55e !important;
+         color: white !important;
+         border-color: #16a34a !important;
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important;
+         color: white !important;
+         border-color: #dc2626 !important;
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb;
+         border-radius: 9999px;
+         overflow: hidden;
+         height: 1rem;
+         margin-bottom: 1.5rem;
+         }
+         .progress-bar {
+         background-color: #4f46e5;
+         height: 100%;
+         transition: width 0.3s ease-in-out;
+         text-align: center;
+         color: white;
+         font-size: 0.75rem;
+         line-height: 1rem;
+         font-weight: 500;
+         border-radius: 9999px;
+         }
+         @keyframes celebrate {
+         0%, 100% { background-position: 0% 50%; }
+         50% { background-position: 100% 50%; }
+         }
+         .celebrate-bg {
+         background: linear-gradient(270deg, #a855f7, #ec4899, #f59e0b, #22c55e, #3b82f6);
+         background-size: 1000% 1000%;
+         animation: celebrate 5s ease infinite;
+         }
+         #confetti-canvas {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none;
+         z-index: 9999;
+         }
+         .explanation {
+         background-color: #e2e8f0;
+         border-left: 4px solid #4f46e5;
+         padding: 1rem;
+         border-radius: 0.375rem;
+         color: #475569;
+         font-size: 0.875rem;
+         margin-top: 1rem;
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
+         <a href="index.html"
             class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
          👈主页
          </a>
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">IB English B SL Paper 1 备考测验</h1>
-        <p class="text-center text-gray-600 mb-6">测试你对 Paper 1 的了解程度！</p>
-
-        <div id="game-area">
+         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 mt-2">IB English B SL Paper 1 备考测验</h1>
+         <p class="text-center text-gray-600 mb-6">测试你对 Paper 1 的了解程度！</p>
+         <div id="game-area">
             <div class="flex justify-between items-center mb-4 text-gray-600">
-                <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 50</span>
-                <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 50</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
             </div>
             <div class="progress-bar-container">
-                <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
             </div>
-
             <div id="question-container" class="mb-6">
-                <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[3em]">问题文本加载中...</h2>
+               <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[3em]">问题文本加载中...</h2>
             </div>
             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             </div>
-            
             <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
-                <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
-                <div id="explanation-text" class="explanation text-left"></div>
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
             </div>
-
             <div class="text-center">
-                <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
-                下一题
-                </button>
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
             </div>
-        </div>
-
-        <div id="results-area" class="hidden text-center">
+         </div>
+         <div id="results-area" class="hidden text-center">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
             <p id="final-score" class="text-xl text-gray-700 mb-6"></p>
             <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
             <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
             重新开始
             </button>
-        </div>
-        <p class="text-center text-gray-600 mb-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
-    </div>
-
-    <script>
-        const questions = [
-            {
-                question: "Which of the following is NOT a subtopic of the 'Identities' theme in IB English B?",
-                options: ["Lifestyles", "Beliefs and values", "Scientific innovation", "Subcultures"],
-                answer: "Scientific innovation",
-                explanation: "'Scientific innovation' is a subtopic of 'Human Ingenuity'. 'Identities' covers aspects like lifestyles, beliefs, values, and subcultures."
-            },
-            {
-                question: "The theme 'Experiences' in IB English B primarily focuses on:",
-                options: ["The history of human civilization", "Significant life events and personal journeys", "The structure of global economies", "Political systems and governance"],
-                answer: "Significant life events and personal journeys",
-                explanation: "'Experiences' explores aspects like leisure, holidays, life stories, rites of passage, and migration, all relating to personal journeys and events."
-            },
-            {
-                question: "Which theme would most likely cover a discussion about the impact of social media on communication?",
-                options: ["Identities", "Sharing the Planet", "Human Ingenuity", "Experiences"],
-                answer: "Human Ingenuity",
-                explanation: "'Human Ingenuity' deals with communication, media, and technology. While social media can impact identities or experiences, its origin and function as a tool for communication fall under Human Ingenuity."
-            },
-            {
-                question: "A text discussing community engagement and the education system would fall under which IB English B theme?",
-                options: ["Social Organization", "Human Ingenuity", "Identities", "Sharing the Planet"],
-                answer: "Social Organization",
-                explanation: "'Social Organization' covers topics like community, social engagement, education, and the workplace."
-            },
-            {
-                question: "Which of these topics is central to the theme 'Sharing the Planet'?",
-                options: ["Artistic expression", "Technological advancements", "Environmental issues and ethics", "Personal hobbies and leisure"],
-                answer: "Environmental issues and ethics",
-                explanation: "'Sharing the Planet' focuses on global issues like the environment, human rights, peace and conflict, globalization, and ethics."
-            },
-            {
-                question: "A student writing about adapting to a new culture after moving abroad is primarily engaging with which theme?",
-                options: ["Experiences", "Identities", "Human Ingenuity", "Social Organization"],
-                answer: "Experiences",
-                explanation: "While it touches on 'Identities', the core of adapting to a new culture through migration is a significant life 'Experience'."
-            },
-            {
-                question: "The subtopic 'ethics related to scientific discovery' would best fit under which theme?",
-                options: ["Human Ingenuity", "Sharing the Planet", "Identities", "Social Organization"],
-                answer: "Human Ingenuity",
-                explanation: "'Human Ingenuity' covers scientific innovation. 'Sharing the Planet' might cover broader ethical dilemmas, but ethics tied directly to scientific discovery is more aligned with Human Ingenuity. Sometimes themes can overlap."
-            },
-            {
-                question: "A discussion on 'the role of law and order in society' aligns best with which theme?",
-                options: ["Social Organization", "Identities", "Experiences", "Human Ingenuity"],
-                answer: "Social Organization",
-                explanation: "'Social Organization' explicitly includes 'law and order' as one ofits subtopics."
-            },
-            {
-                question: "If a Paper 1 prompt asks you to write about 'your ideal holiday', which theme is it most directly tapping into?",
-                options: ["Experiences", "Identities", "Sharing the Planet", "Human Ingenuity"],
-                answer: "Experiences",
-                explanation: "Holidays and travel are key subtopics of the 'Experiences' theme."
-            },
-            {
-                question: "The impact of globalization on local traditions could be explored under which two themes most effectively?",
-                options: ["Sharing the Planet and Identities", "Human Ingenuity and Experiences", "Social Organization and Identities", "Experiences and Sharing the Planet"],
-                answer: "Sharing the Planet and Identities",
-                explanation: "'Sharing the Planet' covers globalization, and 'Identities' covers how traditions shape identity, which can be affected by globalization."
-            },
-            {
-                question: "What is the typical register for a formal letter of complaint to a company?",
-                options: ["Informal and friendly", "Formal and polite", "Casual and direct", "Sarcastic and critical"],
-                answer: "Formal and polite",
-                explanation: "A letter of complaint to a company should maintain a formal and polite tone, even when expressing dissatisfaction, to be taken seriously."
-            },
-            {
-                question: "Which text type is most suitable for sharing personal reflections and opinions with a wide online audience, inviting comments?",
-                options: ["A blog post", "A formal report", "A private diary entry", "An official proposal"],
-                answer: "A blog post",
-                explanation: "Blog posts are designed for sharing personal views, are typically informal or semi-formal, and encourage interaction through comments."
-            },
-            {
-                question: "In Paper 1, if a task asks you to 'write an article for your school magazine about a recent event', what is a key feature you should include?",
-                options: ["A personal salutation like 'Dear readers'", "A clear headline and an engaging introduction (lead)", "A list of references at the end", "Your personal contact information"],
-                answer: "A clear headline and an engaging introduction (lead)",
-                explanation: "Articles typically require a headline to grab attention and an introduction (lead paragraph) that summarizes the main points or hooks the reader."
-            },
-            {
-                question: "What is the primary purpose of a film review?",
-                options: ["To provide a detailed plot summary only", "To advertise the film to a wide audience", "To offer a critical assessment and recommendation", "To interview the director and actors"],
-                answer: "To offer a critical assessment and recommendation",
-                explanation: "A film review aims to evaluate a film's strengths and weaknesses and usually offers an opinion on whether others should watch it."
-            },
-            {
-                question: "When writing a speech, what is crucial to consider for engaging the audience?",
-                options: ["Using highly academic vocabulary only", "Reading directly from a script without eye contact", "Using rhetorical questions and a conversational tone", "Including as many statistics as possible"],
-                answer: "Using rhetorical questions and a conversational tone",
-                explanation: "Speeches are more engaging when they connect with the audience through techniques like rhetorical questions, a suitable tone, and clear delivery (implied)."
-            },
-            {
-                question: "An interview text type typically features:",
-                options: ["A single narrative voice", "A question-and-answer format", "Only the interviewer's opinions", "A list of facts and figures"],
-                answer: "A question-and-answer format",
-                explanation: "The most common structure for an interview is a Q&A format, presenting both the interviewer's questions and the interviewee's responses."
-            },
-            {
-                question: "What is a primary goal of a brochure advertising a new tourist destination?",
-                options: ["To provide a complex historical analysis", "To persuade and inform potential visitors", "To compare it critically with other destinations", "To publish academic research on tourism"],
-                answer: "To persuade and inform potential visitors",
-                explanation: "Brochures are marketing materials designed to attract and inform their target audience, in this case, potential tourists, using persuasive language and key information."
-            },
-            {
-                question: "A formal report submitted to a manager about a project's progress should be:",
-                options: ["Subjective and opinion-based", "Structured, objective, and factual", "Informal and chatty", "Filled with personal anecdotes"],
-                answer: "Structured, objective, and factual",
-                explanation: "Formal reports require a clear structure (e.g., introduction, findings, conclusion), an objective tone, and information based on facts or evidence."
-            },
-            {
-                question: "What is the main objective of a proposal written to the school board?",
-                options: ["To entertain the board members", "To complain about existing school policies", "To suggest a new idea or plan and seek approval/support", "To report on past school events"],
-                answer: "To suggest a new idea or plan and seek approval/support",
-                explanation: "A proposal aims to present a plan or suggestion with the goal of persuading the audience (the school board) to accept or support it."
-            },
-            {
-                question: "Which of these is a characteristic feature of a diary entry?",
-                options: ["Formal language and objective tone", "Written for a public audience", "Includes date, personal reflections, and first-person narrative", "Focuses on reporting news events"],
-                answer: "Includes date, personal reflections, and first-person narrative",
-                explanation: "Diary entries are personal, typically dated, written in the first person, and focus on the writer's thoughts, feelings, and experiences."
-            },
-            {
-                question: "If a prompt asks you to write an email to a friend inviting them to your birthday party, the register should be:",
-                options: ["Highly formal", "Informal", "Strictly neutral", "Academic"],
-                answer: "Informal",
-                explanation: "Emails to friends are typically informal, using casual language and a friendly tone."
-            },
-            {
-                question: "Which text type often uses headings, subheadings, and bullet points to present information clearly and concisely?",
-                options: ["A personal diary entry", "A narrative story", "A report or a proposal", "A poem"],
-                answer: "A report or a proposal",
-                explanation: "Reports and proposals frequently use structural elements like headings, subheadings, and bullet points to organize information for easy reading and understanding."
-            },
-             {
-                question: "The closing 'Yours sincerely,' is typically used in which type of letter?",
-                options: ["An informal letter to a close friend", "A formal letter when you know the recipient's name (e.g., Dear Mr. Smith)", "A formal letter when you don't know the recipient's name (e.g., Dear Sir/Madam)", "An email to a colleague"],
-                answer: "A formal letter when you know the recipient's name (e.g., Dear Mr. Smith)",
-                explanation: "'Yours sincerely,' is used in formal letters when you have addressed the recipient by name (e.g., Dear Mr. Brown). If you use 'Dear Sir/Madam,' you would end with 'Yours faithfully.'"
-            },
-            {
-                question: "What is the main difference between an article and a blog post, generally?",
-                options: ["Articles are always shorter than blog posts.", "Blog posts are typically more personal and can be more informal than traditional articles.", "Articles are only found online, while blog posts are in print.", "Blog posts do not have authors, unlike articles."],
-                answer: "Blog posts are typically more personal and can be more informal than traditional articles.",
-                explanation: "While there's overlap, blog posts often have a more personal voice and can adopt a more informal or conversational tone compared to traditional news or magazine articles, which tend to be more objective or formal."
-            },
-            {
-                question: "A 'call to action' is a common feature in which text type?",
-                options: ["A news report", "A diary entry", "A persuasive advertisement or brochure", "An academic essay"],
-                answer: "A persuasive advertisement or brochure",
-                explanation: "A 'call to action' (e.g., 'Visit our website today!', 'Buy now!') encourages the reader to take a specific step and is common in persuasive texts like advertisements or brochures."
-            },
-            {
-                question: "When writing a review of a restaurant for a local newspaper, who is your primary audience?",
-                options: ["The restaurant owner only", "Professional chefs and food critics", "The general public in your local area", "Your close friends and family"],
-                answer: "The general public in your local area",
-                explanation: "A restaurant review in a local newspaper is aimed at informing and guiding the general public who might be considering dining at that establishment."
-            },
-            {
-                question: "Which of the following is LEAST likely to be a feature of a formal proposal?",
-                options: ["Clear statement of purpose", "Slang and colloquial language", "Logical structure with headings", "A proposed plan of action"],
-                answer: "Slang and colloquial language",
-                explanation: "Formal proposals require a professional tone and precise language. Slang and colloquialisms are inappropriate for such a text type."
-            },
-            {
-                question: "If you are asked to write a 'set of guidelines' for new students, this text type would aim to:",
-                options: ["Entertain", "Inform and instruct", "Persuade them to leave", "Critique their behavior"],
-                answer: "Inform and instruct",
-                explanation: "Guidelines are meant to provide clear information and instructions on how to do something or behave in a certain situation."
-            },
-            {
-                question: "The phrase 'Dear Sir/Madam,' is an appropriate salutation when:",
-                options: ["Writing an email to your best friend.", "Writing a formal letter when you do not know the name of the recipient.", "Writing a blog post about your holiday.", "Writing a text message to your teacher."],
-                answer: "Writing a formal letter when you do not know the name of the recipient.",
-                explanation: "'Dear Sir/Madam,' is a standard formal salutation used when the specific name of the person you are writing to is unknown."
-            },
-            {
-                question: "Which text type is most likely to use persuasive rhetorical devices extensively, such as emotive language and direct address to the reader (e.g., 'you')?",
-                options: ["An objective news report", "A scientific research paper", "An advertisement or a persuasive speech", "A technical manual"],
-                answer: "An advertisement or a persuasive speech",
-                explanation: "Advertisements and persuasive speeches heavily rely on rhetorical devices to influence the audience's thoughts, feelings, or actions."
-            },
-            {
-                question: "In academic writing, 'cohesion' refers to:",
-                options: ["Using complex vocabulary", "The grammatical and lexical linking within a text (e.g., conjunctions, pronouns)", "The writer's personal opinion", "The number of paragraphs in an essay"],
-                answer: "The grammatical and lexical linking within a text (e.g., conjunctions, pronouns)",
-                explanation: "Cohesion refers to how different parts of a text are linked together at the sentence and paragraph level using devices like conjunctions (e.g., 'however', 'therefore'), pronouns, and lexical chains."
-            },
-            {
-                question: "What is the purpose of a topic sentence in a paragraph?",
-                options: ["To provide a concluding thought", "To introduce the main idea of the paragraph", "To list all the sources used", "To ask a rhetorical question"],
-                answer: "To introduce the main idea of the paragraph",
-                explanation: "A topic sentence usually appears at the beginning of a paragraph and states the central point or argument that the paragraph will develop."
-            },
-            {
-                question: "Which of the following demonstrates a formal register in writing?",
-                options: ["'Hey guys, check this out!'", "'It is imperative that we consider the ramifications.'", "'It's kinda like, you know, a big deal.'", "'We gotta do something ASAP.'"],
-                answer: "'It is imperative that we consider the ramifications.'",
-                explanation: "Formal register involves using precise vocabulary (e.g., 'imperative', 'ramifications'), complete sentences, and avoiding slang, contractions, or overly casual language."
-            },
-            {
-                question: "To improve clarity in writing, one should generally avoid:",
-                options: ["Using specific examples", "Ambiguous pronoun references", "Clear topic sentences", "Transitional phrases"],
-                answer: "Ambiguous pronoun references",
-                explanation: "Ambiguous pronoun references (e.g., when 'it' or 'they' could refer to multiple things) can confuse the reader and obscure meaning. Clarity is enhanced by clear referents."
-            },
-            {
-                question: "Which of these is an example of a 'cohesive device' used for contrast?",
-                options: ["Furthermore", "In addition", "However", "For example"],
-                answer: "However",
-                explanation: "'However' is a conjunctive adverb used to introduce a statement that contrasts with or contradicts something that has been said previously."
-            },
-            {
-                question: "When planning a written piece for Paper 1, what is the first crucial step after choosing a prompt?",
-                options: ["Start writing immediately to save time", "Brainstorm ideas and create a brief outline", "Check the word count of similar texts", "Choose the most complex vocabulary you know"],
-                answer: "Brainstorm ideas and create a brief outline",
-                explanation: "Effective planning involves brainstorming relevant ideas and structuring them into a logical outline before starting to write. This ensures coherence and addresses all parts of the prompt."
-            },
-            {
-                question: "Using a wide range of appropriate vocabulary is important in Paper 1 because it:",
-                options: ["Makes the text longer", "Demonstrates linguistic proficiency and precision", "Is the only criterion for a high score", "Guarantees the reader will be entertained"],
-                answer: "Demonstrates linguistic proficiency and precision",
-                explanation: "A varied and precise vocabulary (Criterion A: Language) shows the examiner your command of English and allows you to express ideas more effectively."
-            },
-            {
-                question: "What does 'audience awareness' mean in the context of IB English B writing?",
-                options: ["Writing only about topics the audience likes", "Knowing the exact number of people who will read your text", "Considering who your reader is and adapting your style, tone, and content accordingly", "Using as many technical terms as possible to impress the audience"],
-                answer: "Considering who your reader is and adapting your style, tone, and content accordingly",
-                explanation: "Audience awareness involves tailoring your writing (language, register, information included) to suit the intended readers and the purpose of the text."
-            },
-            {
-                question: "In Paper 1, maintaining a consistent 'tone' means:",
-                options: ["Writing in a monotone, unvarying style", "Ensuring the overall feeling or attitude conveyed by the writing is appropriate for the text type and purpose", "Only using positive language", "Making sure every sentence is the same length"],
-                answer: "Ensuring the overall feeling or attitude conveyed by the writing is appropriate for the text type and purpose",
-                explanation: "Tone refers to the writer's attitude towards the subject or audience. It should be consistent and suitable for the context (e.g., formal, informal, persuasive, objective)."
-            },
-            {
-                question: "Proofreading your work before submission is important primarily to:",
-                options: ["Add more complex ideas", "Correct errors in grammar, spelling, and punctuation", "Change the entire structure of your text", "Ensure you have met the exact word count"],
-                answer: "Correct errors in grammar, spelling, and punctuation",
-                explanation: "Proofreading helps identify and correct surface errors, which improves the clarity and professionalism of your writing and positively impacts the Language criterion."
-            },
-            {
-                question: "IB English B SL Paper 1 is primarily an assessment of your:",
-                options: ["Oral presentation skills", "Literary analysis skills", "Written productive skills", "Reading comprehension skills"],
-                answer: "Written productive skills",
-                explanation: "Paper 1 specifically tests your ability to produce a written text in response to a prompt, focusing on your writing abilities."
-            },
-            {
-                question: "How many prompts will you typically choose from in the IB English B SL Paper 1 exam?",
-                options: ["One", "Two", "Three", "Five"],
-                answer: "Three",
-                explanation: "Students are presented with three different writing prompts and must choose one to respond to."
-            },
-            {
-                question: "The recommended word count for an IB English B SL Paper 1 response is typically:",
-                options: ["100-150 words", "250-400 words", "500-650 words", "700-800 words"],
-                answer: "250-400 words",
-                explanation: "For Standard Level, the expected word count is generally between 250 and 400 words."
-            },
-            {
-                question: "Which assessment criterion in Paper 1 evaluates your use of vocabulary and grammar?",
-                options: ["Criterion A: Language", "Criterion B: Message", "Criterion C: Conceptual Understanding", "Criterion D: Format"],
-                answer: "Criterion A: Language",
-                explanation: "Criterion A specifically assesses the accuracy, range, and appropriateness of your language, including vocabulary and grammar."
-            },
-            {
-                question: "Criterion B: Message in Paper 1 focuses on:",
-                options: ["The correctness of your spelling and punctuation", "How well you develop your ideas and address the task requirements", "Your choice of text type", "The visual layout of your response"],
-                answer: "How well you develop your ideas and address the task requirements",
-                explanation: "Criterion B evaluates the relevance, development, and clarity of your ideas, and how effectively you have fulfilled the demands of the chosen prompt."
-            },
-            {
-                question: "Understanding and applying the conventions of a specific text type (e.g., letter, blog post) is assessed under which criterion?",
-                options: ["Criterion A: Language", "Criterion B: Message", "Criterion C: Conceptual Understanding", "None of the above"],
-                answer: "Criterion C: Conceptual Understanding",
-                explanation: "Criterion C assesses your understanding of the purpose, audience, and context, including the appropriate use of text type conventions (format, register, tone)."
-            },
-            {
-                question: "What is a good strategy if you are unsure about the meaning of one of the prompts in Paper 1?",
-                options: ["Guess and start writing immediately", "Choose one of the other two prompts that you understand better", "Leave that question blank and move on", "Write about a completely different topic"],
-                answer: "Choose one of the other two prompts that you understand better",
-                explanation: "It's crucial to fully understand the prompt. If one is unclear, it's safer and more strategic to choose a prompt you are confident you can address effectively."
-            },
-            {
-                question: "Approximately how much time should you allocate for planning your response in the 1 hour 15 minute Paper 1 exam?",
-                options: ["No time, start writing straight away", "5-10 minutes", "30 minutes", "1 hour"],
-                answer: "5-10 minutes",
-                explanation: "Allocating around 5-10 minutes for reading the prompts, choosing one, brainstorming, and outlining is a good practice to ensure a well-structured and relevant response."
-            },
-            {
-                question: "What does 'register' refer to in the context of IB English B writing?",
-                options: ["The official list of IB students", "The level of formality or informality of the language used", "The speed at which you write", "The number of sources cited"],
-                answer: "The level of formality or informality of the language used",
-                explanation: "Register refers to the style of language appropriate for a particular situation, audience, or purpose, ranging from very formal to very informal."
-            },
-            {
-                question: "If you finish writing your Paper 1 response with 15 minutes remaining, what is the BEST use of that time?",
-                options: ["Start planning for Paper 2", "Close your exam booklet and relax", "Carefully proofread and edit your work for errors and clarity", "Add as many extra sentences as possible to increase word count"],
-                answer: "Carefully proofread and edit your work for errors and clarity",
-                explanation: "Using remaining time to proofread for errors in grammar, spelling, punctuation, and to check for clarity and coherence can significantly improve your score, especially for Criterion A."
-            }
-        ];
-
-        const quizContainer = document.getElementById('quiz-container');
-        const gameArea = document.getElementById('game-area');
-        const resultsArea = document.getElementById('results-area');
-        const questionCounter = document.getElementById('question-counter');
-        const scoreDisplay = document.getElementById('score-display'); 
-        const progressBar = document.getElementById('progress-bar');
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const feedbackArea = document.getElementById('feedback-area'); 
-        const feedbackText = document.getElementById('feedback-text'); 
-        const explanationText = document.getElementById('explanation-text'); 
-        const nextBtn = document.getElementById('next-btn');
-        const finalScore = document.getElementById('final-score');
-        const resultMessage = document.getElementById('result-message');
-        const restartBtn = document.getElementById('restart-btn');
-        const confettiCanvas = document.getElementById('confetti-canvas');
-        
-        let myConfettiInstance = null;
-        if (confettiCanvas && typeof confetti !== 'undefined') {
-             myConfettiInstance = confetti.create(confettiCanvas, {
-                resize: true,
-                useWorker: true
-            });
-        }
-       
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let questionsAnsweredInSession = 0; 
-        let shuffledQuestions = [];
-        
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-        
-        function updateScoreDisplay() {
-            const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
-            scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
-        }
-        
-        function updateProgressBar() {
-            const totalQuestionsToDisplay = shuffledQuestions.length;
-            const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
-            progressBar.style.width = `${progressPercentage}%`;
-            progressBar.textContent = `${progressPercentage}%`;
-        }
-
-        function updateProgressBarAfterAnswer() {
+         </div>
+         <p class="text-center text-xs text-gray-600 mb-1 mt-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+      </div>
+      <script>
+         const questions = [
+         {
+         question: "Which of the following is NOT a subtopic of the 'Identities' theme in IB English B?",
+         options: ["Lifestyles", "Beliefs and values", "Scientific innovation", "Subcultures"],
+         answer: "Scientific innovation",
+         explanation: "'Scientific innovation' is a subtopic of 'Human Ingenuity'. 'Identities' covers aspects like lifestyles, beliefs, values, and subcultures."
+         },
+         {
+         question: "The theme 'Experiences' in IB English B primarily focuses on:",
+         options: ["The history of human civilization", "Significant life events and personal journeys", "The structure of global economies", "Political systems and governance"],
+         answer: "Significant life events and personal journeys",
+         explanation: "'Experiences' explores aspects like leisure, holidays, life stories, rites of passage, and migration, all relating to personal journeys and events."
+         },
+         {
+         question: "Which theme would most likely cover a discussion about the impact of social media on communication?",
+         options: ["Identities", "Sharing the Planet", "Human Ingenuity", "Experiences"],
+         answer: "Human Ingenuity",
+         explanation: "'Human Ingenuity' deals with communication, media, and technology. While social media can impact identities or experiences, its origin and function as a tool for communication fall under Human Ingenuity."
+         },
+         {
+         question: "A text discussing community engagement and the education system would fall under which IB English B theme?",
+         options: ["Social Organization", "Human Ingenuity", "Identities", "Sharing the Planet"],
+         answer: "Social Organization",
+         explanation: "'Social Organization' covers topics like community, social engagement, education, and the workplace."
+         },
+         {
+         question: "Which of these topics is central to the theme 'Sharing the Planet'?",
+         options: ["Artistic expression", "Technological advancements", "Environmental issues and ethics", "Personal hobbies and leisure"],
+         answer: "Environmental issues and ethics",
+         explanation: "'Sharing the Planet' focuses on global issues like the environment, human rights, peace and conflict, globalization, and ethics."
+         },
+         {
+         question: "A student writing about adapting to a new culture after moving abroad is primarily engaging with which theme?",
+         options: ["Experiences", "Identities", "Human Ingenuity", "Social Organization"],
+         answer: "Experiences",
+         explanation: "While it touches on 'Identities', the core of adapting to a new culture through migration is a significant life 'Experience'."
+         },
+         {
+         question: "The subtopic 'ethics related to scientific discovery' would best fit under which theme?",
+         options: ["Human Ingenuity", "Sharing the Planet", "Identities", "Social Organization"],
+         answer: "Human Ingenuity",
+         explanation: "'Human Ingenuity' covers scientific innovation. 'Sharing the Planet' might cover broader ethical dilemmas, but ethics tied directly to scientific discovery is more aligned with Human Ingenuity. Sometimes themes can overlap."
+         },
+         {
+         question: "A discussion on 'the role of law and order in society' aligns best with which theme?",
+         options: ["Social Organization", "Identities", "Experiences", "Human Ingenuity"],
+         answer: "Social Organization",
+         explanation: "'Social Organization' explicitly includes 'law and order' as one of its subtopics."
+         },
+         {
+         question: "If a Paper 1 prompt asks you to write about 'your ideal holiday', which theme is it most directly tapping into?",
+         options: ["Experiences", "Identities", "Sharing the Planet", "Human Ingenuity"],
+         answer: "Experiences",
+         explanation: "Holidays and travel are key subtopics of the 'Experiences' theme."
+         },
+         {
+         question: "The impact of globalization on local traditions could be explored under which two themes most effectively?",
+         options: ["Sharing the Planet and Identities", "Human Ingenuity and Experiences", "Social Organization and Identities", "Experiences and Sharing the Planet"],
+         answer: "Sharing the Planet and Identities",
+         explanation: "'Sharing the Planet' covers globalization, and 'Identities' covers how traditions shape identity, which can be affected by globalization."
+         },
+         {
+         question: "What is the typical register for a formal letter of complaint to a company?",
+         options: ["Informal and friendly", "Formal and polite", "Casual and direct", "Sarcastic and critical"],
+         answer: "Formal and polite",
+         explanation: "A letter of complaint to a company should maintain a formal and polite tone, even when expressing dissatisfaction, to be taken seriously."
+         },
+         {
+         question: "Which text type is most suitable for sharing personal reflections and opinions with a wide online audience, inviting comments?",
+         options: ["A blog post", "A formal report", "A private diary entry", "An official proposal"],
+         answer: "A blog post",
+         explanation: "Blog posts are designed for sharing personal views, are typically informal or semi-formal, and encourage interaction through comments."
+         },
+         {
+         question: "In Paper 1, if a task asks you to 'write an article for your school magazine about a recent event', what is a key feature you should include?",
+         options: ["A personal salutation like 'Dear readers'", "A clear headline and an engaging introduction (lead)", "A list of references at the end", "Your personal contact information"],
+         answer: "A clear headline and an engaging introduction (lead)",
+         explanation: "Articles typically require a headline to grab attention and an introduction (lead paragraph) that summarizes the main points or hooks the reader."
+         },
+         {
+         question: "What is the primary purpose of a film review?",
+         options: ["To provide a detailed plot summary only", "To advertise the film to a wide audience", "To offer a critical assessment and recommendation", "To interview the director and actors"],
+         answer: "To offer a critical assessment and recommendation",
+         explanation: "A film review aims to evaluate a film's strengths and weaknesses and usually offers an opinion on whether others should watch it."
+         },
+         {
+         question: "When writing a speech, what is crucial to consider for engaging the audience?",
+         options: ["Using highly academic vocabulary only", "Reading directly from a script without eye contact", "Using rhetorical questions and a conversational tone", "Including as many statistics as possible"],
+         answer: "Using rhetorical questions and a conversational tone",
+         explanation: "Speeches are more engaging when they connect with the audience through techniques like rhetorical questions, a suitable tone, and clear delivery (implied)."
+         },
+         {
+         question: "An interview text type typically features:",
+         options: ["A single narrative voice", "A question-and-answer format", "Only the interviewer's opinions", "A list of facts and figures"],
+         answer: "A question-and-answer format",
+         explanation: "The most common structure for an interview is a Q&A format, presenting both the interviewer's questions and the interviewee's responses."
+         },
+         {
+         question: "What is a primary goal of a brochure advertising a new tourist destination?",
+         options: ["To provide a complex historical analysis", "To persuade and inform potential visitors", "To compare it critically with other destinations", "To publish academic research on tourism"],
+         answer: "To persuade and inform potential visitors",
+         explanation: "Brochures are marketing materials designed to attract and inform their target audience, in this case, potential tourists, using persuasive language and key information."
+         },
+         {
+         question: "A formal report submitted to a manager about a project's progress should be:",
+         options: ["Subjective and opinion-based", "Structured, objective, and factual", "Informal and chatty", "Filled with personal anecdotes"],
+         answer: "Structured, objective, and factual",
+         explanation: "Formal reports require a clear structure (e.g., introduction, findings, conclusion), an objective tone, and information based on facts or evidence."
+         },
+         {
+         question: "What is the main objective of a proposal written to the school board?",
+         options: ["To entertain the board members", "To complain about existing school policies", "To suggest a new idea or plan and seek approval/support", "To report on past school events"],
+         answer: "To suggest a new idea or plan and seek approval/support",
+         explanation: "A proposal aims to present a plan or suggestion with the goal of persuading the audience (the school board) to accept or support it."
+         },
+         {
+         question: "Which of these is a characteristic feature of a diary entry?",
+         options: ["Formal language and objective tone", "Written for a public audience", "Includes date, personal reflections, and first-person narrative", "Focuses on reporting news events"],
+         answer: "Includes date, personal reflections, and first-person narrative",
+         explanation: "Diary entries are personal, typically dated, written in the first person, and focus on the writer's thoughts, feelings, and experiences."
+         },
+         {
+         question: "If a prompt asks you to write an email to a friend inviting them to your birthday party, the register should be:",
+         options: ["Highly formal", "Informal", "Strictly neutral", "Academic"],
+         answer: "Informal",
+         explanation: "Emails to friends are typically informal, using casual language and a friendly tone."
+         },
+         {
+         question: "Which text type often uses headings, subheadings, and bullet points to present information clearly and concisely?",
+         options: ["A personal diary entry", "A narrative story", "A report or a proposal", "A poem"],
+         answer: "A report or a proposal",
+         explanation: "Reports and proposals frequently use structural elements like headings, subheadings, and bullet points to organize information for easy reading and understanding."
+         },
+         {
+         question: "The closing 'Yours sincerely,' is typically used in which type of letter?",
+         options: ["An informal letter to a close friend", "A formal letter when you know the recipient's name (e.g., Dear Mr. Smith)", "A formal letter when you don't know the recipient's name (e.g., Dear Sir/Madam)", "An email to a colleague"],
+         answer: "A formal letter when you know the recipient's name (e.g., Dear Mr. Smith)",
+         explanation: "'Yours sincerely,' is used in formal letters when you have addressed the recipient by name (e.g., Dear Mr. Brown). If you use 'Dear Sir/Madam,' you would end with 'Yours faithfully.'"
+         },
+         {
+         question: "What is the main difference between an article and a blog post, generally?",
+         options: ["Articles are always shorter than blog posts.", "Blog posts are typically more personal and can be more informal than traditional articles.", "Articles are only found online, while blog posts are in print.", "Blog posts do not have authors, unlike articles."],
+         answer: "Blog posts are typically more personal and can be more informal than traditional articles.",
+         explanation: "While there's overlap, blog posts often have a more personal voice and can adopt a more informal or conversational tone compared to traditional news or magazine articles, which tend to be more objective or formal."
+         },
+         {
+         question: "A 'call to action' is a common feature in which text type?",
+         options: ["A news report", "A diary entry", "A persuasive advertisement or brochure", "An academic essay"],
+         answer: "A persuasive advertisement or brochure",
+         explanation: "A 'call to action' (e.g., 'Visit our website today!', 'Buy now!') encourages the reader to take a specific step and is common in persuasive texts like advertisements or brochures."
+         },
+         {
+         question: "When writing a review of a restaurant for a local newspaper, who is your primary audience?",
+         options: ["The restaurant owner only", "Professional chefs and food critics", "The general public in your local area", "Your close friends and family"],
+         answer: "The general public in your local area",
+         explanation: "A restaurant review in a local newspaper is aimed at informing and guiding the general public who might be considering dining at that establishment."
+         },
+         {
+         question: "Which of the following is LEAST likely to be a feature of a formal proposal?",
+         options: ["Clear statement of purpose", "Slang and colloquial language", "Logical structure with headings", "A proposed plan of action"],
+         answer: "Slang and colloquial language",
+         explanation: "Formal proposals require a professional tone and precise language. Slang and colloquialisms are inappropriate for such a text type."
+         },
+         {
+         question: "If you are asked to write a 'set of guidelines' for new students, this text type would aim to:",
+         options: ["Entertain", "Inform and instruct", "Persuade them to leave", "Critique their behavior"],
+         answer: "Inform and instruct",
+         explanation: "Guidelines are meant to provide clear information and instructions on how to do something or behave in a certain situation."
+         },
+         {
+         question: "The phrase 'Dear Sir/Madam,' is an appropriate salutation when:",
+         options: ["Writing an email to your best friend.", "Writing a formal letter when you do not know the name of the recipient.", "Writing a blog post about your holiday.", "Writing a text message to your teacher."],
+         answer: "Writing a formal letter when you do not know the name of the recipient.",
+         explanation: "'Dear Sir/Madam,' is a standard formal salutation used when the specific name of the person you are writing to is unknown."
+         },
+         {
+         question: "Which text type is most likely to use persuasive rhetorical devices extensively, such as emotive language and direct address to the reader (e.g., 'you')?",
+         options: ["An objective news report", "A scientific research paper", "An advertisement or a persuasive speech", "A technical manual"],
+         answer: "An advertisement or a persuasive speech",
+         explanation: "Advertisements and persuasive speeches heavily rely on rhetorical devices to influence the audience's thoughts, feelings, or actions."
+         },
+         {
+         question: "In academic writing, 'cohesion' refers to:",
+         options: ["Using complex vocabulary", "The grammatical and lexical linking within a text (e.g., conjunctions, pronouns)", "The writer's personal opinion", "The number of paragraphs in an essay"],
+         answer: "The grammatical and lexical linking within a text (e.g., conjunctions, pronouns)",
+         explanation: "Cohesion refers to how different parts of a text are linked together at the sentence and paragraph level using devices like conjunctions (e.g., 'however', 'therefore'), pronouns, and lexical chains."
+         },
+         {
+         question: "What is the purpose of a topic sentence in a paragraph?",
+         options: ["To provide a concluding thought", "To introduce the main idea of the paragraph", "To list all the sources used", "To ask a rhetorical question"],
+         answer: "To introduce the main idea of the paragraph",
+         explanation: "A topic sentence usually appears at the beginning of a paragraph and states the central point or argument that the paragraph will develop."
+         },
+         {
+         question: "Which of the following demonstrates a formal register in writing?",
+         options: ["'Hey guys, check this out!'", "'It is imperative that we consider the ramifications.'", "'It's kinda like, you know, a big deal.'", "'We gotta do something ASAP.'"],
+         answer: "'It is imperative that we consider the ramifications.'",
+         explanation: "Formal register involves using precise vocabulary (e.g., 'imperative', 'ramifications'), complete sentences, and avoiding slang, contractions, or overly casual language."
+         },
+         {
+         question: "To improve clarity in writing, one should generally avoid:",
+         options: ["Using specific examples", "Ambiguous pronoun references", "Clear topic sentences", "Transitional phrases"],
+         answer: "Ambiguous pronoun references",
+         explanation: "Ambiguous pronoun references (e.g., when 'it' or 'they' could refer to multiple things) can confuse the reader and obscure meaning. Clarity is enhanced by clear referents."
+         },
+         {
+         question: "Which of these is an example of a 'cohesive device' used for contrast?",
+         options: ["Furthermore", "In addition", "However", "For example"],
+         answer: "However",
+         explanation: "'However' is a conjunctive adverb used to introduce a statement that contrasts with or contradicts something that has been said previously."
+         },
+         {
+         question: "When planning a written piece for Paper 1, what is the first crucial step after choosing a prompt?",
+         options: ["Start writing immediately to save time", "Brainstorm ideas and create a brief outline", "Check the word count of similar texts", "Choose the most complex vocabulary you know"],
+         answer: "Brainstorm ideas and create a brief outline",
+         explanation: "Effective planning involves brainstorming relevant ideas and structuring them into a logical outline before starting to write. This ensures coherence and addresses all parts of the prompt."
+         },
+         {
+         question: "Using a wide range of appropriate vocabulary is important in Paper 1 because it:",
+         options: ["Makes the text longer", "Demonstrates linguistic proficiency and precision", "Is the only criterion for a high score", "Guarantees the reader will be entertained"],
+         answer: "Demonstrates linguistic proficiency and precision",
+         explanation: "A varied and precise vocabulary (Criterion A: Language) shows the examiner your command of English and allows you to express ideas more effectively."
+         },
+         {
+         question: "What does 'audience awareness' mean in the context of IB English B writing?",
+         options: ["Writing only about topics the audience likes", "Knowing the exact number of people who will read your text", "Considering who your reader is and adapting your style, tone, and content accordingly", "Using as many technical terms as possible to impress the audience"],
+         answer: "Considering who your reader is and adapting your style, tone, and content accordingly",
+         explanation: "Audience awareness involves tailoring your writing (language, register, information included) to suit the intended readers and the purpose of the text."
+         },
+         {
+         question: "In Paper 1, maintaining a consistent 'tone' means:",
+         options: ["Writing in a monotone, unvarying style", "Ensuring the overall feeling or attitude conveyed by the writing is appropriate for the text type and purpose", "Only using positive language", "Making sure every sentence is the same length"],
+         answer: "Ensuring the overall feeling or attitude conveyed by the writing is appropriate for the text type and purpose",
+         explanation: "Tone refers to the writer's attitude towards the subject or audience. It should be consistent and suitable for the context (e.g., formal, informal, persuasive, objective)."
+         },
+         {
+         question: "Proofreading your work before submission is important primarily to:",
+         options: ["Add more complex ideas", "Correct errors in grammar, spelling, and punctuation", "Change the entire structure of your text", "Ensure you have met the exact word count"],
+         answer: "Correct errors in grammar, spelling, and punctuation",
+         explanation: "Proofreading helps identify and correct surface errors, which improves the clarity and professionalism of your writing and positively impacts the Language criterion."
+         },
+         {
+         question: "IB English B SL Paper 1 is primarily an assessment of your:",
+         options: ["Oral presentation skills", "Literary analysis skills", "Written productive skills", "Reading comprehension skills"],
+         answer: "Written productive skills",
+         explanation: "Paper 1 specifically tests your ability to produce a written text in response to a prompt, focusing on your writing abilities."
+         },
+         {
+         question: "How many prompts will you typically choose from in the IB English B SL Paper 1 exam?",
+         options: ["One", "Two", "Three", "Five"],
+         answer: "Three",
+         explanation: "Students are presented with three different writing prompts and must choose one to respond to."
+         },
+         {
+         question: "The recommended word count for an IB English B SL Paper 1 response is typically:",
+         options: ["100-150 words", "250-400 words", "500-650 words", "700-800 words"],
+         answer: "250-400 words",
+         explanation: "For Standard Level, the expected word count is generally between 250 and 400 words."
+         },
+         {
+         question: "Which assessment criterion in Paper 1 evaluates your use of vocabulary and grammar?",
+         options: ["Criterion A: Language", "Criterion B: Message", "Criterion C: Conceptual Understanding", "Criterion D: Format"],
+         answer: "Criterion A: Language",
+         explanation: "Criterion A specifically assesses the accuracy, range, and appropriateness of your language, including vocabulary and grammar."
+         },
+         {
+         question: "Criterion B: Message in Paper 1 focuses on:",
+         options: ["The correctness of your spelling and punctuation", "How well you develop your ideas and address the task requirements", "Your choice of text type", "The visual layout of your response"],
+         answer: "How well you develop your ideas and address the task requirements",
+         explanation: "Criterion B evaluates the relevance, development, and clarity of your ideas, and how effectively you have fulfilled the demands of the chosen prompt."
+         },
+         {
+         question: "Understanding and applying the conventions of a specific text type (e.g., letter, blog post) is assessed under which criterion?",
+         options: ["Criterion A: Language", "Criterion B: Message", "Criterion C: Conceptual Understanding", "None of the above"],
+         answer: "Criterion C: Conceptual Understanding",
+         explanation: "Criterion C assesses your understanding of the purpose, audience, and context, including the appropriate use of text type conventions (format, register, tone)."
+         },
+         {
+         question: "What is a good strategy if you are unsure about the meaning of one of the prompts in Paper 1?",
+         options: ["Guess and start writing immediately", "Choose one of the other two prompts that you understand better", "Leave that question blank and move on", "Write about a completely different topic"],
+         answer: "Choose one of the other two prompts that you understand better",
+         explanation: "It's crucial to fully understand the prompt. If one is unclear, it's safer and more strategic to choose a prompt you are confident you can address effectively."
+         },
+         {
+         question: "Approximately how much time should you allocate for planning your response in the 1 hour 15 minute Paper 1 exam?",
+         options: ["No time, start writing straight away", "5-10 minutes", "30 minutes", "1 hour"],
+         answer: "5-10 minutes",
+         explanation: "Allocating around 5-10 minutes for reading the prompts, choosing one, brainstorming, and outlining is a good practice to ensure a well-structured and relevant response."
+         },
+         {
+         question: "What does 'register' refer to in the context of IB English B writing?",
+         options: ["The official list of IB students", "The level of formality or informality of the language used", "The speed at which you write", "The number of sources cited"],
+         answer: "The level of formality or informality of the language used",
+         explanation: "Register refers to the style of language appropriate for a particular situation, audience, or purpose, ranging from very formal to very informal."
+         },
+         {
+         question: "If you finish writing your Paper 1 response with 15 minutes remaining, what is the BEST use of that time?",
+         options: ["Start planning for Paper 2", "Close your exam booklet and relax", "Carefully proofread and edit your work for errors and clarity", "Add as many extra sentences as possible to increase word count"],
+         answer: "Carefully proofread and edit your work for errors and clarity",
+         explanation: "Using remaining time to proofread for errors in grammar, spelling, punctuation, and to check for clarity and coherence can significantly improve your score, especially for Criterion A."
+         },
+         {
+         question: "A text exploring how language shapes national identity would primarily fall under which subtopic of 'Identities'?",
+         options: ["Lifestyles", "Language and identity", "Subcultures", "Personal relationships"],
+         answer: "Language and identity",
+         explanation: "The 'Identities' theme includes 'language and identity' as a specific subtopic focusing on the connection between language and how individuals or groups perceive themselves."
+         },
+         {
+         question: "When writing about 'Beliefs and Values' under the 'Identities' theme, it's important to:",
+         options: ["Only discuss religious beliefs", "Critique all beliefs presented", "Explore how beliefs and values shape actions and perspectives", "Focus solely on historical belief systems"],
+         answer: "Explore how beliefs and values shape actions and perspectives",
+         explanation: "This subtopic encourages an exploration of various beliefs and values (not just religious) and their impact on individuals and societies, rather than simple critique or historical listing."
+         },
+         {
+         question: "A Paper 1 prompt asking you to narrate a 'rite of passage' you experienced would belong to which theme?",
+         options: ["Identities", "Experiences", "Human Ingenuity", "Social Organization"],
+         answer: "Experiences",
+         explanation: "'Rites of passage' are significant life events that mark transitions, a core subtopic of the 'Experiences' theme."
+         },
+         {
+         question: "When discussing 'migration' under the theme 'Experiences', which aspect is LEAST likely to be the central focus for a Paper 1 task?",
+         options: ["The emotional journey of an immigrant", "The challenges of adapting to a new culture", "The economic policies governing global migration", "An individual's story of leaving their homeland"],
+         answer: "The economic policies governing global migration",
+         explanation: "While economic factors can be a reason for migration, Paper 1 usually focuses on the personal, cultural, and emotional aspects of the experience rather than complex policy analysis."
+         },
+         {
+         question: "A text analyzing the use of symbolism in a famous painting would connect to which subtopic of 'Human Ingenuity'?",
+         options: ["Scientific innovation", "Artistic expression", "Media and communication", "Technology and ethics"],
+         answer: "Artistic expression",
+         explanation: "'Artistic expression' within 'Human Ingenuity' covers various art forms, including visual arts, and their analysis."
+         },
+         {
+         question: "If a prompt asks you to write about the future of artificial intelligence, it primarily relates to which aspect of 'Human Ingenuity'?",
+         options: ["Entertainment", "Communication", "Scientific and technological innovation", "Artistic expression"],
+         answer: "Scientific and technological innovation",
+         explanation: "Artificial intelligence is a prime example of scientific and technological innovation, a key component of the 'Human Ingenuity' theme."
+         },
+         {
+         question: "A discussion about the structure and rules of a specific workplace would fall under which subtopic of 'Social Organization'?",
+         options: ["Community", "Social engagement", "The working world/employment", "Education"],
+         answer: "The working world/employment",
+         explanation: "'The working world' or 'employment' is a subtopic of 'Social Organization' that deals with workplace structures, rules, and relationships."
+         },
+         {
+         question: "Writing a proposal for a new school club to the student council directly engages with which aspect of 'Social Organization'?",
+         options: ["Law and order", "Social relationships", "Community and social engagement", "Globalisation"],
+         answer: "Community and social engagement",
+         explanation: "Proposing a school club is an act of community building and social engagement within the school environment, fitting the 'Social Organization' theme."
+         },
+         {
+         question: "A speech advocating for greater international cooperation to combat climate change directly addresses which theme?",
+         options: ["Identities", "Experiences", "Human Ingenuity", "Sharing the Planet"],
+         answer: "Sharing the Planet",
+         explanation: "Climate change and international cooperation are key issues within the 'Sharing the Planet' theme, which focuses on global issues and responsibilities."
+         },
+         {
+         question: "The subtopic 'peace and conflict' under 'Sharing the Planet' might involve discussing:",
+         options: ["Personal disagreements between friends", "The history of ancient warfare only", "The causes of international conflicts and efforts towards resolution", "The rules of a competitive sport"],
+         answer: "The causes of international conflicts and efforts towards resolution",
+         explanation: "'Peace and conflict' explores larger societal and international issues, their causes, and potential solutions, rather than minor personal disputes or purely historical accounts without contemporary relevance."
+         },
+         {
+         question: "According to the 'IB English B SL P1 模板：评论 (Review)', what is the purpose of the '引言 (Introduction)' section?",
+         options: ["To list all the actors in the film", "To give a detailed plot summary", "To briefly introduce the reviewed object and give an overall impression or core evaluation", "To provide the reviewer's biography"],
+         answer: "To briefly introduce the reviewed object and give an overall impression or core evaluation",
+         explanation: "The template states the introduction should 'briefly introduce the object of your review and give your overall impression or core evaluation.'"
+         },
+         {
+         question: "The '评论 (Review)' template suggests that '正文段落 1 (Body Paragraph 1)' should focus on:",
+         options: ["The reviewer's personal feelings only", "A general overview without specifics", "Description and evaluation of specific aspects of the object", "Comparing the object to all its competitors"],
+         answer: "Description and evaluation of specific aspects of the object",
+         explanation: "The template specifies this section is for 'describing and evaluating the reviewed object from a specific aspect.'"
+         },
+         {
+         question: "In a restaurant review, as per the '评论 (Review)' template's guidance for body paragraphs, what kind of '具体例证 (specific examples)' would be effective?",
+         options: ["Saying 'the food was good'", "Describing the taste, ingredients, and presentation of a specific dish", "Mentioning that the reviewer's friend also liked it", "Stating the price range of the menu"],
+         answer: "Describing the taste, ingredients, and presentation of a specific dish",
+         explanation: "The template emphasizes providing specific examples, not just general adjectives. Describing a dish in detail supports the evaluation effectively."
+         },
+         {
+         question: "The '结论与推荐 (Conclusion and Recommendation)' section of a review, according to the template, should:",
+         options: ["Introduce new aspects of the reviewed object", "Summarize the overall evaluation and clearly state if it's recommended for a specific audience", "Only focus on the negative points", "Provide a lengthy plot summary"],
+         answer: "Summarize the overall evaluation and clearly state if it's recommended for a specific audience",
+         explanation: "The template advises to 'summarize your overall evaluation here. Clearly give your recommendation: Is it recommended? Suitable for what kind of readers/audience/customers?'"
+         },
+         {
+         question: "What is the suggested tone for a review, based on the general understanding and the template's example titles like 'Deliciousness and Disappointment Coexist'?",
+         options: ["Strictly objective and emotionless", "Always overwhelmingly positive", "Can be subjective and evaluative, expressing balanced opinions", "Purely factual, like a news report"],
+         answer: "Can be subjective and evaluative, expressing balanced opinions",
+         explanation: "Reviews are inherently evaluative and allow for subjective opinions, though they should be supported by evidence. The example title suggests a balanced perspective is possible."
+         },
+         {
+         question: "In a formal letter, if the recipient's name is unknown, what is the correct salutation and closing combination?",
+         options: ["Dear [Company Name], / Yours truly,", "Dear Hiring Manager, / Best regards,", "Dear Sir/Madam, / Yours faithfully,", "To Whom It May Concern, / Cheers,"],
+         answer: "Dear Sir/Madam, / Yours faithfully,",
+         explanation: "The standard convention for formal letters when the recipient's name is unknown is 'Dear Sir/Madam,' followed by the closing 'Yours faithfully,'."
+         },
+         {
+         question: "What distinguishes an 'opinion article' from a 'news report' on the same event?",
+         options: ["An opinion article is always shorter.", "A news report includes the writer's personal feelings and biases.", "An opinion article presents a specific viewpoint with supporting arguments, while a news report aims for objectivity.", "Only news reports have headlines."],
+         answer: "An opinion article presents a specific viewpoint with supporting arguments, while a news report aims for objectivity.",
+         explanation: "Opinion articles are meant to persuade or present a particular perspective, using argumentation, while news reports strive to present facts objectively without explicit bias."
+         },
+         {
+         question: "What is the role of 'signposting' (e.g., 'Firstly...', 'My second point is...', 'In conclusion...') in a speech?",
+         options: ["To make the speech longer", "To confuse the audience", "To help the audience follow the structure and main points of the speech", "To show off complex vocabulary"],
+         answer: "To help the audience follow the structure and main points of the speech",
+         explanation: "Signposting language guides the listeners through the speech, making it easier to understand the progression of ideas and the overall argument."
+         },
+         {
+         question: "A strong proposal typically includes a section on 'Problem Statement' or 'Needs Analysis'. What is its purpose?",
+         options: ["To list all possible solutions immediately", "To complain about the current situation without offering solutions", "To clearly define the problem or need that the proposal aims to address", "To provide a detailed budget for the project"],
+         answer: "To clearly define the problem or need that the proposal aims to address",
+         explanation: "This section establishes the rationale for the proposal by identifying a specific problem or need, thereby justifying the proposed solution."
+         },
+         {
+         question: "What is the importance of a clear and concise subject line in an email?",
+         options: ["It is not important; people read emails anyway.", "It helps the recipient quickly understand the email's purpose and prioritize it.", "It should be very long and detailed.", "It should be left blank for formal emails."],
+         answer: "It helps the recipient quickly understand the email's purpose and prioritize it.",
+         explanation: "A good subject line gives the recipient immediate context, making it more likely they will open and respond appropriately to the email."
+         },
+         {
+         question: "Which of the following is LEAST characteristic of a typical diary entry?",
+         options: ["Use of first-person pronouns (I, me, my)", "Expression of personal feelings and thoughts", "A formal tone and objective reporting of events", "Inclusion of the date"],
+         answer: "A formal tone and objective reporting of events",
+         explanation: "Diary entries are inherently personal and subjective, usually written in an informal or reflective tone, not a formal, objective one."
+         },
+         {
+         question: "When writing a set of guidelines, why is it important to use clear, direct language and possibly imperative verbs (e.g., 'Complete this form...', 'Do not...')?",
+         options: ["To make the guidelines sound more friendly", "To ensure the instructions are easy to understand and follow", "To make the guidelines more difficult to interpret", "To fill up space"],
+         answer: "To ensure the instructions are easy to understand and follow",
+         explanation: "Guidelines are meant to instruct. Clear, direct language and imperative verbs remove ambiguity and help the reader understand exactly what they need to do."
+         },
+         {
+         question: "What is a key difference between a 'report' and a 'proposal'?",
+         options: ["Reports are always informal, while proposals are formal.", "Reports primarily present information and findings about something that has happened or been investigated, while proposals suggest future action.", "Proposals never include data, while reports are full of data.", "Only proposals have a title."],
+         answer: "Reports primarily present information and findings about something that has happened or been investigated, while proposals suggest future action.",
+         explanation: "A report typically looks back or analyzes a current situation with facts and findings. A proposal looks forward, suggesting a plan or course of action to be taken."
+         },
+         {
+         question: "What does 'PAC' stand for in the context of planning a written piece for IB English B?",
+         options: ["Paragraphs, Audience, Cohesion", "Purpose, Audience, Context", "Punctuation, Accuracy, Clarity", "Proposal, Article, Critique"],
+         answer: "Purpose, Audience, Context",
+         explanation: "PAC (Purpose, Audience, Context) are three crucial elements to consider before and during writing to ensure the text is appropriate and effective."
+         },
+         {
+         question: "If a text type requires a 'persuasive' tone, what kind of language features might you use?",
+         options: ["Neutral vocabulary and passive voice only", "Rhetorical questions, emotive language, strong modal verbs (e.g., must, should)", "Only facts and statistics without any opinion", "Complex scientific jargon"],
+         answer: "Rhetorical questions, emotive language, strong modal verbs (e.g., must, should)",
+         explanation: "Persuasive writing often employs rhetorical devices, language that appeals to emotions, and words that convey conviction to influence the reader."
+         },
+         {
+         question: "How can you ensure 'paragraph unity' in your writing?",
+         options: ["By making all paragraphs the same length", "By ensuring each paragraph discusses multiple unrelated ideas", "By ensuring each paragraph focuses on a single main idea, usually introduced by a topic sentence", "By using very long and complex sentences"],
+         answer: "By ensuring each paragraph focuses on a single main idea, usually introduced by a topic sentence",
+         explanation: "Paragraph unity means that all sentences in a paragraph contribute to developing one central idea, which helps with clarity and organization."
+         },
+         {
+         question: "What is the risk of overusing very complex vocabulary that you are not entirely comfortable with?",
+         options: ["It always impresses the examiner.", "It can lead to incorrect word choices (malapropisms) and make your writing unclear.", "It is the best way to achieve a formal register.", "It guarantees a high score for Criterion A."],
+         answer: "It can lead to incorrect word choices (malapropisms) and make your writing unclear.",
+         explanation: "While a good range of vocabulary is positive, using words incorrectly or inappropriately can hinder communication and negatively affect your Language score."
+         },
+         {
+         question: "Which of the following is an example of a 'rhetorical question'?",
+         options: ["'What time is the meeting?'", "'Do you agree that we need to take action now?' (expecting agreement or thought)", "'Where did you buy that book?'", "'Is this the correct answer?' (seeking information)"],
+         answer: "'Do you agree that we need to take action now?' (expecting agreement or thought)",
+         explanation: "A rhetorical question is asked to make a point or create a dramatic effect rather than to get an actual answer."
+         },
+         {
+         question: "For Criterion C: Conceptual Understanding, what does 'context' refer to?",
+         options: ["The word count of your response", "The situation or background in which the text is produced and understood", "The grammatical accuracy of your sentences", "The number of paragraphs you write"],
+         answer: "The situation or background in which the text is produced and understood",
+         explanation: "Context includes factors like the setting, the relationship between writer and reader, and the cultural or social circumstances surrounding the text, all ofwhich influence how it's written and received."
+         },
+         {
+         question: "If a student writes a very creative and engaging story but it doesn't address the chosen prompt's requirements, which criterion will be most negatively affected?",
+         options: ["Criterion A: Language", "Criterion B: Message", "Criterion C: Conceptual Understanding", "All criteria equally"],
+         answer: "Criterion B: Message",
+         explanation: "Criterion B: Message assesses how well the student addresses the task requirements and develops relevant ideas. If the response is off-topic, this criterion will suffer significantly, even if the language is good."
+         },
+         {
+         question: "Exceeding the recommended word count significantly in Paper 1 might lead to:",
+         options: ["A higher score for Criterion B because you wrote more", "No penalty at all", "A potential loss of focus, coherence, or a penalty if the excess is extreme and irrelevant", "Automatic failure of the paper"],
+         answer: "A potential loss of focus, coherence, or a penalty if the excess is extreme and irrelevant",
+         explanation: "While there isn't a strict penalty for slightly exceeding, significantly overwriting can lead to irrelevant content, lack of conciseness, and may indicate poor planning, affecting the Message and Conceptual Understanding criteria."
+         },
+         {
+         question: "What is the primary difference in expectation for IB English B HL Paper 1 compared to SL Paper 1 regarding word count?",
+         options: ["HL has a shorter word count", "SL has a much higher word count", "HL has a higher recommended word count (e.g., 450-600 words)", "There is no difference in word count"],
+         answer: "HL has a higher recommended word count (e.g., 450-600 words)",
+         explanation: "Higher Level students are typically expected to write a longer, more developed response, with a word count often in the 450-600 range."
+         },
+         {
+         question: "A student who uses a wide variety of sentence structures (simple, compound, complex) effectively is likely to score well in:",
+         options: ["Criterion B: Message, for idea development", "Criterion A: Language, for grammatical range and accuracy", "Criterion C: Conceptual Understanding, for text type choice", "Word count adherence only"],
+         answer: "Criterion A: Language, for grammatical range and accuracy",
+         explanation: "Varied and accurate sentence structures are a key component of linguistic proficiency, assessed under Criterion A: Language."
+         },
+         {
+         question: "If a prompt asks for a 'blog post reflecting on a personal challenge', what is key for Criterion C?",
+         options: ["Using very formal language", "Adopting a personal, reflective tone suitable for a blog and addressing the challenge", "Including a bibliography", "Writing in the third person"],
+         answer: "Adopting a personal, reflective tone suitable for a blog and addressing the challenge",
+         explanation: "Criterion C assesses the choice of appropriate text type conventions. For a personal blog post, a reflective tone, first-person narrative, and informal/semi-formal register are expected."
+         },
+         {
+         question: "When writing an 'article' for a school newspaper about a successful fundraising event, what should be the main focus?",
+         options: ["Your personal opinion on fundraising in general", "A detailed financial audit of the event", "Reporting on the event's success, key activities, and positive impact, in an engaging way for students", "Criticizing the event's organization"],
+         answer: "Reporting on the event's success, key activities, and positive impact, in an engaging way for students",
+         explanation: "An article for a school newspaper should be relevant and engaging for its student audience, focusing on the positive aspects and key details of the event."
+         },
+         {
+         question: "What is a common pitfall to avoid when writing a 'debate speech'?",
+         options: ["Using strong persuasive language", "Clearly stating your main arguments", "Only attacking the opponent without providing substantive arguments for your own side", "Structuring your speech logically"],
+         answer: "Only attacking the opponent without providing substantive arguments for your own side",
+         explanation: "Effective debate involves not only refuting opponents but also building a strong, well-supported case for your own position."
+         },
+         {
+         question: "In an 'interview' where you are the interviewer, what is your primary role?",
+         options: ["To dominate the conversation with your own opinions", "To ask leading questions that force specific answers", "To ask open-ended, relevant questions that allow the interviewee to share their insights", "To make the interviewee feel uncomfortable"],
+         answer: "To ask open-ended, relevant questions that allow the interviewee to share their insights",
+         explanation: "A good interviewer facilitates the conversation, guiding it with well-chosen questions that encourage the interviewee to speak openly and provide meaningful responses."
+         },
+         {
+         question: "A 'leaflet' designed to inform elderly citizens about a new community health service should use what kind of language and design considerations (even if only described in text)?",
+         options: ["Trendy slang and very small font", "Complex medical jargon and dense paragraphs", "Clear, simple language, larger font, and easy-to-understand layout", "Bright, flashy colors and distracting graphics"],
+         answer: "Clear, simple language, larger font, and easy-to-understand layout",
+         explanation: "Effective communication with a specific audience (elderly citizens) requires considering their needs, such as readability (larger font, simple language) and clarity of information."
+         },
+         {
+         question: "What is the typical purpose of the 'introduction' in a formal 'report'?",
+         options: ["To present the writer's personal feelings about the topic", "To state the report's purpose, scope, and briefly outline its structure", "To give a detailed summary of all the findings", "To thank everyone who helped write the report"],
+         answer: "To state the report's purpose, scope, and briefly outline its structure",
+         explanation: "The introduction to a formal report sets the stage by informing the reader about what the report is about, what it covers (and doesn't cover), and how the information will be organized."
+         },
+         {
+         question: "When writing a 'set of instructions' (guidelines), what is the importance of sequencing?",
+         options: ["It's not important; users can figure it out.", "Presenting steps in a logical, chronological order is crucial for clarity and success.", "Steps should be presented randomly to make it more challenging.", "Only the first and last steps matter."],
+         answer: "Presenting steps in a logical, chronological order is crucial for clarity and success.",
+         explanation: "Instructions must be in the correct sequence for the user to be able to follow them effectively and achieve the desired outcome."
+         },
+         {
+         question: "What is a key difference in purpose between a 'diary entry' and a 'letter to the editor'?",
+         options: ["Both are primarily for public persuasion.", "A diary entry is personal reflection, while a letter to the editor is a public statement of opinion intended for publication.", "A diary entry is always formal, while a letter to the editor is informal.", "Both must follow a strict Q&A format."],
+         answer: "A diary entry is personal reflection, while a letter to the editor is a public statement of opinion intended for publication.",
+         explanation: "Diaries are private and reflective. Letters to the editor are public, aiming to share an opinion with the newspaper's readership, often in response to a published article."
+         },
+         {
+         question: "How might the tone of a 'blog post' reviewing a new video game differ from a 'formal academic critique' of the same game?",
+         options: ["The blog post would be more objective and use more technical jargon.", "The academic critique would be more personal and use slang.", "The blog post is likely to be more informal, opinionated, and use language accessible to gamers, while the academic critique would be formal, analytical, and use scholarly language.", "There would be no difference in tone or language."],
+         answer: "The blog post is likely to be more informal, opinionated, and use language accessible to gamers, while the academic critique would be formal, analytical, and use scholarly language.",
+         explanation: "The audience and purpose dictate the tone. A blog post aims to engage a general or specific interest audience, often informally. An academic critique targets a scholarly audience with formal, analytical language."
+         },
+         {
+         question: "If a Paper 1 prompt asks you to write to your school principal to suggest improvements for the library, which text type is most appropriate?",
+         options: ["A casual blog post", "A formal proposal or a formal letter", "A short story", "A set of instructions for using the current library"],
+         answer: "A formal proposal or a formal letter",
+         explanation: "Communicating suggestions for improvement to a school principal requires a formal approach. A proposal would outline the suggestions systematically, or a formal letter could convey the ideas respectfully."
+         },
+         {
+         question: "You witness a minor accident and a local newspaper asks for eyewitness accounts. Which text type would you likely be asked to produce?",
+         options: ["A persuasive speech", "A fictional story based on the accident", "A factual account, possibly in the form of a short report or a letter to the editor", "A detailed proposal for road safety measures"],
+         answer: "A factual account, possibly in the form of a short report or a letter to the editor",
+         explanation: "Newspapers seek factual information from eyewitnesses. This could be a simple report of what was observed or a more structured letter if providing an opinion on related matters."
+         },
+         {
+         question: "What does 'elaboration' mean when developing ideas for Criterion B: Message?",
+         options: ["Keeping your ideas as brief as possible", "Providing supporting details, examples, explanations, or evidence to expand on your main points", "Repeating the same idea multiple times in different words", "Using only very short sentences"],
+         answer: "Providing supporting details, examples, explanations, or evidence to expand on your main points",
+         explanation: "Elaboration involves going beyond simple statements by adding depth and support to your ideas, making them more convincing and fully developed for the reader."
+         },
+         {
+         question: "If you are struggling to meet the word count for Paper 1, what should you focus on?",
+         options: ["Adding irrelevant information or filler words", "Elaborating further on your existing points with more detail, examples, or explanations", "Repeating your introduction as the conclusion", "Using a much larger font size"],
+         answer: "Elaborating further on your existing points with more detail, examples, or explanations",
+         explanation: "The best way to increase word count meaningfully is to develop your existing ideas more thoroughly, ensuring all additions are relevant and contribute to the message."
+         },
+         {
+         question: "What is the danger of relying too heavily on a pre-memorized essay for Paper 1?",
+         options: ["It guarantees a top score if the topic is similar.", "It shows excellent preparation.", "It is likely to be irrelevant or not fully address the specific prompt, leading to low scores for Criterion B and C.", "It is a recommended strategy by the IB."],
+         answer: "It is likely to be irrelevant or not fully address the specific prompt, leading to low scores for Criterion B and C.",
+         explanation: "Paper 1 prompts are designed to be specific. A pre-memorized essay rarely fits perfectly and will likely fail to meet the task requirements (Criterion B) and show conceptual understanding of the prompt (Criterion C)."
+         },
+         {
+         question: "The 'inverted pyramid' structure is most commonly associated with which text type?",
+         options: ["A personal diary entry", "A news report", "A fictional short story", "A formal proposal"],
+         answer: "A news report",
+         explanation: "The inverted pyramid structure, where the most important information is presented first, followed by details in decreasing order of importance, is a hallmark of traditional news reporting."
+         },
+         {
+         question: "What is meant by 'lexical resource' in Criterion A: Language?",
+         options: ["The number of dictionaries you own", "The range and appropriateness of the vocabulary you use", "Your ability to spell correctly", "The length of your sentences"],
+         answer: "The range and appropriateness of the vocabulary you use",
+         explanation: "Lexical resource refers to the breadth and depth of your vocabulary and your ability to use words accurately and effectively in context."
+         },
+         {
+         question: "If a prompt asks you to write a 'thank you letter' to someone who helped you, the tone should generally be:",
+         options: ["Critical and demanding", "Sincere, appreciative, and polite", "Humorous and sarcastic", "Strictly objective and impersonal"],
+         answer: "Sincere, appreciative, and polite",
+         explanation: "A thank you letter, whether formal or informal depending on the recipient, should convey genuine gratitude and maintain a polite and appreciative tone."
+         },
+         {
+         question: "What is the purpose of an 'emotive appeal' (appeal to emotion) in persuasive writing?",
+         options: ["To present purely logical arguments", "To connect with the audience on an emotional level and influence their feelings or actions", "To confuse the audience with irrelevant details", "To demonstrate the writer's neutrality"],
+         answer: "To connect with the audience on an emotional level and influence their feelings or actions",
+         explanation: "Emotive appeals aim to evoke feelings like sympathy, fear, joy, or anger in the audience to make the persuasive message more impactful."
+         },
+         {
+         question: "When writing a 'film review', why is it generally better to avoid giving away major plot spoilers?",
+         options: ["It's not important; spoilers make reviews more exciting.", "To respect potential viewers who haven't seen the film and allow them to experience it themselves.", "Film distributors prohibit spoilers in all reviews.", "Spoilers help the review meet the word count."],
+         answer: "To respect potential viewers who haven't seen the film and allow them to experience it themselves.",
+         explanation: "Good review etiquette usually involves avoiding major spoilers so as not to ruin the experience for those who plan to watch the film."
+         },
+         {
+         question: "Which of these is a key characteristic of an effective 'headline' for an article?",
+         options: ["It should be very long and contain multiple sentences.", "It should be vague and uninteresting.", "It should be concise, attention-grabbing, and relevant to the article's content.", "It should be written in a very small font."],
+         answer: "It should be concise, attention-grabbing, and relevant to the article's content.",
+         explanation: "A good headline captures the reader's interest quickly and gives an idea of what the article is about."
+         },
+         {
+         question: "In a 'proposal' arguing for a new school policy, what role does 'evidence' or 'data' play?",
+         options: ["It is irrelevant; proposals are based on opinions only.", "It can strengthen the arguments by providing factual support for the problem or the proposed solution's effectiveness.", "It should be avoided as it makes the proposal too long.", "It is only used to criticize existing policies."],
+         answer: "It can strengthen the arguments by providing factual support for the problem or the proposed solution's effectiveness.",
+         explanation: "Evidence, such as statistics, survey results, or examples, can make a proposal more persuasive by demonstrating the need for change or the potential benefits of the proposed plan."
+         },
+         {
+         question: "The term 'target audience' for a brochure advertising a luxury spa would most likely be:",
+         options: ["Budget-conscious students", "Families with young children", "Affluent individuals seeking relaxation and pampering", "Extreme sports enthusiasts"],
+         answer: "Affluent individuals seeking relaxation and pampering",
+         explanation: "Understanding the target audience is crucial for tailoring the message, tone, and visuals of a brochure. A luxury spa would target those who can afford and desire such services."
+         },
+         {
+         question: "If you are asked to write an 'opinion column' for a newspaper, what is expected of you?",
+         options: ["To report news objectively without any personal views", "To present a well-argued personal viewpoint on a current issue", "To write a fictional story", "To provide a list of facts and statistics only"],
+         answer: "To present a well-argued personal viewpoint on a current issue",
+         explanation: "An opinion column is a platform for the writer to express their personal opinions, supported by reasoning and evidence, on topical matters."
+         },
+         {
+         question: "What is the significance of 'formatting conventions' (e.g., date, salutation, closing) in a formal letter?",
+         options: ["They are outdated and unnecessary.", "They contribute to the letter's professionalism and show an understanding of the text type.", "They are only important in informal letters.", "They make the letter harder to read."],
+         answer: "They contribute to the letter's professionalism and show an understanding of the text type.",
+         explanation: "Adhering to formatting conventions is part of correctly producing a formal letter and is assessed under Criterion C: Conceptual Understanding."
+         },
+         {
+         question: "A 'travel blog post' about a recent trip would likely aim to:",
+         options: ["Provide a dry, academic analysis of the destination's economy", "Share personal experiences, tips, and reflections in an engaging and possibly informal way", "Complain about every aspect of the trip", "Present a formal report to a travel agency"],
+         answer: "Share personal experiences, tips, and reflections in an engaging and possibly informal way",
+         explanation: "Travel blogs typically offer a personal perspective, combining narrative with practical advice and reflections to entertain and inform fellow travelers or aspirants."
+         },
+         {
+         question: "When evaluating a text for 'Criterion B: Message', an examiner looks for:",
+         options: ["Perfect grammar and spelling above all else", "The relevance, development, and coherence of ideas in relation to the prompt", "The length of the text only", "The use of sophisticated vocabulary exclusively"],
+         answer: "The relevance, development, and coherence of ideas in relation to the prompt",
+         explanation: "Criterion B focuses on how well the student has understood the task, developed relevant ideas, and presented them in a clear and logical manner."
+         },
+         {
+         question: "What is a 'hook' in the introduction of an article or speech?",
+         options: ["The final concluding sentence", "A sentence or series of sentences designed to grab the audience's attention and make them want to read/listen further", "A list of sources", "The writer's signature"],
+         answer: "A sentence or series of sentences designed to grab the audience's attention and make them want to read/listen further",
+         explanation: "A hook (e.g., a surprising statistic, a compelling question, a short anecdote) is a technique used to engage the audience from the very beginning."
+         },
+         {
+         question: "Which of these best describes 'bias' in a written text?",
+         options: ["The use of correct grammar", "A fair and balanced presentation of all viewpoints", "A prejudice in favor of or against one thing, person, or group compared with another, usually in a way considered to be unfair", "The length of the paragraphs"],
+         answer: "A prejudice in favor of or against one thing, person, or group compared with another, usually in a way considered to be unfair",
+         explanation: "Bias refers to a tendency to lean in a certain direction, often to the detriment of impartiality. While some text types allow for opinion, unacknowledged or unfair bias can be problematic in others (like news reports)."
+         },
+         {
+         question: "In the context of 'Sharing the Planet', what does 'globalization' refer to?",
+         options: ["Focusing only on local community issues", "The process by which businesses or other organizations develop international influence or start operating on an international scale", "The study of historical maps", "A type of personal travel experience"],
+         answer: "The process by which businesses or other organizations develop international influence or start operating on an international scale",
+         explanation: "Globalization involves the increasing interconnectedness of countries and cultures, particularly in terms of economics, communication, and cultural exchange."
+         },
+         {
+         question: "If a Paper 1 prompt asks you to write a 'set of rules' for a new online forum, what is a key consideration for the language used?",
+         options: ["It should be ambiguous and open to interpretation.", "It should be clear, concise, and use direct, unambiguous language.", "It should be highly poetic and metaphorical.", "It should be written entirely in slang to appeal to younger users."],
+         answer: "It should be clear, concise, and use direct, unambiguous language.",
+         explanation: "Rules need to be easily understood by all users to be effective. Clarity and precision are paramount to avoid confusion and ensure compliance."
+         },
+         {
+         question: "What is the primary function of the 'conclusion' in most expository or argumentative texts (e.g., article, essay, proposal)?",
+         options: ["To introduce completely new main ideas", "To summarize the main points and offer a final thought or call to action", "To apologize for any weaknesses in the text", "To end abruptly without any summary"],
+         answer: "To summarize the main points and offer a final thought or call to action",
+         explanation: "A conclusion typically brings closure by restating the main arguments in a new way, reinforcing the overall message, and sometimes suggesting next steps or leaving the reader with a final pertinent thought."
+         },
+         {
+         question: "The subtopic 'Customs and Traditions' under the theme 'Experiences' would best be explored by writing about:",
+         options: ["The latest technological gadgets", "A local festival and its significance to the community", "The rules of a new board game", "An analysis of international trade agreements"],
+         answer: "A local festival and its significance to the community",
+         explanation: "'Customs and Traditions' focuses on established practices, beliefs, and events that are part of a group's cultural heritage, such as festivals."
+         },
+         {
+         question: "When writing an 'email of apology' for a mistake, what elements should it ideally contain?",
+         options: ["Denial of any wrongdoing and blaming others", "A clear acknowledgement of the mistake, an expression of regret, and an indication of how it will be rectified or avoided in the future", "A very brief and vague message", "Excuses and justifications for the mistake"],
+         answer: "A clear acknowledgement of the mistake, an expression of regret, and an indication of how it will be rectified or avoided in the future",
+         explanation: "An effective apology is sincere and takes responsibility. It should clearly state what one is apologizing for, express remorse, and ideally offer a solution or assurance."
+         },
+         {
+         question: "What is the role of 'visual language' (even if only described in text) in a 'brochure'?",
+         options: ["It is purely decorative and has no impact on the message.", "It should be minimal and barely noticeable.", "It works with the text to attract attention, convey information quickly, and enhance the overall appeal and persuasiveness.", "It is only used in digital brochures, not print ones."],
+         answer: "It works with the text to attract attention, convey information quickly, and enhance the overall appeal and persuasiveness.",
+         explanation: "In a brochure, visuals (images, colors, layout) are integral to its effectiveness, helping to grab the reader's eye, illustrate points, and reinforce the brand or message."
+         },
+         {
+         question: "A 'news report' about a natural disaster should prioritize:",
+         options: ["The reporter's personal feelings and fears", "Factual information about the event, its impact, and relief efforts, delivered objectively", "Speculation and unconfirmed rumors", "A detailed history of natural disasters in the region"],
+         answer: "Factual information about the event, its impact, and relief efforts, delivered objectively",
+         explanation: "In crisis situations, news reports play a crucial role in disseminating accurate, timely, and objective information to the public and relevant authorities."
+         },
+         {
+         question: "If you are asked to write a 'review' of a school play for the school's social media page, the tone should likely be:",
+         options: ["Harshly critical and dismissive to show high standards", "Supportive and constructive, highlighting strengths while perhaps gently suggesting areas for improvement, suitable for the school community", "Completely neutral and devoid of any opinion", "Filled with complex theatrical jargon only understandable by professionals"],
+         answer: "Supportive and constructive, highlighting strengths while perhaps gently suggesting areas for improvement, suitable for the school community",
+         explanation: "The audience (school community) and context (social media for the school) suggest a tone that is generally positive and encouraging, even if offering constructive feedback."
+         },
+         {
+         question: "What is the importance of 'proofreading' for a text type like a 'formal job application letter'?",
+         options: ["It's not very important as employers overlook small errors.", "It is crucial, as errors can create a negative impression of carelessness and unprofessionalism.", "It should only be done by a professional editor.", "It only matters if the letter is handwritten."],
+         answer: "It is crucial, as errors can create a negative impression of carelessness and unprofessionalism.",
+         explanation: "In high-stakes formal communication like a job application, errors in grammar, spelling, or punctuation can significantly undermine the applicant's credibility and attention to detail."
+         }
+         ];
+         
+         
+         const quizContainer = document.getElementById('quiz-container');
+         const gameArea = document.getElementById('game-area');
+         const resultsArea = document.getElementById('results-area');
+         const questionCounter = document.getElementById('question-counter');
+         const scoreDisplay = document.getElementById('score-display'); 
+         const progressBar = document.getElementById('progress-bar');
+         const questionText = document.getElementById('question-text');
+         const optionsContainer = document.getElementById('options-container');
+         const feedbackArea = document.getElementById('feedback-area'); 
+         const feedbackText = document.getElementById('feedback-text'); 
+         const explanationText = document.getElementById('explanation-text'); 
+         const nextBtn = document.getElementById('next-btn');
+         const finalScore = document.getElementById('final-score');
+         const resultMessage = document.getElementById('result-message');
+         const restartBtn = document.getElementById('restart-btn');
+         const confettiCanvas = document.getElementById('confetti-canvas');
+         
+         let myConfettiInstance = null;
+         if (confettiCanvas && typeof confetti !== 'undefined') {
+              myConfettiInstance = confetti.create(confettiCanvas, {
+                 resize: true,
+                 useWorker: true
+             });
+         }
+         
+         let currentQuestionIndex = 0;
+         let score = 0;
+         let questionsAnsweredInSession = 0; 
+         let shuffledQuestions = [];
+         
+         function shuffleArray(array) {
+             for (let i = array.length - 1; i > 0; i--) {
+                 const j = Math.floor(Math.random() * (i + 1));
+                 [array[i], array[j]] = [array[j], array[i]];
+             }
+             return array;
+         }
+         
+         function updateScoreDisplay() {
+             const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
+             scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
+         }
+         
+         function updateProgressBar() {
              const totalQuestionsToDisplay = shuffledQuestions.length;
-             const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+             const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
              progressBar.style.width = `${progressPercentage}%`;
              progressBar.textContent = `${progressPercentage}%`;
-        }
-        
-        function startGame() {
-            currentQuestionIndex = 0;
-            score = 0;
-            questionsAnsweredInSession = 0;
-            shuffledQuestions = shuffleArray([...questions]); 
-
-            updateScoreDisplay();
-            progressBar.style.width = '0%';
-            progressBar.textContent = '0%';
-            resultsArea.classList.add('hidden');
-            resultsArea.classList.remove('results-enter', 'results-enter-active');
-            quizContainer.classList.remove('celebrate-bg');
-            gameArea.classList.remove('hidden');
-            nextBtn.classList.add('hidden');
-            feedbackArea.classList.add('hidden'); 
-            explanationText.innerHTML = ''; 
-            showQuestion();
-        }
-        
-        function showQuestion() {
-            updateProgressBar(); 
-            optionsContainer.innerHTML = '';
-            feedbackArea.classList.add('hidden'); 
-            feedbackText.textContent = '';
-            explanationText.innerHTML = ''; 
-            feedbackText.className = 'text-lg font-semibold mb-2'; 
-        
-            const currentQuestion = shuffledQuestions[currentQuestionIndex];
-            questionText.innerHTML = currentQuestion.question; 
-            questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
-        
-            const shuffledOptions = shuffleArray([...currentQuestion.options]);
-        
-            shuffledOptions.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
-                button.addEventListener('click', selectAnswer);
-                optionsContainer.appendChild(button);
-            });
-        
-            nextBtn.classList.add('hidden');
-        }
-        
-        function triggerConfetti() {
-            if (myConfettiInstance) {
-                myConfettiInstance({
-                    particleCount: 120, 
-                    spread: 80, 
-                    origin: { y: 0.6 },
-                    colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6'] 
-                });
-            }
-        }
-        
-        function selectAnswer(e) {
-            const selectedButton = e.target;
-            const currentQuestion = shuffledQuestions[currentQuestionIndex];
-            const correctAnswer = currentQuestion.answer;
-            const explanation = currentQuestion.explanation; 
-            questionsAnsweredInSession++;
-        
-            Array.from(optionsContainer.children).forEach(button => {
-                button.disabled = true;
-                if (button.textContent === correctAnswer) {
-                    button.classList.add('correct-answer');
-                }
-            });
-        
-            if (selectedButton.textContent === correctAnswer) {
-                score++;
-                feedbackText.textContent = '✅ 回答正确!';
-                feedbackText.className = 'text-lg font-semibold mb-2 text-green-600'; 
-                selectedButton.classList.add('correct-answer');
-                triggerConfetti(); // Removed the Math.random() condition
-            } else {
-                feedbackText.textContent = `❌ 回答错误!`; 
-                feedbackText.className = 'text-lg font-semibold mb-2 text-red-600'; 
-                selectedButton.classList.add('wrong-answer');
-            }
-
-            explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`; 
-            feedbackArea.classList.remove('hidden'); 
-
-            updateScoreDisplay();
-            updateProgressBarAfterAnswer(); 
-            nextBtn.classList.remove('hidden');
-        }
-        
-        function showNextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < shuffledQuestions.length) {
-                showQuestion();
-            } else {
-                endGame();
-            }
-        }
-        
-        function endGame() {
-            gameArea.classList.add('hidden');
-            resultsArea.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                 resultsArea.classList.add('results-enter');
-                 requestAnimationFrame(() => {
-                    resultsArea.classList.add('results-enter-active');
-                });
-            });
-        
-            const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
-            finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
-        
-            let message = ''; 
-            quizContainer.classList.remove('celebrate-bg'); 
-        
-            if (finalPercentage === 100) {
-                message = '💯 完美！你简直是 IB English B 大师！知识点掌握得炉火纯青！';
-                 quizContainer.classList.add('celebrate-bg');
-                 if (myConfettiInstance) { myConfettiInstance(); myConfettiInstance(); } 
-            } else if (finalPercentage >= 90) {
-                 message = '🌟 太出色了！对 Paper 1 的理解非常深刻，绝对的学霸！';
-                 quizContainer.classList.add('celebrate-bg');
-                 if (myConfettiInstance) { myConfettiInstance(); }
-            } else if (finalPercentage >= 80) {
-                message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
-            } else if (finalPercentage >= 70) {
-                 message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
-            } else if (finalPercentage >= 60) {
-                message = '👍 相当不错！大部分知识点都理解了，继续加油！';
-            } else if (finalPercentage >= 50) {
-                message = '😊 不错！掌握了核心内容，可以更有自信！';
-            } else {
-                message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
-            }
-            resultMessage.textContent = message;
-        }
-        
-        nextBtn.addEventListener('click', showNextQuestion);
-        restartBtn.addEventListener('click', startGame);
-        
-        startGame();
-    </script>
-</body>
+         }
+         
+         function updateProgressBarAfterAnswer() {
+              const totalQuestionsToDisplay = shuffledQuestions.length;
+              const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+              progressBar.style.width = `${progressPercentage}%`;
+              progressBar.textContent = `${progressPercentage}%`;
+         }
+         
+         function startGame() {
+             currentQuestionIndex = 0;
+             score = 0;
+             questionsAnsweredInSession = 0;
+             shuffledQuestions = shuffleArray([...questions]); 
+         
+             updateScoreDisplay();
+             progressBar.style.width = '0%';
+             progressBar.textContent = '0%';
+             resultsArea.classList.add('hidden');
+             resultsArea.classList.remove('results-enter', 'results-enter-active');
+             quizContainer.classList.remove('celebrate-bg');
+             gameArea.classList.remove('hidden');
+             nextBtn.classList.add('hidden');
+             feedbackArea.classList.add('hidden'); 
+             explanationText.innerHTML = ''; 
+             showQuestion();
+         }
+         
+         function showQuestion() {
+             updateProgressBar(); 
+             optionsContainer.innerHTML = '';
+             feedbackArea.classList.add('hidden'); 
+             feedbackText.textContent = '';
+             explanationText.innerHTML = ''; 
+             feedbackText.className = 'text-lg font-semibold mb-2'; 
+         
+             const currentQuestion = shuffledQuestions[currentQuestionIndex];
+             questionText.innerHTML = currentQuestion.question; 
+             questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+         
+             const shuffledOptions = shuffleArray([...currentQuestion.options]);
+         
+             shuffledOptions.forEach(option => {
+                 const button = document.createElement('button');
+                 button.textContent = option;
+                 button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                 button.addEventListener('click', selectAnswer);
+                 optionsContainer.appendChild(button);
+             });
+         
+             nextBtn.classList.add('hidden');
+         }
+         
+         function triggerConfetti() {
+             if (myConfettiInstance) {
+                 myConfettiInstance({
+                     particleCount: 120, 
+                     spread: 80, 
+                     origin: { y: 0.6 },
+                     colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6'] 
+                 });
+             }
+         }
+         
+         function selectAnswer(e) {
+             const selectedButton = e.target;
+             const currentQuestion = shuffledQuestions[currentQuestionIndex];
+             const correctAnswer = currentQuestion.answer;
+             const explanation = currentQuestion.explanation; 
+             questionsAnsweredInSession++;
+         
+             Array.from(optionsContainer.children).forEach(button => {
+                 button.disabled = true;
+                 if (button.textContent === correctAnswer) {
+                     button.classList.add('correct-answer');
+                 }
+             });
+         
+             if (selectedButton.textContent === correctAnswer) {
+                 score++;
+                 feedbackText.textContent = '✅ 回答正确!';
+                 feedbackText.className = 'text-lg font-semibold mb-2 text-green-600'; 
+                 selectedButton.classList.add('correct-answer');
+                 triggerConfetti(); // Removed the Math.random() condition
+             } else {
+                 feedbackText.textContent = `❌ 回答错误!`; 
+                 feedbackText.className = 'text-lg font-semibold mb-2 text-red-600'; 
+                 selectedButton.classList.add('wrong-answer');
+             }
+         
+             explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`; 
+             feedbackArea.classList.remove('hidden'); 
+         
+             updateScoreDisplay();
+             updateProgressBarAfterAnswer(); 
+             nextBtn.classList.remove('hidden');
+         }
+         
+         function showNextQuestion() {
+             currentQuestionIndex++;
+             if (currentQuestionIndex < shuffledQuestions.length) {
+                 showQuestion();
+             } else {
+                 endGame();
+             }
+         }
+         
+         function endGame() {
+             gameArea.classList.add('hidden');
+             resultsArea.classList.remove('hidden');
+             requestAnimationFrame(() => {
+                  resultsArea.classList.add('results-enter');
+                  requestAnimationFrame(() => {
+                     resultsArea.classList.add('results-enter-active');
+                 });
+             });
+         
+             const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+             finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+         
+             let message = ''; 
+             quizContainer.classList.remove('celebrate-bg'); 
+         
+             if (finalPercentage === 100) {
+                 message = '💯 完美！你简直是 IB English B 大师！知识点掌握得炉火纯青！';
+                  if (myConfettiInstance) { myConfettiInstance(); myConfettiInstance(); } 
+             } else if (finalPercentage >= 90) {
+                  message = '🌟 太出色了！对 Paper 1 的理解非常深刻，绝对的学霸！';
+                  if (myConfettiInstance) { myConfettiInstance(); }
+             } else if (finalPercentage >= 80) {
+                 message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
+             } else if (finalPercentage >= 70) {
+                  message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
+             } else if (finalPercentage >= 60) {
+                 message = '👍 相当不错！大部分知识点都理解了，继续加油！';
+             } else if (finalPercentage >= 50) {
+                 message = '😊 不错！掌握了核心内容，可以更有自信！';
+             } else {
+                 message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
+             }
+             resultMessage.textContent = message;
+         }
+         
+         nextBtn.addEventListener('click', showNextQuestion);
+         restartBtn.addEventListener('click', startGame);
+         
+         startGame();
+      </script>
+   </body>
 </html>
