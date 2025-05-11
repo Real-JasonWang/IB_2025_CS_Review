@@ -10,7 +10,8 @@
       <style>
          body {
          font-family: 'Inter', sans-serif;
-         overscroll-behavior-y: none; 
+         overscroll-behavior-y: none;
+         animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
          }
          .option-btn:not([disabled]):hover {
          transform: translateY(-2px);
@@ -65,11 +66,6 @@
          0%, 100% { background-position: 0% 50%; }
          50% { background-position: 100% 50%; }
          }
-         .celebrate-bg {
-         background: linear-gradient(270deg, #a855f7, #ec4899, #f59e0b, #22c55e, #3b82f6);
-         background-size: 1000% 1000%;
-         animation: celebrate 5s ease infinite;
-         }
          #confetti-canvas {
          position: fixed;
          top: 0;
@@ -92,6 +88,10 @@
          .option-btn, #next-btn, #restart-btn {
          -webkit-tap-highlight-color: transparent;
          }
+         @keyframes fadeInScaleUp {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
       </style>
    </head>
    <body class="bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
@@ -499,7 +499,6 @@
              progressBar.textContent = '0%';
              resultsArea.classList.add('hidden');
              resultsArea.classList.remove('results-enter', 'results-enter-active');
-             quizContainer.classList.remove('celebrate-bg');
              gameArea.classList.remove('hidden');
              nextBtn.classList.add('hidden');
              feedbackArea.classList.add('hidden'); 
@@ -591,7 +590,6 @@
              const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
              finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
              let message = ''; 
-             quizContainer.classList.remove('celebrate-bg'); 
              if (finalPercentage === 100) {
                  message = '💯 完美！你简直是 IB English B Paper 2 大师！知识点掌握得炉火纯青！';
                   if (myConfettiInstance) { myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.5 }}); myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.7 }}); } 

@@ -3,76 +3,268 @@
    <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Jason Wang's IB Revision Toys</title>
+      <title>Jason Wang's IB Revision Toys 0.2.0</title>
       <script src="https://cdn.tailwindcss.com"></script>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
       <style>
          body {
          font-family: 'Inter', sans-serif;
+         overflow-x: hidden; 
+         }
+         #launcher-container {
+         background-color: white; 
+         border-radius: 0.75rem; 
+         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+         transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+         opacity: 0; 
+         }
+         #launcher-container:hover {
+         transform: translateY(-6px) perspective(1000px) rotateX(1deg); 
+         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+         }
+         .header-title {
+         color: #1f2937; 
+         }
+         .header-subtitle {
+         color: #4b5563; 
+         }
+         #info-nav-bar {
+         display: flex;
+         flex-wrap: wrap; 
+         justify-content: center;
+         gap: 0.75rem; 
+         margin-bottom: 1.5rem; 
+         opacity: 0;
+         }
+         .nav-item {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         width: 4rem; 
+         height: 6rem; 
+         background-color: #f3f4f6; 
+         color: #374151; 
+         border-radius: 0.5rem; 
+         text-decoration: none;
+         font-size: 0.75rem; 
+         font-weight: 500; 
+         text-align: center;
+         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+         position: relative;
+         overflow: hidden;
+         border: 1px solid #e5e7eb; 
+         cursor: pointer;
+         }
+         .nav-item .nav-icon {
+         font-size: 1.5rem; 
+         margin-bottom: 0.375rem; 
+         color: #58599b; 
+         }
+         .nav-item:hover {
+         background-color: #e5e7eb; 
+         transform: translateY(-4px) scale(1.05);
+         box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+         color: #1f2937; 
+         }
+         .nav-item:hover .nav-icon {
+         color: #6366f1; 
+         }
+         .nav-item:active {
+         transform: translateY(-1px) scale(0.98);
+         box-shadow: 0 4px 8px rgba(0,0,0,0.08);
          }
          .quiz-launch-btn {
-         display: block;
+         display: flex; 
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
          text-decoration: none;
          color: white;
          font-weight: 600;
-         padding: 0.75rem 1rem;
-         border-radius: 0.75rem;
-         transition: width 0.3s ease-in-out;
+         padding: 0.75rem 1rem; 
+         border-radius: 0.75rem; 
+         transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease;
          text-align: center;
+         position: relative;
+         overflow: hidden;
+         border: 2px solid transparent; 
+         opacity: 0; 
          }
-         .quiz-launch-btn:hover {
+         .quiz-launch-btn::before {
+         content: "";
+         position: absolute;
+         top: 0;
+         left: -150%;
+         width: 60%;
+         height: 100%;
+         background: linear-gradient(
+         100deg,
+         rgba(255, 255, 255, 0) 0%,
+         rgba(255, 255, 255, 0.25) 50%,
+         rgba(255, 255, 255, 0) 100%
+         );
+         transform: skewX(-20deg);
+         transition: left 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+         }
+         .quiz-launch-btn:hover::before {
+         left: 150%;
+         }
+         .quiz-launch-btn:not(.cursor-not-allowed):hover { 
+         transform: translateY(-5px) scale(1.04);
          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
          }
+         .btn-english:not(.cursor-not-allowed):hover { border-color: rgba(99, 102, 241, 0.5); } 
+         .btn-cs:not(.cursor-not-allowed):hover { border-color: rgba(139, 92, 246, 0.5); }    
+         .quiz-launch-btn:not(.cursor-not-allowed):active {
+         transform: translateY(-2px) scale(0.99);
+         box-shadow: 0 6px 12px rgba(0,0,0,0.1), 0 3px 6px rgba(0,0,0,0.08);
+         }
          .quiz-launch-btn .quiz-title {
-         font-size: 1.125rem;
-         line-height: 1.5rem;
+         font-size: 1.125rem; 
+         line-height: 1.75rem; 
+         margin-bottom: 0.125rem; 
          }
          .quiz-launch-btn .quiz-description {
-         font-size: 0.75rem;
+         font-size: 0.75rem; 
          opacity: 0.85;
-         margin-top: 0.125rem;
          font-weight: 400;
+         }
+         .quiz-launch-btn .quiz-icon {
+         font-size: 1.375rem;
+         margin-bottom: 0.375rem;
+         }
+         .quiz-launch-btn.cursor-not-allowed:hover {
+         transform: none; 
+         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
+         border-color: transparent;
+         }
+         .quiz-launch-btn.cursor-not-allowed::before {
+         display: none; 
+         }
+         .footer-text {
+         color: #6b7280; 
+         }
+         #quiz-list {
+         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+         }
+         @keyframes fadeInScaleUp {
+         from {
+         opacity: 0;
+         transform: scale(0.92);
+         }
+         to {
+         opacity: 1;
+         transform: scale(1);
+         }
+         }
+         @keyframes fadeInSlideUpItem {
+         from {
+         opacity: 0;
+         transform: translateY(25px);
+         }
+         to {
+         opacity: 1;
+         transform: translateY(0);
+         }
          }
       </style>
    </head>
    <body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
-      <div id="launcher-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-5xl mx-auto">
+      <div id="launcher-container" class="p-6 md:p-10 w-full max-w-5xl mx-auto">
          <header class="text-center mb-6 md:mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">欢迎来到IB Revision Toys🥳</h1>
-            <p class="text-gray-600 mt-5 text-sm sm:text-base">复习不枯燥,有趣且高效,难点轻松过,玩出新门道</p>
+            <h1 class="text-3xl font-bold header-title"> 
+               欢迎来到IB Revision Toys🥳
+            </h1>
+            <p class="header-subtitle mt-5 text-sm sm:text-base"> 
+               复习难点轻松造，有趣高效新门道
+            </p>
          </header>
+         <nav id="info-nav-bar">
+            <a href="misc/update_history.html" class="nav-item">
+            <i class="fas fa-history nav-icon"></i>
+            <span>更新历史</span>
+            </a>
+            <a href="misc/update_plan.html" class="nav-item">
+            <i class="fas fa-tasks nav-icon"></i>
+            <span>后续企划</span>
+            </a>
+            <a href="misc/about_project.html" class="nav-item">
+            <i class="fas fa-info-circle nav-icon"></i>
+            <span>关于项目</span>
+            </a>
+            <a href="misc/acknowledgements.html" class="nav-item">
+            <i class="fas fa-heart nav-icon"></i>
+            <span>致谢</span>
+            </a>
+         </nav>
          <div id="quiz-list" class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-2">
-            <a href="p2_eng_randl.html" class="quiz-launch-btn bg-indigo-600 hover:bg-indigo-700">
+            <a href="econ_fandmicro.html" class="quiz-launch-btn bg-pink-600 hover:bg-pink-700 btn-econ">
+            <i class="fas fa-table quiz-icon"></i>
+            <span class="quiz-title">Econ HL 基础&微观</span>
+            <span class="quiz-description">121题 v2505a</span>
+            </a>
+            <a href="p2_eng_randl.html" class="quiz-launch-btn bg-indigo-600 hover:bg-indigo-700 btn-english">
+            <i class="fas fa-language quiz-icon"></i>
             <span class="quiz-title">English B SL P2</span>
             <span class="quiz-description">50题 v2505a</span>
             </a>
-            <a href="p1_eng_writing.html" class="quiz-launch-btn bg-indigo-600 hover:bg-indigo-700">
-            <span class="quiz-title">English B SL P1 </span>
+            <a href="p1_eng_writing.html" class="quiz-launch-btn bg-indigo-600 hover:bg-indigo-700 btn-english">
+            <i class="fas fa-pen-alt quiz-icon"></i>
+            <span class="quiz-title">English B SL P1</span>
             <span class="quiz-description">120题 v2505b</span>
             </a>
-            <a href="p2_oop.html" class="quiz-launch-btn bg-purple-600 hover:bg-purple-700">
+            <a href="p2_oop.html" class="quiz-launch-btn bg-purple-600 hover:bg-purple-700 btn-cs">
+            <i class="fas fa-laptop-code quiz-icon"></i>
             <span class="quiz-title">CS SL P2 (仅OOP)</span>
             <span class="quiz-description">110+题 v2505a</span>
             </a>
-            <a href="p1_cs.html" class="quiz-launch-btn bg-purple-600 hover:bg-purple-700"">
+            <a href="p1_cs.html" class="quiz-launch-btn bg-purple-600 hover:bg-purple-700 btn-cs">
+            <i class="fas fa-microchip quiz-icon"></i>
             <span class="quiz-title">CS SL P1</span>
             <span class="quiz-description">180+题 v2504a</span>
             </a>
-            <a href="index.html" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700">
+            <a href="#" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700 cursor-not-allowed">
+            <i class="fas fa-atom quiz-icon"></i>
             <span class="quiz-title">敬请期待</span>
             <span class="quiz-description">新测验开发中</span>
             </a>
-            <a href="index.html" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700"
+            <a href="#" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700 cursor-not-allowed">
+            <i class="fas fa-atom quiz-icon"></i>
+            <span class="quiz-title">敬请期待</span>
+            <span class="quiz-description">新测验开发中</span>
+            </a>
+            <a href="#" class="quiz-launch-btn bg-gray-600 hover:bg-gray-700 cursor-not-allowed">
+            <i class="fas fa-atom quiz-icon"></i>
             <span class="quiz-title">敬请期待</span>
             <span class="quiz-description">新测验开发中</span>
             </a>
          </div>
-         <p class="text-center text-gray-600 mt-5 text-sm sm:text-base">暂无更多</p>
-         <footer class="text-center mt-10 md-1 text-gray-500 text-xs">
+         <p class="text-center text-gray-600 mt-5 text-sm sm:text-base"> 
+            暂无更多
+         </p>
+         <footer class="text-center mt-10 md:mt-12 footer-text text-xs">
             <p>&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
-            <p>>> Version 0.1.1 "Tiny Mouse"</p>
-            <p>Licensed under the MIT License. </p>
+            <p class="mt-1">Version 0.2.0 "Pretty Mouse"</p>
+            <p class="mt-1">Licensed under the MIT License.</p>
          </footer>
       </div>
+      <script>
+         document.addEventListener('DOMContentLoaded', () => {
+             const launcherContainer = document.getElementById('launcher-container');
+             if (launcherContainer) {
+                 launcherContainer.style.animation = `fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards`;
+             }
+             const navBar = document.getElementById('info-nav-bar');
+             if (navBar) {
+                 navBar.style.animation = `fadeInSlideUpItem 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) 0.2s forwards`;
+             }
+             const buttons = document.querySelectorAll('.quiz-launch-btn');
+             buttons.forEach((button, index) => {
+                 button.style.animation = `fadeInSlideUpItem 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) ${index * 0.08 + 0.5}s forwards`;
+             });
+         });
+      </script>
    </body>
 </html>

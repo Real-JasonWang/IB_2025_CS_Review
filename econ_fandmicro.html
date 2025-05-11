@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB Economics HL 备考测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         overscroll-behavior-y: none; 
+         animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px); 
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0); 
+         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(30px);
+         transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed; 
+         opacity: 0.7; 
+         }
+         .correct-answer {
+         background-color: #22c55e !important; 
+         color: white !important;
+         border-color: #16a34a !important;
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important; 
+         color: white !important;
+         border-color: #dc2626 !important;
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb; 
+         border-radius: 9999px; 
+         overflow: hidden; 
+         height: 1rem; 
+         margin-bottom: 1.5rem; 
+         }
+         .progress-bar {
+         background-color: #4f46e5; 
+         height: 100%;
+         transition: width 0.3s ease-in-out; 
+         text-align: center;
+         color: white;
+         font-size: 0.75rem; 
+         line-height: 1rem; 
+         font-weight: 500;
+         border-radius: 9999px;
+         }
+         #confetti-canvas {
+         position: fixed; 
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none; 
+         z-index: 9999; 
+         }
+         .explanation {
+         background-color: #f3f4f6; 
+         border-left: 4px solid #4f46e5; 
+         padding: 1rem; 
+         border-radius: 0.375rem; 
+         color: #374151; 
+         font-size: 0.875rem; 
+         margin-top: 1rem; 
+         line-height: 1.5; 
+         }
+         .option-btn, #next-btn, #restart-btn {
+         -webkit-tap-highlight-color: transparent; 
+         }
+         @keyframes fadeInScaleUp { 
+         from { opacity: 0; transform: scale(0.92); }
+         to { opacity: 1; transform: scale(1); }
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
+         <a href="index.html"
+            class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 mb-4">
+         👈 主页
+         </a>
+         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 mt-2">IB Economics HL 备考测验</h1>
+         <p class="text-center text-gray-600 mb-6">测试你对经济学基础和微观经济学的了解程度！</p>
+         <div id="game-area">
+            <div class="flex justify-between items-center mb-4 text-gray-600">
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 10</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+            </div>
+            <div class="progress-bar-container">
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            <div id="question-container" class="mb-6">
+               <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[4.5em] md:min-h-[3em]">问题文本加载中...</h2>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+            </div>
+            <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
+            </div>
+            <div class="text-center">
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
+            </div>
+         </div>
+         <div id="results-area" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
+            <p id="final-score" class="text-xl text-gray-700 mb-6"></p>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+            重新开始
+            </button>
+         </div>
+         <p class="text-center text-xs text-gray-500 mb-1 mt-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+      </div>
+      <script>
+         const questions = [
+             {
+                 question: "经济学主要研究的问题是由于什么根本原因引起的？",
+                 options: ["货币的无限供应", "人类欲望的无限性与资源的稀缺性", "政府的过度干预", "技术的快速发展"],
+                 answer: "人类欲望的无限性与资源的稀缺性",
+                 explanation: "经济学的核心问题是稀缺性——即社会拥有有限的资源，因此不能生产人们希望拥有的所有商品和服务。这迫使我们做出选择。"
+             },
+             {
+                 question: "小明决定用下午的时间去图书馆学习经济学，而不是去看电影。他看电影的乐趣对他而言代表了什么？",
+                 options: ["会计成本", "边际收益", "机会成本", "沉没成本"],
+                 answer: "机会成本",
+                 explanation: "机会成本是指为了得到某种东西而所要放弃另一些东西的最大价值。小明学习经济学的机会成本是放弃的看电影的乐趣。"
+             },
+             {
+                 question: "在生产可能性曲线 (PPC) 上，从一点移动到另一点所放弃的另一种产品的数量代表什么？",
+                 options: ["生产效率", "机会成本", "经济增长", "资源稀缺性"],
+                 answer: "机会成本",
+                 explanation: "生产可能性曲线 (PPC) 上的移动显示了为了增加一种产品的生产而必须放弃的另一种产品的数量，这正是机会成本的定义。曲线本身代表了在现有资源和技术下可能的最大产出组合。"
+             },
+             {
+                 question: "如果一个经济体在生产可能性曲线 (PPC) 内部的某一点进行生产，这表明什么？",
+                 options: ["资源得到了充分利用", "实现了生产效率", "存在失业或资源闲置", "技术水平领先"],
+                 answer: "存在失业或资源闲置",
+                 explanation: "PPC曲线内部的点表示经济体未能充分利用其资源，或者资源利用效率低下，导致实际产出低于潜在产出。"
+             },
+             {
+                 question: "生产可能性曲线 (PPC) 向外弯曲（凹向原点）通常是因为：",
+                 options: ["机会成本固定不变", "机会成本递减", "机会成本递增", "资源可以完美替代"],
+                 answer: "机会成本递增",
+                 explanation: "PPC向外弯曲是因为资源并非完全同质或在不同产品的生产中效率相同。当把资源从一种产品的生产转移到另一种时，需要放弃越来越多的前者，导致机会成本递增。"
+             },
+             {
+                 question: "以下哪项不属于生产要素？",
+                 options: ["土地", "货币", "劳动", "企业家才能"],
+                 answer: "货币",
+                 explanation: "生产要素包括土地（自然资源）、劳动（人力）、资本（物质资本如机器设备）和企业家才能。货币是交换媒介，不是直接的生产要素。"
+             },
+             {
+                 question: "“为谁生产”这个基本经济问题主要关注的是：",
+                 options: ["生产技术的选择", "产品和服务的分配", "生产什么类型的商品", "如何组合生产要素"],
+                 answer: "产品和服务的分配",
+                 explanation: "“为谁生产”涉及社会如何将其产出分配给不同的成员，即收入分配和消费问题。"
+             },
+             {
+                 question: "技术进步通常会导致生产可能性曲线 (PPC) 如何变化？",
+                 options: ["向内移动", "向外移动", "曲线上点的移动", "形状变得更平坦"],
+                 answer: "向外移动",
+                 explanation: "技术进步意味着可以用相同的资源生产更多的产品，或者用更少的资源生产相同数量的产品，从而扩大了经济的生产可能性，使PPC向外移动，代表潜在经济增长。"
+             },
+             {
+                 question: "在两部门经济的循环流程图中，以下哪项代表从家庭到厂商的实际流量 (real flow)？",
+                 options: ["消费支出", "生产要素 (如劳动)", "物品与服务", "收入 (如工资)"],
+                 answer: "生产要素 (如劳动)",
+                 explanation: "在循环流程图中，家庭向厂商提供生产要素（如劳动、土地、资本）是实际流量，而厂商向家庭支付的收入（如工资、租金、利润）是货币流量。同样，厂商向家庭提供物品与服务是实际流量，家庭的消费支出是货币流量。"
+             },
+             {
+                 question: "在包含政府、金融市场和国际贸易的经济循环流程图中，以下哪项是注入项 (injection)？",
+                 options: ["储蓄 (Savings)", "税收 (Taxes)", "进口 (Imports)", "政府支出 (Government Spending)"],
+                 answer: "政府支出 (Government Spending)",
+                 explanation: "注入项是指向循环流程中增加支出的部分，包括政府支出 (G)、投资 (I) 和出口 (X)。漏出项包括储蓄 (S)、税收 (T) 和进口 (M)。"
+             },
+             {
+                 question: "“经济福祉 (Economic Well-being)” 这个核心概念不仅仅指收入水平，还更广泛地涉及到：",
+                 options: ["仅指GDP的增长率", "生活质量、健康、教育和环境等", "个人储蓄的多少", "国家外汇储备的规模"],
+                 answer: "生活质量、健康、教育和环境等",
+                 explanation: "经济福祉是一个多维度的概念，除了物质生活水平外，还包括健康状况、教育水平、环境质量、社会公平、个人自由等影响人们整体生活满意度的因素。"
+             },
+             {
+                 question: "政府为了解决空气污染问题而限制工厂排放，这体现了经济学九大核心概念中的哪一个？",
+                 options: ["效率 (Efficiency)", "变革 (Change)", "干预 (Intervention)", "相互依存 (Interdependence)"],
+                 answer: "干预 (Intervention)",
+                 explanation: "政府干预是指政府为了影响市场结果而采取的行动。在此案例中，政府通过规制来纠正市场失灵（负外部性）。"
+             },
+             {
+                 question: "“最低工资上涨会导致失业率上升”这一表述属于：",
+                 options: ["规范经济学陈述", "实证经济学陈述", "价值判断", "政策建议"],
+                 answer: "实证经济学陈述",
+                 explanation: "实证经济学陈述是关于“是什么”的描述性陈述，它试图描述世界本来的样子，可以通过数据和事实来检验其真伪。规范经济学陈述是关于“应该是什么”的规定性陈述，涉及价值判断。"
+             },
+             {
+                 question: "经济学家在构建模型时使用“其他条件不变” (ceteris paribus) 假设的目的是：",
+                 options: ["使模型完全符合现实", "简化分析，隔离特定变量的影响", "使模型更难理解", "确保模型结果总是正确的"],
+                 answer: "简化分析，隔离特定变量的影响",
+                 explanation: "“其他条件不变”假设允许经济学家在分析一个变量对另一个变量的影响时，暂时不考虑其他可能影响因素的变化，从而简化复杂问题。"
+             },
+             {
+                 question: "需求定律表明，在其他条件不变的情况下，商品价格与其需求量之间存在什么关系？",
+                 options: ["正相关关系", "负相关关系", "没有关系", "不确定关系"],
+                 answer: "负相关关系",
+                 explanation: "需求定律指出，当一种商品的价格上升时，其需求量通常会下降；当价格下降时，需求量通常会上升，两者呈负相关关系，因此需求曲线向右下方倾斜。"
+             },
+             {
+                 question: "如果消费者预期某种商品的价格未来会上涨，当前对该商品的需求曲线会如何变化？",
+                 options: ["向右移动", "向左移动", "保持不变，但需求量减少", "变得更陡峭"],
+                 answer: "向右移动",
+                 explanation: "消费者对未来价格的预期是需求的非价格决定因素之一。如果预期价格上涨，消费者倾向于在当前购买更多，导致当前需求增加，需求曲线向右移动。"
+             },
+             {
+                 question: "假设牛肉和鸡肉是替代品。如果鸡肉价格大幅上涨，对牛肉的需求曲线会如何变化？",
+                 options: ["向左移动", "向右移动", "不移动，但牛肉需求量增加", "变得更缺乏弹性"],
+                 answer: "向右移动",
+                 explanation: "替代品是指可以相互替代满足同一种需求的商品。当鸡肉价格上涨时，消费者会减少对鸡肉的购买，转而购买相对便宜的牛肉，导致对牛肉的需求增加，牛肉需求曲线向右移动。"
+             },
+             {
+                 question: "如果智能手机和手机应用程序是互补品，当智能手机价格下降时，对手机应用程序的需求曲线会如何变化？",
+                 options: ["向左移动", "向右移动", "不移动", "变得更富有弹性"],
+                 answer: "向右移动",
+                 explanation: "互补品是指需要一起消费才能满足某种需求的商品。智能手机价格下降会导致其需求量增加，从而也增加了对与之配套使用的手机应用程序的需求，使应用程序需求曲线向右移动。"
+             },
+             {
+                 question: "以下哪项因素的变化会导致需求量的变化（沿需求曲线移动），而不是需求的改变（需求曲线移动）？",
+                 options: ["消费者收入的变化", "消费者偏好的变化", "该商品自身价格的变化", "相关商品价格的变化"],
+                 answer: "该商品自身价格的变化",
+                 explanation: "商品自身价格的变化引起的是需求量的变化，表现为在同一条需求曲线上的点的移动。其他因素（如收入、偏好、相关品价格等）的变化引起的是整个需求的改变，表现为需求曲线的移动。"
+             },
+             {
+                 question: "对于劣等品 (inferior good) 而言，当消费者收入增加时，其需求曲线会如何变化？",
+                 options: ["向右移动", "向左移动", "保持不变", "无法确定"],
+                 answer: "向左移动",
+                 explanation: "劣等品是指需求量随消费者收入增加而减少的商品。因此，收入增加会导致对劣等品的需求减少，需求曲线向左移动。"
+             },
+             {
+                 question: "（HL only）给定线性需求函数 Qd = 100 - 2P，当价格 P = 20 时，需求量 Qd 是多少？",
+                 options: ["40", "60", "80", "100"],
+                 answer: "60",
+                 explanation: "将 P = 20 代入需求函数 Qd = 100 - 2P，得到 Qd = 100 - 2(20) = 100 - 40 = 60。"
+             },
+             {
+                 question: "（HL only）对于需求函数 Qd = a - bP，其中 'b' 代表什么？",
+                 options: ["价格为零时的需求量", "需求曲线在价格轴上的截距", "需求曲线斜率的倒数的相反数", "需求价格弹性的绝对值"],
+                 answer: "需求曲线斜率的倒数的相反数",
+                 explanation: "在线性需求函数 Qd = a - bP 中，-b 是需求量对价格变化的反应程度。需求曲线通常画成 P 是纵轴，Qd 是横轴，其斜率为 -1/b。因此，b 是斜率倒数的相反数 (dQd/dP = -b)。"
+             },
+         
+             {
+                 question: "供给定律表明，在其他条件不变的情况下，商品价格与其供给量之间存在什么关系？",
+                 options: ["正相关关系", "负相关关系", "没有关系", "不确定关系"],
+                 answer: "正相关关系",
+                 explanation: "供给定律指出，当一种商品的价格上升时，生产者通常愿意并能够提供更多的该商品；当价格下降时，供给量通常会减少，两者呈正相关关系，因此供给曲线向右上方倾斜。"
+             },
+             {
+                 question: "如果生产某种商品的技术得到改进，对该商品的供给曲线会如何变化？",
+                 options: ["向左移动", "向右移动", "不移动，但供给量增加", "变得更陡峭"],
+                 answer: "向右移动",
+                 explanation: "技术进步通常会降低生产成本或提高生产效率，使得生产者在任何给定价格下都愿意供给更多商品，导致供给增加，供给曲线向右移动。"
+             },
+             {
+                 question: "政府对生产者征收从量税 (specific tax) 会导致供给曲线如何移动？",
+                 options: ["向上（或向左）移动", "向下（或向右）移动", "不移动，但供给量减少", "变得更富有弹性"],
+                 answer: "向上（或向左）移动",
+                 explanation: "从量税增加了每单位产品的生产成本。为了在每个产量水平上获得与征税前相同的净收益，生产者需要更高的市场价格，这表现为供给曲线向上（或向左）平行移动，移动的垂直距离等于单位税额。"
+             },
+             {
+                 question: "以下哪项因素的变化会导致供给量的变化（沿供给曲线移动），而不是供给的改变（供给曲线移动）？",
+                 options: ["生产要素价格的变化", "技术的变化", "该商品自身价格的变化", "生产者数量的变化"],
+                 answer: "该商品自身价格的变化",
+                 explanation: "商品自身价格的变化引起的是供给量的变化，表现为在同一条供给曲线上的点的移动。其他因素（如生产成本、技术、预期等）的变化引起的是整个供给的改变，表现为供给曲线的移动。"
+             },
+             {
+                 question: "（HL only）给定线性供给函数 Qs = 10 + 3P，当价格 P = 15 时，供给量 Qs 是多少？",
+                 options: ["45", "50", "55", "60"],
+                 answer: "55",
+                 explanation: "将 P = 15 代入供给函数 Qs = 10 + 3P，得到 Qs = 10 + 3(15) = 10 + 45 = 55。"
+             },
+             {
+                 question: "（HL only）对于供给函数 Qs = c + dP，如果 c 为负数，这意味着什么？",
+                 options: ["价格为零时仍有供给", "供给曲线从原点开始", "生产者需要一个最低价格才会开始供给", "供给完全无弹性"],
+                 answer: "生产者需要一个最低价格才会开始供给",
+                 explanation: "如果 c 为负数，例如 Qs = -10 + 2P，这意味着当价格低于某一水平时（在此例中是P<5），供给量为零。生产者需要价格达到一定水平（P=5时Qs=0）才愿意开始供给产品。供给曲线与价格轴的交点为 -c/d。"
+             },
+         
+             {
+                 question: "在竞争市场中，当市场价格低于均衡价格时，通常会出现什么情况？",
+                 options: ["超额供给 (Surplus)", "超额需求 (Shortage)", "市场出清", "生产者剩余最大化"],
+                 answer: "超额需求 (Shortage)",
+                 explanation: "当市场价格低于均衡价格时，需求量会大于供给量 (Qd > Qs)，导致市场上商品供不应求，出现短缺。"
+             },
+             {
+                 question: "在供求图中，消费者剩余是指哪部分面积？",
+                 options: ["需求曲线以下，价格线以上，均衡数量以左的三角形区域", "供给曲线以上，价格线以下，均衡数量以左的三角形区域", "需求曲线和供给曲线之间的区域", "价格线乘以均衡数量形成的矩形区域"],
+                 answer: "需求曲线以下，价格线以上，均衡数量以左的三角形区域",
+                 explanation: "消费者剩余是消费者愿意支付的最高价格与实际支付的市场价格之间的差额的总和。在图上表现为需求曲线下方、市场价格线上方以及均衡数量左侧围成的三角形区域。"
+             },
+             {
+                 question: "当市场达到均衡时，社会总剩余（社区剩余）指的是什么？",
+                 options: ["仅消费者剩余", "仅生产者剩余", "消费者剩余与生产者剩余之和", "政府税收收入"],
+                 answer: "消费者剩余与生产者剩余之和",
+                 explanation: "社会总剩余，也称社区剩余或经济总剩余，是衡量市场整体福利的指标，等于消费者剩余加上生产者剩余。在没有外部性的竞争市场中，市场均衡能使社会总剩余最大化。"
+             },
+             {
+                 question: "如果市场实现了配置效率 (allocative efficiency)，这意味着：",
+                 options: ["产品以最低平均成本生产", "资源被用于生产社会最期望的商品组合，即 P = MC 或 MSB = MSC", "所有生产者都获得了超额利润", "市场中不存在失业"],
+                 answer: "资源被用于生产社会最期望的商品组合，即 P = MC 或 MSB = MSC",
+                 explanation: "配置效率是指资源分配到能够最大化社会福利的用途上。当边际社会效益 (MSB) 等于边际社会成本 (MSC)，或者在完全竞争且无外部性的情况下价格 (P) 等于边际成本 (MC) 时，就实现了配置效率。"
+             },
+             {
+                 question: "假设某商品的需求增加，而供给保持不变，市场均衡价格和均衡数量会如何变化？",
+                 options: ["价格下降，数量增加", "价格上升，数量增加", "价格上升，数量减少", "价格下降，数量减少"],
+                 answer: "价格上升，数量增加",
+                 explanation: "需求增加会导致需求曲线向右移动。在供给曲线不变的情况下，新的均衡点将对应更高的价格和更大的数量。"
+             },
+             {
+                 question: "如果某种商品的需求和供给同时增加，但需求增加的幅度大于供给增加的幅度，那么均衡价格和均衡数量最可能如何变化？",
+                 options: ["价格上升，数量上升", "价格下降，数量上升", "价格上升，数量下降", "价格不确定，数量上升"],
+                 answer: "价格上升，数量上升",
+                 explanation: "需求和供给都增加，均衡数量肯定上升。由于需求增加的幅度大于供给增加的幅度，需求曲线右移的距离大于供给曲线右移的距离，导致均衡价格上升。"
+             },
+         
+             {
+                 question: "（HL only）边际效用递减规律表明：",
+                 options: ["消费越多，总效用越小", "消费额外一单位商品所带来的总效用增加量是递减的", "所有商品都具有相同的边际效用", "只有劣等品才符合边际效用递减"],
+                 answer: "消费额外一单位商品所带来的总效用增加量是递减的",
+                 explanation: "边际效用递减规律是指在一定时间内，随着消费者对某种商品消费量的连续增加，他从最后一单位商品消费中所得到的效用增量（即边际效用）是逐渐减少的。"
+             },
+             {
+                 question: "（HL only）在消费者理论中，预算线向外平行移动代表了什么？",
+                 options: ["一种商品价格下降", "消费者偏好改变", "消费者收入增加", "两种商品价格同比例上升"],
+                 answer: "消费者收入增加",
+                 explanation: "预算线表示消费者在给定收入和商品价格下能够购买的各种商品组合。当消费者收入增加时，其购买能力增强，预算线会向外平行移动。反之，收入减少则向内平行移动。"
+             },
+             {
+                 question: "（HL only）无差异曲线凸向原点是因为：",
+                 options: ["边际替代率递增", "边际替代率递减", "商品是完全替代的", "消费者收入有限"],
+                 answer: "边际替代率递减",
+                 explanation: "无差异曲线凸向原点反映了边际替代率 (MRS) 递减的规律。这意味着消费者为了多获得一单位X商品而愿意放弃的Y商品的数量，随着X商品拥有量的增加而减少。"
+             },
+             {
+                 question: "（HL only）消费者实现最优选择的条件是，在预算约束下，其无差异曲线与预算线：",
+                 options: ["相交于两点", "相切", "平行", "垂直"],
+                 answer: "相切",
+                 explanation: "消费者最优选择点是预算线与尽可能远离原点的无差异曲线的相切点。在该点，无差异曲线的斜率（边际替代率 MRS）等于预算线的斜率（商品价格之比 Px/Py）。"
+             },
+             {
+                 question: "小明在购买新手机时，第一家店员报价8000元，他觉得太贵。第二家店员先展示了一款12000元的旗舰机，再说他想买的型号只要8500元，小明觉得8500元似乎可以接受了。这更可能体现了哪种认知偏差 (HL only)？",
+                 options: ["框架效应 (Framing effect)", "可得性启发 (Availability heuristic)", "锚定效应 (Anchoring bias)", "有限自控能力 (Bounded self-control)"],
+                 answer: "锚定效应 (Anchoring bias)",
+                 explanation: "锚定效应是指个体在做决策时，会过度依赖接收到的第一个信息（锚点）。12000元的旗舰机价格成为了一个锚点，使得后续的8500元价格显得相对合理，即使它高于最初的心理价位或市场公允价。"
+             },
+             {
+                 question: "（HL only）“框架效应”是指人们的决策受到以下哪项因素的影响？",
+                 options: ["信息呈现的方式", "最近容易想到的信息", "最初接触到的信息", "对未来过度乐观"],
+                 answer: "信息呈现的方式",
+                 explanation: "框架效应是指同一个问题在不同的呈现方式（框架）下，人们会做出不同的决策。例如，强调收益的框架和强调损失的框架可能导致不同的选择，即使客观结果相同。"
+             },
+             {
+                 question: "（HL only）企业追求收入最大化 (Revenue Maximization) 时的生产决策点是：",
+                 options: ["边际成本 (MC) 等于边际收益 (MR)", "边际收益 (MR) 等于零", "平均成本 (AC) 最低点", "价格 (P) 等于边际成本 (MC)"],
+                 answer: "边际收益 (MR) 等于零",
+                 explanation: "当边际收益 (MR) 大于零时，增加产量会增加总收益；当MR小于零时，增加产量会减少总收益。因此，总收益在MR=0时达到最大值。"
+             },
+             {
+                 question: "（HL only）“满足化 (Satisficing)”行为描述的是企业决策者：",
+                 options: ["总是追求利润最大化", "试图达到一个可接受的、令人满意的目标水平，而非最优水平", "专注于市场份额的快速增长", "将社会责任置于所有其他目标之上"],
+                 answer: "试图达到一个可接受的、令人满意的目标水平，而非最优水平",
+                 explanation: "满足化理论认为，由于信息不完全和认知能力的限制，企业决策者可能不会追求理论上的最优解（如利润最大化），而是设定一个“足够好”的目标，一旦达到就感到满意。"
+             },
+         
+             {
+                 question: "如果一种商品的需求价格弹性 (PED) 大于1 (富有弹性)，企业为了增加总收益 (Total Revenue) 应该采取什么策略？",
+                 options: ["提高价格", "降低价格", "保持价格不变", "减少产量"],
+                 answer: "降低价格",
+                 explanation: "当需求富有弹性 (PED > 1) 时，价格下降的百分比会导致需求量增加的百分比更大，从而使得总收益 (P × Q) 增加。反之，提价会导致总收益减少。"
+             },
+             {
+                 question: "如果一种商品的需求价格弹性 (PED) 小于1 (缺乏弹性)，当价格上涨时，总收益 (Total Revenue) 会如何变化？",
+                 options: ["增加", "减少", "保持不变", "先增加后减少"],
+                 answer: "增加",
+                 explanation: "当需求缺乏弹性 (PED < 1) 时，价格上涨的百分比会导致需求量减少的百分比更小，因此总收益 (P × Q) 会增加。"
+             },
+             {
+                 question: "垂直的需求曲线表示需求价格弹性 (PED) 的值为：",
+                 options: ["PED = 0 (完全无弹性)", "PED = 1 (单位弹性)", "PED > 1 (富有弹性)", "PED = ∞ (完全有弹性)"],
+                 answer: "PED = 0 (完全无弹性)",
+                 explanation: "垂直的需求曲线意味着无论价格如何变化，需求量都保持不变。因此，需求量对价格变化的敏感度为零，即PED = 0，称为完全无弹性需求。"
+             },
+             {
+                 question: "以下哪种商品的需求价格弹性可能最小（最缺乏弹性）？",
+                 options: ["豪华跑车", "特定品牌的咖啡", "治疗糖尿病的胰岛素", "去国外度假"],
+                 answer: "治疗糖尿病的胰岛素",
+                 explanation: "需求价格弹性的决定因素之一是商品是否为必需品以及是否存在替代品。胰岛素对于糖尿病患者是必需品，且替代品很少，因此其需求价格弹性通常非常小（缺乏弹性）。"
+             },
+             {
+                 question: "（HL only）在线性需求曲线上，随着价格从高到低下降，需求价格弹性 (PED) 的绝对值如何变化？",
+                 options: ["保持不变", "逐渐变大", "逐渐变小", "先变大后变小"],
+                 answer: "逐渐变小",
+                 explanation: "在线性需求曲线上，价格较高、数量较小的部分，需求富有弹性 (PED > 1)；在价格较低、数量较大的部分，需求缺乏弹性 (PED < 1)。中点的PED=1。因此，从高价到低价，PED的绝对值从无穷大（或一个很大的数）逐渐减小到零。"
+             },
+             {
+                 question: "如果商品A的需求收入弹性 (YED) 为 -0.5，那么商品A是：",
+                 options: ["正常品 (Normal good)", "劣等品 (Inferior good)", "奢侈品 (Luxury good)", "必需品 (Necessity good)"],
+                 answer: "劣等品 (Inferior good)",
+                 explanation: "需求收入弹性 (YED)衡量需求量对消费者收入变化的反应程度。YED为负值表示该商品是劣等品，即收入增加时，对其需求量减少。"
+             },
+             {
+                 question: "如果商品X和商品Y的需求交叉价格弹性 (XED) 为 1.5，那么这两种商品是什么关系？",
+                 options: ["互补品 (Complements)", "替代品 (Substitutes)", "独立品 (Independent goods)", "劣等品 (Inferior goods)"],
+                 answer: "替代品 (Substitutes)",
+                 explanation: "需求交叉价格弹性 (XED)衡量一种商品的需求量对另一种商品价格变化的反应程度。XED为正值表示这两种商品是替代品，即一种商品价格上涨会导致另一种商品需求量增加。"
+             },
+             {
+                 question: "如果商品C的需求收入弹性 (YED) 为 2.0，这表明商品C是：",
+                 options: ["劣等品", "必需品", "奢侈品", "单位收入弹性的商品"],
+                 answer: "奢侈品",
+                 explanation: "奢侈品是YED大于1的正常品，意味着收入增加一个百分点，对该商品的需求量增加超过一个百分点。"
+             },
+         
+             {
+                 question: "供给价格弹性 (PES) 衡量的是：",
+                 options: ["供给量对消费者收入变化的敏感度", "供给量对相关商品价格变化的敏感度", "供给量对自身价格变化的敏感度", "需求量对供给变化的敏感度"],
+                 answer: "供给量对自身价格变化的敏感度",
+                 explanation: "供给价格弹性 (PES) = (%ΔQs) / (%ΔP)，衡量供给量对商品自身价格变动的反应程度。"
+             },
+             {
+                 question: "如果一条供给曲线是经过原点的直线，那么其供给价格弹性 (PES) 是多少？",
+                 options: ["PES = 0", "PES < 1", "PES = 1", "PES > 1"],
+                 answer: "PES = 1",
+                 explanation: "任何经过原点的线性供给曲线都具有单位供给价格弹性 (PES = 1)。"
+             },
+             {
+                 question: "在短期内，许多初级产品（如农产品）的供给价格弹性通常是：",
+                 options: ["富有弹性 (PES > 1)", "缺乏弹性 (PES < 1)", "完全有弹性 (PES = ∞)", "完全无弹性 (PES = 0)"],
+                 answer: "缺乏弹性 (PES < 1)",
+                 explanation: "初级产品的生产周期通常较长，且短期内改变生产规模的能力有限（如土地、气候限制），因此其供给对价格变化的反应不敏感，供给缺乏弹性。"
+             },
+             {
+                 question: "以下哪个因素最可能导致一种商品的供给价格弹性较大（富有弹性）？",
+                 options: ["生产周期长", "存在大量闲置产能和易于获取的生产要素", "商品难以储存", "生产技术复杂且专业化程度高"],
+                 answer: "存在大量闲置产能和易于获取的生产要素",
+                 explanation: "当企业拥有闲置产能，或能够轻易获得额外的生产要素时，它们可以对价格上涨做出更迅速和更大规模的产量调整，从而使供给更富有弹性。"
+             },
+         
+             {
+                 question: "如果政府对某种生活必需品设定了有效的最高限价 (price ceiling)，并且该限价低于市场均衡价格，最可能导致的结果是什么？",
+                 options: ["市场出现过剩 (surplus)", "市场出现短缺 (shortage)", "生产者剩余增加", "市场价格上升到均衡水平"],
+                 answer: "市场出现短缺 (shortage)",
+                 explanation: "有效的最高限价设定在市场均衡价格之下，会导致需求量大于供给量 (Qd > Qs)，从而引发市场短缺。生产者可能不愿意以低价供应足够商品，而消费者则希望购买更多。"
+             },
+             {
+                 question: "政府对某种商品征收从量消费税后，通常会导致：",
+                 options: ["消费者支付的价格下降，生产者获得的价格上升", "消费者支付的价格上升，生产者获得的价格下降", "均衡数量增加", "社会总剩余增加"],
+                 answer: "消费者支付的价格上升，生产者获得的价格下降",
+                 explanation: "税收使供给曲线向上（或向左）移动。新的均衡点下，消费者支付的价格 (Pc) 高于原均衡价格，生产者实际收到的价格 (Pp = Pc - tax) 低于原均衡价格。均衡数量减少，并产生无谓损失。"
+             },
+             {
+                 question: "在征收间接税后，税负在消费者和生产者之间的分配主要取决于：",
+                 options: ["政府的规定", "需求的收入弹性和供给的交叉价格弹性", "需求价格弹性和供给价格弹性的相对大小", "市场的初始均衡价格"],
+                 answer: "需求价格弹性和供给价格弹性的相对大小",
+                 explanation: "如果需求相对于供给更缺乏弹性 (PED < PES, 绝对值比较)，则消费者承担更大的税负份额。反之，如果供给相对于需求更缺乏弹性 (PES < PED)，则生产者承担更大的税负份额。"
+             },
+             {
+                 question: "政府对某种商品提供补贴 (subsidy) 后，通常会导致：",
+                 options: ["消费者支付的价格上升，均衡数量减少", "消费者支付的价格下降，均衡数量增加", "生产者剩余减少", "产生无谓损失，因为产量低于社会最优水平"],
+                 answer: "消费者支付的价格下降，均衡数量增加",
+                 explanation: "补贴使供给曲线向下（或向右）移动。新的均衡点下，消费者支付的价格下降，生产者实际收到的价格上升，均衡数量增加。但补贴也可能导致过度生产，产生无谓损失。"
+             },
+             {
+                 question: "如果政府为农民设定了农产品的最低限价 (price floor)，并且该限价高于市场均衡价格，最可能导致的结果是什么？",
+                 options: ["市场出现短缺", "市场出现过剩", "消费者剩余增加", "政府不需要采取进一步措施"],
+                 answer: "市场出现过剩",
+                 explanation: "有效的最低限价设定在市场均衡价格之上，会导致供给量大于需求量 (Qs > Qd)，从而引发市场过剩。政府可能需要收购这些过剩产品以维持限价。"
+             },
+             {
+                 question: "下图显示了对某种商品征收从量税的影响。政府的税收收入由哪个区域代表？ (假设P*是原均衡价, Pc是消费者支付价, Pp是生产者实收价, Qt是征税后数量)",
+                 options: ["三角形ABC (无谓损失区域)", "矩形PcBDPp", "梯形PcBEP*", "三角形P*CE"],
+                 answer: "矩形PcBDPp",
+                 explanation: "政府的税收收入等于单位税额乘以征税后的均衡数量。在图中，单位税额是Pc与Pp之间的垂直距离，数量是Qt。因此，税收收入是 (Pc-Pp) * Qt，通常表示为一个矩形区域。"
+             },
+             {
+                 question: "当政府设定有效的最高限价时，可能会出现的非价格配给机制不包括：",
+                 options: ["排队", "按需分配", "抽签", "拍卖"],
+                 answer: "拍卖",
+                 explanation: "最高限价导致短缺，需要非价格机制来分配有限的商品。排队、按需分配（如关系）、抽签都是可能的。拍卖通常会导致价格上升到市场出清水平，与最高限价的目的相反。"
+             },
+         
+             {
+                 question: "一家工厂在生产过程中排放了未经处理的污染物到河流中，对下游渔业造成了损害。这种情况在经济学中称为什么？其图表特征是什么？", 
+                 options: ["生产的正外部性；边际社会成本(MSC)低于边际私人成本(MPC)", "生产的负外部性；边际社会成本(MSC)高于边际私人成本(MPC)", "消费的负外部性；边际社会效益(MSB)低于边际私人效益(MPB)", "公共物品问题；市场无法提供"],
+                 answer: "生产的负外部性；边际社会成本(MSC)高于边际私人成本(MPC)",
+                 explanation: "工厂排污对第三方（渔业）造成了未被计入生产成本的损害，这是生产的负外部性。此时，社会承担的总成本 (MSC) 高于工厂自身的私人成本 (MPC)，导致市场产量 (Qm) 大于社会最优产量 (Qopt)。"
+             },
+             {
+                 question: "对于存在生产负外部性的市场，自由市场决定的产量与社会最优产量相比：",
+                 options: ["市场产量等于社会最优产量", "市场产量小于社会最优产量", "市场产量大于社会最优产量", "无法确定"],
+                 answer: "市场产量大于社会最优产量",
+                 explanation: "在生产负外部性的情况下，生产者只考虑其私人成本 (MPC)，而社会成本 (MSC) 还包括外部成本。因此，市场均衡产量 (MPC=MPB) 会高于社会最优产量 (MSC=MSB)，导致过度生产和无谓损失。"
+             },
+             {
+                 question: "政府可以通过征收庇古税 (Pigouvian tax) 来纠正生产的负外部性。理想的庇古税额应等于：",
+                 options: ["边际私人成本 (MPC)", "边际外部成本 (MEC) 在社会最优产量水平上的值", "总外部成本", "边际社会效益 (MSB)"],
+                 answer: "边际外部成本 (MEC) 在社会最优产量水平上的值",
+                 explanation: "庇古税旨在使生产者内部化其产生的外部成本。理想的税额应等于在社会最优产量 (Qopt) 水平上的边际外部成本 (MEC = MSC - MPC)，从而使修正后的私人成本等于社会成本，引导市场达到Qopt。"
+             },
+             {
+                 question: "个人接种疫苗不仅保护了自己，也降低了他人被传染的风险。这属于什么类型的外部性？其图表特征是什么？",
+                 options: ["消费的负外部性；MSB < MPB", "消费的正外部性；MSB > MPB", "生产的正外部性；MSC < MPC", "生产的负外部性；MSC > MPC"],
+                 answer: "消费的正外部性；MSB > MPB",
+                 explanation: "接种疫苗产生了消费的正外部性，因为消费者的行为给社会带来了额外的益处（降低传染风险），而这些益处未被消费者在决策时完全考虑。因此，边际社会效益 (MSB) 高于边际私人效益 (MPB)，导致市场消费量 (Qm) 低于社会最优消费量 (Qopt)。"
+             },
+             {
+                 question: "对于存在消费正外部性的市场，政府可以采取以下哪种措施来提高效率？",
+                 options: ["征税", "提供补贴", "设定最高限价", "直接禁止消费"],
+                 answer: "提供补贴",
+                 explanation: "对于消费正外部性，市场提供的数量通常低于社会最优水平。政府可以通过提供补贴来降低消费者的成本或增加生产者的收益，从而鼓励更多的消费/生产，使市场接近社会最优水平。"
+             },
+             {
+                 question: "“公地悲剧” (Tragedy of the Commons) 描述的是共同资源由于什么特性而容易被过度使用？",
+                 options: ["排他性和竞争性", "非排他性和非竞争性", "非排他性和竞争性", "排他性和非竞争性"],
+                 answer: "非排他性和竞争性",
+                 explanation: "共同资源（如公共渔场、牧场）具有非排他性（难以阻止人们使用）和竞争性（一个人使用会减少他人可用的量）。这导致个体有动机过度攫取资源，最终可能导致资源枯竭。"
+             },
+             {
+                 question: "解决“公地悲剧”问题的一种可能方法是：",
+                 options: ["完全禁止使用该资源", "将共同资源私有化或引入可交易的配额制度", "增加对资源使用的补贴", "鼓励更多人使用该资源以实现规模经济"],
+                 answer: "将共同资源私有化或引入可交易的配额制度",
+                 explanation: "通过明确产权（私有化）或限制总使用量并分配可交易的许可证/配额，可以激励资源使用者更有效地利用资源，避免过度消耗。"
+             },
+             {
+                 question: "下图显示了生产负外部性的情况。无谓损失 (DWL) 由哪个区域代表？ (Qm为市场产量, Qopt为社会最优产量)",
+                 options: ["三角形 formed by MSC, MPB, and quantity axis between Qopt and Qm", "三角形 formed by MSC, MPC, and quantity Qm", "三角形 formed by MSC, MPB(D), between Qopt and Qm, pointing to the left", "矩形区域"],
+                 answer: "三角形 formed by MSC, MPB(D), between Qopt and Qm, pointing to the left",
+                 explanation: "在生产负外部性图中，市场产量Qm大于社会最优产量Qopt。从Qopt到Qm的每一单位产出，其边际社会成本(MSC)都高于边际社会效益(MSB/MPB)。这些超额成本的总和构成了无谓损失，通常是一个指向社会最优点的三角形区域。"
+             },
+         
+             {
+                 question: "国防被认为是纯公共物品 (pure public good) 的主要原因是什么？", 
+                 options: ["它由政府提供且具有排他性", "它具有竞争性和非排他性", "它具有非竞争性和非排他性", "它可以像私人物品一样在市场上有效买卖"],
+                 answer: "它具有非竞争性和非排他性",
+                 explanation: "纯公共物品的核心特征是非竞争性 (non-rivalrous)，即一个人消费该物品不会妨碍另一个人消费；以及非排他性 (non-excludable)，即难以或不可能阻止未付费的人消费。国防符合这两个特征。"
+             },
+             {
+                 question: "“搭便车”问题 (Free Rider Problem) 最容易出现在哪种类型的物品上？",
+                 options: ["私人物品 (Private goods)", "公共物品 (Public goods)", "俱乐部物品 (Club goods)", "共同资源 (Common resources)"],
+                 answer: "公共物品 (Public goods)",
+                 explanation: "由于公共物品的非排他性，个人可以在不付费的情况下享用其带来的利益，这导致了搭便车问题。如果许多人都选择搭便车，那么私人市场就可能无法提供或提供不足量的公共物品。"
+             },
+             {
+                 question: "与私人物品的市场需求曲线通过个体需求曲线水平加总得到不同，公共物品的市场需求曲线（或边际社会效益曲线）是如何得到的？",
+                 options: ["通过个体需求曲线水平加总", "通过个体需求曲线垂直加总", "等于供给曲线", "总是完全有弹性的"],
+                 answer: "通过个体需求曲线垂直加总",
+                 explanation: "对于公共物品，每个人消费的是相同的数量。因此，为了得到整个社会对某一数量公共物品愿意支付的总价格（或总边际效益），需要将每个个体在该数量上愿意支付的价格（边际效益）垂直加总起来。"
+             },
+             {
+                 question: "以下哪项最不可能是准公共物品 (quasi-public good)？",
+                 options: ["收费的高速公路", "拥挤的公园", "无线电广播信号", "国家安全"],
+                 answer: "国家安全",
+                 explanation: "准公共物品是指在某种程度上具有非竞争性或非排他性，但并非完全具备这两个特征的物品。收费公路（排他）、拥挤公园（消费有竞争性）、无线电广播（非竞争但可加密实现排他）都可能是准公共物品。国家安全通常被视为纯公共物品。"
+             },
+         
+         
+             {
+                 question: "（HL only）在二手车市场，卖方通常比买方更了解车况。这种情况可能导致什么问题？",
+                 options: ["道德风险 (Moral hazard)", "逆向选择 (Adverse selection)", "搭便车问题 (Free rider problem)", "公地悲剧 (Tragedy of the commons)"],
+                 answer: "逆向选择 (Adverse selection)",
+                 explanation: "逆向选择发生在交易一方拥有另一方所不具备的信息，并且利用这种信息优势导致市场中劣质品驱逐优质品。在二手车市场，由于买方难以判断车的好坏，他们可能只愿意支付平均价格，这使得优质车主不愿意出售，市场上充斥着“柠檬车”。"
+             },
+             {
+                 question: "（HL only）某人购买了全面的汽车保险后，开车变得更加鲁莽。这体现了什么现象？",
+                 options: ["逆向选择 (Adverse selection)", "道德风险 (Moral hazard)", "信号传递 (Signaling)", "筛选 (Screening)"],
+                 answer: "道德风险 (Moral hazard)",
+                 explanation: "道德风险发生在信息不对称的交易达成后，拥有信息优势的一方可能会改变其行为，从而损害另一方的利益。购买保险后，由于风险已转移给保险公司，投保人可能会减少谨慎行为。"
+             },
+             {
+                 question: "（HL only）政府要求食品生产商标注营养成分信息，主要是为了解决哪种市场失灵问题？",
+                 options: ["负外部性", "公共物品提供不足", "信息不对称", "垄断力量"],
+                 answer: "信息不对称",
+                 explanation: "通过强制信息披露，政府试图减少生产者和消费者之间的信息不对称，使消费者能够做出更明智的购买决策，从而改善市场效率。"
+             },
+         
+             {
+                 question: "（HL only）在短期生产中，当边际产量 (MP) 大于平均产量 (AP) 时，平均产量 (AP) 会如何变化？",
+                 options: ["上升", "下降", "保持不变", "等于边际产量"],
+                 answer: "上升",
+                 explanation: "边际量大于平均量时，平均量会上升。例如，如果你的下一门考试成绩高于你的平均成绩，你的平均成绩就会提高。同理，当MP > AP时，AP上升。"
+             },
+             {
+                 question: "（HL only）边际报酬递减规律 (Law of Diminishing Marginal Returns) 指的是在短期生产中，当其他投入不变，连续增加某一可变投入时：",
+                 options: ["总产量最终会减少", "边际产量最终会变为负数", "边际产量最终会递减", "平均产量总是递增的"],
+                 answer: "边际产量最终会递减",
+                 explanation: "边际报酬递减规律说明，在技术水平和其他投入保持不变的条件下，连续等量地增加一种可变生产要素的投入，当该可变要素的投入量增加到一定程度后，其带来的边际产量将出现递减的趋势。"
+             },
+             {
+                 question: "（HL only）在短期成本曲线中 (HL only)，边际成本 (MC) 曲线与平均总成本 (ATC) 曲线和平均可变成本 (AVC) 曲线的关系是什么？",
+                 options: ["MC 曲线在 ATC 和 AVC 曲线的最高点与之相交", "MC 曲线在 ATC 和 AVC 曲线的最低点与之相交", "MC 曲线始终位于 ATC 和 AVC 曲线之上", "MC 曲线始终位于 ATC 和 AVC 曲线之下"],
+                 answer: "MC 曲线在 ATC 和 AVC 曲线的最低点与之相交",
+                 explanation: "边际成本 (MC) 曲线会分别穿过平均可变成本 (AVC) 曲线和平均总成本 (ATC) 曲线的最低点。当 MC < AVC (或 ATC) 时，AVC (或 ATC) 下降；当 MC > AVC (或 ATC) 时，AVC (或 ATC) 上升。"
+             },
+             {
+                 question: "（HL only）平均固定成本 (AFC) 曲线的形状是：",
+                 options: ["U型", "向上倾斜", "持续向下倾斜，但不接触横轴", "一条水平线"],
+                 answer: "持续向下倾斜，但不接触横轴",
+                 explanation: "平均固定成本 (AFC) = 总固定成本 (TFC) / 产量 (Q)。由于TFC是一个常数，随着Q的增加，AFC会持续下降，但永远不会等于零（除非Q无穷大），因此曲线逐渐接近横轴。"
+             },
+             {
+                 question: "（HL only）长期平均总成本 (LRATC) 曲线呈现U型的原因是：",
+                 options: ["边际报酬递减规律", "规模经济与规模不经济", "固定成本的存在", "可变成本的波动"],
+                 answer: "规模经济与规模不经济",
+                 explanation: "LRATC曲线的下降部分是由于规模经济（如专业化、技术优势）导致的平均成本下降；上升部分是由于规模不经济（如管理困难、协调成本增加）导致的平均成本上升。"
+             },
+             {
+                 question: "（HL only）当企业经历规模经济 (Economies of Scale) 时，其长期平均总成本 (LRATC) 会：",
+                 options: ["随着产量的增加而上升", "随着产量的增加而下降", "保持不变", "先下降后上升"],
+                 answer: "随着产量的增加而下降",
+                 explanation: "规模经济是指随着生产规模的扩大，企业的平均生产成本下降的现象。这使得LRATC曲线在初始阶段向下倾斜。"
+             },
+         
+             {
+                 question: "（HL only）在完全竞争市场中，单个厂商面临的需求曲线是：",
+                 options: ["向右下方倾斜的", "向右上方倾斜的", "一条水平线", "一条垂直线"],
+                 answer: "一条水平线",
+                 explanation: "完全竞争市场中有大量厂商生产同质产品，每个厂商都是价格接受者，只能接受市场决定的价格。因此，单个厂商面临的需求曲线是一条在市场价格水平上的水平线，这意味着其需求是完全有弹性的 (D=AR=MR=P)。"
+             },
+             {
+                 question: "（HL only）完全竞争厂商实现短期利润最大化的条件是：",
+                 options: ["价格 (P) 等于平均总成本 (ATC)", "边际成本 (MC) 等于边际收益 (MR)，且MC曲线正在上升", "总收益 (TR) 最大化", "平均可变成本 (AVC) 最小化"],
+                 answer: "边际成本 (MC) 等于边际收益 (MR)，且MC曲线正在上升",
+                 explanation: "所有追求利润最大化的厂商（无论市场结构）都会在MC=MR的产量水平上生产。对于完全竞争厂商，MR=P。MC曲线正在上升是确保该点为利润最大而非最小的二阶条件。"
+             },
+             {
+                 question: "（HL only）在完全竞争市场的长期均衡中，厂商的经济利润是多少？",
+                 options: ["超额利润 (Supernormal profit)", "正常利润 (Normal profit / Zero economic profit)", "亏损 (Loss)", "不确定"],
+                 answer: "正常利润 (Normal profit / Zero economic profit)",
+                 explanation: "由于完全竞争市场没有进入壁垒，如果短期存在超额利润，新厂商会进入，导致市场供给增加，价格下降，直至所有厂商的经济利润降为零（即获得正常利润，P=ATC）。反之，如果短期亏损，厂商会退出，价格上升，直至亏损消失。"
+             },
+             {
+                 question: "（HL only）完全竞争厂商的短期关闭点 (shutdown point) 是指价格等于：",
+                 options: ["平均总成本 (ATC) 的最低点", "平均可变成本 (AVC) 的最低点", "平均固定成本 (AFC) 的最低点", "边际成本 (MC) 的最低点"],
+                 answer: "平均可变成本 (AVC) 的最低点",
+                 explanation: "如果市场价格低于平均可变成本的最低点 (P < min AVC)，厂商继续生产不仅无法弥补固定成本，连可变成本都无法完全收回，此时选择停产（关闭）可以减少亏损（亏损额等于固定成本）。"
+             },
+             {
+                 question: "（HL only）完全竞争市场在长期均衡时，同时实现了哪两种效率？",
+                 options: ["配置效率和动态效率", "生产效率和X-效率", "配置效率和生产效率", "技术效率和公平"],
+                 answer: "配置效率和生产效率",
+                 explanation: "在长期均衡中，完全竞争厂商在 P = MC (配置效率) 和 P = min ATC (生产效率，即以最低平均成本生产) 的点上生产。"
+             },
+         
+             {
+                 question: "（HL only）垄断厂商的需求曲线与其平均收益 (AR) 曲线的关系是：",
+                 options: ["需求曲线在AR曲线下方", "需求曲线与AR曲线是同一条曲线", "需求曲线在AR曲线上方", "两条曲线不相关"],
+                 answer: "需求曲线与AR曲线是同一条曲线",
+                 explanation: "对于任何市场结构的厂商，平均收益 (AR) 都等于价格 (P)。由于需求曲线显示了不同价格水平对应的需求量，因此需求曲线也就是厂商的平均收益曲线 (D=AR)。"
+             },
+             {
+                 question: "（HL only）对于一个面临线性向下倾斜需求曲线的垄断厂商，其边际收益 (MR) 曲线：",
+                 options: ["与需求曲线重合", "位于需求曲线之上，且斜率更大", "位于需求曲线之下，且斜率通常是需求曲线的两倍", "是一条水平线"],
+                 answer: "位于需求曲线之下，且斜率通常是需求曲线的两倍",
+                 explanation: "为了多销售一单位产品，垄断者必须降低所有单位产品的价格（不能进行完美价格歧视时）。因此，边际收益总是小于价格。如果需求曲线是线性的 (P = a - bQ)，则总收益 TR = P*Q = aQ - bQ^2，边际收益 MR = dTR/dQ = a - 2bQ。MR曲线的纵轴截距与需求曲线相同，但横轴截距是需求曲线的一半，斜率是需求曲线的两倍。"
+             },
+             {
+                 question: "（HL only）垄断厂商在短期和长期都有可能获得超额利润，主要是因为：",
+                 options: ["产品差异化", "存在显著的进入壁垒", "政府管制较少", "消费者信息不完全"],
+                 answer: "存在显著的进入壁垒",
+                 explanation: "高进入壁垒（如专利、规模经济、政府特许等）阻止了新厂商进入市场与垄断者竞争，使得垄断者可以在长期维持价格高于平均总成本，从而获得超额利润。"
+             },
+             {
+                 question: "（HL only）自然垄断 (Natural Monopoly) 通常发生在哪个条件下？",
+                 options: ["市场需求非常小", "长期平均总成本 (LRATC) 在相关产量范围内持续下降", "政府授予了独家经营权", "产品具有高度的差异化"],
+                 answer: "长期平均总成本 (LRATC) 在相关产量范围内持续下降",
+                 explanation: "自然垄断是指由于巨大的固定成本和显著的规模经济，使得由单一厂商供应整个市场的成本低于多个厂商分别供应的成本。其特征是LRATC曲线在覆盖市场需求的产量范围内持续下降。"
+             },
+             {
+                 question: "（HL only）与完全竞争市场相比，垄断市场通常导致：",
+                 options: ["更高的价格和更高的产量", "更低的价格和更高的产量", "更高的价格和更低的产量", "更低的价格和更低的产量"],
+                 answer: "更高的价格和更低的产量",
+                 explanation: "垄断者通过限制产量来提高价格，以实现利润最大化。与完全竞争均衡相比，垄断导致价格更高 (Pm > Pc)，产量更低 (Qm < Qc)，并产生无谓损失，因为 P > MC。"
+             },
+             {
+                 question: "（HL only）X-低效率 (X-inefficiency) 指的是垄断厂商由于缺乏竞争压力可能导致：",
+                 options: ["过度投资于研发", "生产成本高于技术上可能的最低水平", "定价低于利润最大化水平", "产量超过社会最优水平"],
+                 answer: "生产成本高于技术上可能的最低水平",
+                 explanation: "X-低效率描述的是企业内部的效率低下，由于缺乏竞争，管理层可能缺乏降低成本的动力，导致实际成本高于必要的最低成本。"
+             },
+         
+             {
+                 question: "（HL only）垄断竞争市场的主要特征不包括：",
+                 options: ["大量买者和卖者", "产品同质无差异", "进入和退出市场相对容易", "厂商进行非价格竞争"],
+                 answer: "产品同质无差异",
+                 explanation: "垄断竞争市场的核心特征之一是产品差异化，即每个厂商的产品在品牌、质量、设计或服务上与其他厂商略有不同，这使得厂商对其产品价格有一定的控制力。"
+             },
+             {
+                 question: "（HL only）在垄断竞争市场 (HL only) 的长期均衡中，厂商的价格 (P) 和平均总成本 (ATC) 的关系是什么？", 
+                 options: ["P > ATC，厂商获得超额利润", "P < ATC，厂商遭受亏损", "P = ATC，厂商获得正常利润", "P = MC，实现配置效率"],
+                 answer: "P = ATC，厂商获得正常利润",
+                 explanation: "由于垄断竞争市场进入壁垒较低，如果短期存在超额利润，新厂商会进入，导致原厂商需求曲线左移，直至价格等于平均总成本 (P=ATC)，厂商仅获得正常利润。此时，需求曲线与ATC曲线相切。"
+             },
+             {
+                 question: "（HL only）垄断竞争厂商在长期均衡时，其产量位于平均总成本 (ATC) 曲线的哪个位置？",
+                 options: ["ATC曲线的最低点", "ATC曲线上升的部分", "ATC曲线下降的部分，但未达到最低点", "不确定"],
+                 answer: "ATC曲线下降的部分，但未达到最低点",
+                 explanation: "在垄断竞争的长期均衡中，需求曲线与ATC曲线相切于ATC曲线下降的某个点（因为需求曲线向下倾斜）。这意味着厂商没有在最低平均成本点生产，存在超额生产能力 (excess capacity)，即 P > min ATC。"
+             },
+             {
+                 question: "（HL only）垄断竞争市场与完全竞争市场相比，在长期均衡时的一个关键区别是：",
+                 options: ["垄断竞争厂商能获得长期超额利润", "垄断竞争厂商实现了生产效率 (P=minATC)", "垄断竞争厂商不实现配置效率 (P>MC)", "垄断竞争市场没有非价格竞争"],
+                 answer: "垄断竞争厂商不实现配置效率 (P>MC)",
+                 explanation: "在垄断竞争的长期均衡中，价格等于平均总成本 (P=ATC)，但由于需求曲线向下倾斜且MR<P，利润最大化点 (MC=MR) 使得 P > MC，因此未实现配置效率。完全竞争长期均衡时 P=MC。"
+             },
+             {
+                 question: "（HL only）广告和品牌建设是哪种市场结构中常见的非价格竞争手段？",
+                 options: ["完全竞争", "垄断", "垄断竞争和寡头垄断", "纯粹的公共物品市场"],
+                 answer: "垄断竞争和寡头垄断",
+                 explanation: "在垄断竞争和寡头垄断市场中，厂商通过产品差异化和非价格竞争（如广告、品牌、服务、包装等）来吸引顾客，争夺市场份额。"
+             },
+             {
+                 question: "（HL only）寡头垄断市场的核心特征是：",
+                 options: ["大量小规模厂商", "产品完全同质", "厂商之间的相互依存 (interdependence)", "自由进入和退出"],
+                 answer: "厂商之间的相互依存 (interdependence)",
+                 explanation: "寡头垄断市场由少数几家大厂商主导，每家厂商的决策（如定价、产量、广告）都会显著影响其他厂商，并且在做决策时必须考虑竞争对手的反应。这种相互依存是寡头市场的核心。"
+             },
+             {
+                 question: "（HL only）卡特尔 (Cartel) 是寡头厂商之间的一种什么行为？",
+                 options: ["激烈的价格竞争", "独立的非价格竞争", "正式的勾结 (collusion) 以限制竞争，如同一个垄断者行事", "通过创新来超越对手"],
+                 answer: "正式的勾结 (collusion) 以限制竞争，如同一个垄断者行事",
+                 explanation: "卡特尔是寡头厂商之间通过公开或秘密协议，在产量、价格、市场划分等方面进行合作，以期获得垄断利润。例如OPEC。"
+             },
+             {
+                 question: "（HL only）弯折的需求曲线模型 (Kinked Demand Curve Model) 试图解释寡头市场中的什么现象？",
+                 options: ["价格的频繁波动", "价格刚性 (price rigidity)", "厂商总是能获得超额利润", "产品的高度差异化"],
+                 answer: "价格刚性 (price rigidity)",
+                 explanation: "弯折的需求曲线模型假设，如果一个寡头厂商提价，其他厂商不会跟随，导致其需求富有弹性；如果降价，其他厂商会跟随，导致其需求缺乏弹性。这使得边际收益曲线出现一个垂直的断裂部分，只要边际成本曲线在该断裂部分波动，厂商就没有动机改变现行价格，从而导致价格相对稳定。"
+             },
+             {
+                 question: "（HL only）在博弈论的支付矩阵中，纳什均衡 (Nash Equilibrium) 是指：",
+                 options: ["所有参与者都获得最大可能支付的状态", "每个参与者在给定其他参与者策略的情况下，都选择了自己的最优策略，没有人有单方面改变策略的动机", "参与者通过合作实现共同利益最大化的状态", "存在一个参与者拥有无论其他参与者如何选择都为最优的策略"],
+                 answer: "每个参与者在给定其他参与者策略的情况下，都选择了自己的最优策略，没有人有单方面改变策略的动机",
+                 explanation: "纳什均衡是一种策略组合，在该组合中，没有任何一个参与者可以通过单方面改变自己的策略而获得更好的结果，前提是其他参与者的策略保持不变。"
+             },
+             {
+                 question: "（HL only）“囚徒困境”博弈的结果通常表明：",
+                 options: ["合作总是比不合作更有利于个体", "个体理性选择可能导致集体非理性的结果", "市场总是能自动达到最优状态", "信息不对称是博弈的核心"],
+                 answer: "个体理性选择可能导致集体非理性的结果",
+                 explanation: "在囚徒困境中，每个“囚徒”从自身利益最大化出发选择“坦白”（背叛），最终导致双方都受到比合作（都沉默）更差的惩罚。这说明个体追求自身利益最大化并不总能带来集体利益的最大化。"
+             },
+         
+             {
+                 question: "（HL only）实行价格歧视的必要条件不包括：",
+                 options: ["厂商必须拥有一定的市场力量（定价能力）", "厂商必须能够将不同市场或消费者群体分割开", "厂商生产的产品必须是同质的", "必须能够防止不同市场之间的转售套利行为"],
+                 answer: "厂商生产的产品必须是同质的",
+                 explanation: "虽然价格歧视常用于同质产品，但产品是否同质本身不是一个必要条件，关键是厂商能否对不同需求弹性的群体收取不同价格。其他三个选项都是价格歧视的必要条件。"
+             },
+             {
+                 question: "（HL only）电影院对学生和老年人收取较低的票价，这属于哪种类型的价格歧视？",
+                 options: ["一级价格歧视 (Perfect price discrimination)", "二级价格歧视 (Second-degree price discrimination)", "三级价格歧视 (Third-degree price discrimination)", "非价格歧视"],
+                 answer: "三级价格歧视 (Third-degree price discrimination)",
+                 explanation: "三级价格歧视是指厂商将消费者划分为具有不同需求价格弹性的不同群体，并对每个群体收取不同的价格。学生和老年人通常被认为需求弹性较大，因此票价较低。"
+             },
+             {
+                 question: "（HL only）如果一个垄断厂商能够对不同的消费者群体实行三级价格歧视，它通常会对需求价格弹性较小的群体收取：",
+                 options: ["较低的价格", "较高的价格", "相同的价格", "不确定的价格"],
+                 answer: "较高的价格",
+                 explanation: "利润最大化的厂商会对需求价格弹性较小（更缺乏弹性，对价格不敏感）的消费者群体收取较高的价格，而对需求价格弹性较大（更富有弹性，对价格敏感）的群体收取较低的价格。"
+             },
+         
+             {
+                 question: "（HL only）洛伦兹曲线 (Lorenz Curve) 离绝对平等线 (Line of Perfect Equality) 越远，表明：",
+                 options: ["收入分配越平等", "收入分配越不平等", "基尼系数越小", "社会福利水平越高"],
+                 answer: "收入分配越不平等",
+                 explanation: "洛伦兹曲线描绘了人口累计百分比与其所占有的收入（或财富）累计百分比之间的关系。曲线越弯曲，离代表完全平等的45度对角线越远，说明收入（或财富）分配越不平等。"
+             },
+             {
+                 question: "（HL only）基尼系数 (Gini Coefficient) 的取值范围是0到1，基尼系数越接近1，表示：",
+                 options: ["收入分配越趋向绝对平等", "收入分配越趋向绝对不平等", "市场效率越高", "经济增长越快"],
+                 answer: "收入分配越趋向绝对不平等",
+                 explanation: "基尼系数是衡量收入或财富分配不平等程度的常用指标。基尼系数为0表示完全平等，为1表示完全不平等（一个人拥有所有收入/财富）。数值越大，不平等程度越高。"
+             },
+             {
+                 question: "（HL only）政府通过累进税制 (progressive taxation) 和转移支付 (transfer payments) 来调节收入分配，主要是为了实现经济学九大核心概念中的哪个目标？",
+                 options: ["效率 (Efficiency)", "公平 (Equity)", "可持续性 (Sustainability)", "变革 (Change)"],
+                 answer: "公平 (Equity)",
+                 explanation: "累进税（高收入者税率更高）和转移支付（如失业救济、福利补贴）是政府用来缩小贫富差距、促进收入分配更公平的常用政策工具，旨在提高社会的公平性。"
+             },
+             {
+                 question: "（HL only）经济学家通常认为，在追求更大程度的收入公平与实现更高的经济效率之间可能存在：",
+                 options: ["协同效应 (Synergy)", "权衡取舍 (Trade-off)", "必然的正相关关系", "没有关联"],
+                 answer: "权衡取舍 (Trade-off)",
+                 explanation: "一些旨在促进公平的政策（如高税率、高福利）可能会对工作激励、储蓄和投资产生负面影响，从而可能牺牲一定的经济效率。因此，在公平和效率之间往往存在一定的权衡。"
+             },
+             {
+                 question: "当一种商品的价格从10元上涨到12元，需求量从100单位减少到80单位，使用中点法计算的需求价格弹性 (PED) 约等于多少？",
+                 options: ["-0.5", "-1.0", "-1.22", "-2.0"],
+                 answer: "-1.22",
+                 explanation: "PED = [ (80-100) / ((80+100)/2) ] / [ (12-10) / ((12+10)/2) ] = (-20/90) / (2/11) = (-2/9) * (11/2) = -11/9 ≈ -1.22. (通常取绝对值比较，所以是1.22，富有弹性)"
+             },
+             {
+                 question: "如果政府对污染企业征收的税额恰好等于其造成的边际外部成本，这将导致：",
+                 options: ["企业停止生产", "市场产量增加到社会最优水平以上", "市场产量减少到社会最优水平", "污染完全消失"],
+                 answer: "市场产量减少到社会最优水平",
+                 explanation: "这种税收（庇古税）使企业的边际私人成本上升到边际社会成本的水平，从而激励企业将产量减少到社会最优水平Qopt，此时MSC=MSB。"
+             },
+             {
+                 question: "“可持续性 (Sustainability)” 这一核心经济概念主要关注的是：",
+                 options: ["短期利润的最大化", "当前一代人的需求满足，而不损害未来代人满足其需求的能力", "经济增长速度越快越好", "政府预算的平衡"],
+                 answer: "当前一代人的需求满足，而不损害未来代人满足其需求的能力",
+                 explanation: "可持续性强调在经济发展过程中要考虑到对环境和资源的长期影响，确保未来的世代也能享有足够的资源和良好的环境来实现他们的福祉。"
+             },
+             {
+                 question: "在分析国际贸易对国内市场的影响时，如果一国开放某种商品的进口，且世界价格低于国内均衡价格，国内消费者剩余会如何变化？",
+                 options: ["减少", "增加", "不变", "不确定"],
+                 answer: "增加",
+                 explanation: "开放进口且世界价格较低时，国内市场价格会下降到世界价格水平，消费者能够以更低价格购买更多商品，因此消费者剩余会增加。"
+             },
+             {
+                 question: "（HL only）如果一个寡头市场中的所有厂商都遵守一个严格的卡特尔协议，共同决定产量和价格，那么这个市场的行为最接近于：",
+                 options: ["完全竞争市场", "垄断竞争市场", "纯粹垄断市场", "多个独立的小垄断者市场"],
+                 answer: "纯粹垄断市场",
+                 explanation: "一个成功的卡特尔会像一个单一的垄断者那样行事，通过限制总产量和提高价格来共同最大化行业利润。"
+             },
+             {
+                 question: "（HL only）当长期平均总成本 (LRATC) 曲线随着产量的增加而上升时，企业正在经历：",
+                 options: ["规模经济 (Economies of scale)", "规模不经济 (Diseconomies of scale)", "固定规模报酬 (Constant returns to scale)", "边际报酬递减"],
+                 answer: "规模不经济 (Diseconomies of scale)",
+                 explanation: "规模不经济是指当企业规模过大时，由于管理复杂性增加、协调困难等因素，导致平均生产成本随着产量的进一步增加而上升。"
+             },
+             {
+                 question: "如果咖啡和茶是替代品，当咖啡价格下降时，对茶的需求曲线会如何移动，茶的均衡价格和数量会如何变化？",
+                 options: ["茶需求曲线右移；价格上升，数量上升", "茶需求曲线左移；价格下降，数量下降", "茶需求曲线右移；价格下降，数量上升", "茶需求曲线左移；价格上升，数量下降"],
+                 answer: "茶需求曲线左移；价格下降，数量下降",
+                 explanation: "咖啡价格下降，消费者会更多购买咖啡，减少对替代品茶的需求，导致茶的需求曲线向左移动。在茶的供给曲线不变的情况下，这将导致茶的均衡价格和均衡数量都下降。"
+             },
+             {
+                 question: "“相互依存 (Interdependence)” 这个核心概念在分析哪个市场结构时最为关键？",
+                 options: ["完全竞争", "垄断", "垄断竞争", "寡头垄断"],
+                 answer: "寡头垄断",
+                 explanation: "寡头垄断市场由少数几家大企业控制，每家企业的决策都会显著影响其他竞争对手，并且在做决策时必须考虑对手的可能反应，这种相互依存关系是寡头市场的核心特征。"
+             },
+             {
+                 question: "如果政府对某种商品提供补贴，使得供给曲线向下移动。与无补贴时相比，补贴后的生产者剩余：",
+                 options: ["一定增加", "一定减少", "可能增加也可能减少", "保持不变"],
+                 answer: "一定增加",
+                 explanation: "补贴降低了生产者的有效成本或增加了他们收到的有效价格。在新的均衡下，生产者以更高的有效价格销售更多的商品，因此生产者剩余通常会增加。"
+             },
+             {
+                 question: "（HL only）在完全竞争厂商的短期均衡图中，如果价格高于平均总成本 (ATC) 但低于平均可变成本 (AVC) 的最低点，厂商应该：",
+                 options: ["继续生产以减少亏损", "立即停产以将亏损降至最低（等于固定成本）", "提高价格", "增加产量"],
+                 answer: "立即停产以将亏损降至最低（等于固定成本）",
+                 explanation: "题目条件有误，价格不可能同时高于ATC又低于min AVC。如果价格低于AVC的最低点 (P < min AVC)，厂商应立即停产，因为继续生产连可变成本都无法覆盖，亏损会更大。如果P > ATC，则有利润。如果 min AVC < P < ATC，则亏损但应继续生产以弥补部分固定成本。"
+             },
+             {
+                 question: "（HL only）“变革 (Change)” 作为经济学的核心概念之一，在分析生产可能性曲线 (PPC) 时，最能体现这一概念的是：",
+                 options: ["PPC上点的移动，代表机会成本", "PPC内部的点，代表资源未充分利用", "PPC曲线自身的向外或向内平移", "PPC的形状（凹向原点或直线）"],
+                 answer: "PPC曲线自身的向外或向内平移",
+                 explanation: "PPC曲线的移动代表了经济体生产潜力的变化，这通常是由技术进步、资源数量或质量的变化等因素驱动的，这些都是经济“变革”的表现。向外移动代表潜在增长，向内移动代表潜力萎缩。"
+             }
+         ];
+                 const quizContainer = document.getElementById('quiz-container');
+                 const gameArea = document.getElementById('game-area');
+                 const resultsArea = document.getElementById('results-area');
+                 const questionCounter = document.getElementById('question-counter');
+                 const scoreDisplay = document.getElementById('score-display');
+                 const progressBar = document.getElementById('progress-bar');
+                 const questionText = document.getElementById('question-text');
+                 const optionsContainer = document.getElementById('options-container');
+                 const feedbackArea = document.getElementById('feedback-area');
+                 const feedbackText = document.getElementById('feedback-text');
+                 const explanationText = document.getElementById('explanation-text');
+                 const nextBtn = document.getElementById('next-btn');
+                 const finalScore = document.getElementById('final-score');
+                 const resultMessage = document.getElementById('result-message');
+                 const restartBtn = document.getElementById('restart-btn');
+                 const confettiCanvas = document.getElementById('confetti-canvas');
+                 let myConfettiInstance = null;
+                 if (confettiCanvas && typeof confetti !== 'undefined') {
+                     myConfettiInstance = confetti.create(confettiCanvas, {
+                         resize: true,
+                         useWorker: true
+                     });
+                 }
+                 let currentQuestionIndex = 0;
+                 let score = 0;
+                 let questionsAnsweredInSession = 0;
+                 let shuffledQuestions = [];
+                 function shuffleArray(array) {
+                     for (let i = array.length - 1; i > 0; i--) {
+                         const j = Math.floor(Math.random() * (i + 1));
+                         [array[i], array[j]] = [array[j], array[i]];
+                     }
+                     return array;
+                 }
+                 function updateScoreDisplay() {
+                     const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
+                     scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
+                 }
+                 function updateProgressBar() {
+                     const totalQuestionsToDisplay = shuffledQuestions.length;
+                     const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
+                     progressBar.style.width = `${progressPercentage}%`;
+                     progressBar.textContent = `${progressPercentage}%`;
+                 }
+                 function updateProgressBarAfterAnswer() {
+                     const totalQuestionsToDisplay = shuffledQuestions.length;
+                     const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+                     progressBar.style.width = `${progressPercentage}%`;
+                     progressBar.textContent = `${progressPercentage}%`;
+                 }
+                 function startGame() {
+                     currentQuestionIndex = 0;
+                     score = 0;
+                     questionsAnsweredInSession = 0;
+                     shuffledQuestions = shuffleArray([...questions]);
+                     updateScoreDisplay();
+                     progressBar.style.width = '0%';
+                     progressBar.textContent = '0%';
+                     resultsArea.classList.add('hidden');
+                     resultsArea.classList.remove('results-enter', 'results-enter-active'); 
+                     gameArea.classList.remove('hidden'); 
+                     nextBtn.classList.add('hidden'); 
+                     feedbackArea.classList.add('hidden'); 
+                     explanationText.innerHTML = ''; 
+                     showQuestion();
+                 }
+                 function showQuestion() {
+                     updateProgressBar();
+                     optionsContainer.innerHTML = '';
+                     feedbackArea.classList.add('hidden');
+                     feedbackText.textContent = '';
+                     explanationText.innerHTML = '';
+                     feedbackText.className = 'text-lg font-semibold mb-2';
+                     const currentQuestion = shuffledQuestions[currentQuestionIndex];
+                     questionText.innerHTML = currentQuestion.question;
+                     questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+                     const shuffledOptions = shuffleArray([...currentQuestion.options]);
+                     shuffledOptions.forEach(option => {
+                         const button = document.createElement('button');
+                         button.innerHTML = option;
+                         button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                         button.addEventListener('click', selectAnswer);
+                         optionsContainer.appendChild(button);
+                     });
+                     nextBtn.classList.add('hidden');
+                 }
+                 function triggerConfetti() {
+                     if (myConfettiInstance) {
+                         myConfettiInstance({
+                             particleCount: 120,
+                             spread: 80,
+                             origin: { y: 0.6 },
+                             colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6']
+                         });
+                     }
+                 }
+                 function selectAnswer(e) {
+                     const selectedButton = e.target.closest('.option-btn');
+                     if (!selectedButton) return;
+                     const currentQuestion = shuffledQuestions[currentQuestionIndex];
+                     const correctAnswer = currentQuestion.answer;
+                     const explanation = currentQuestion.explanation;
+                     questionsAnsweredInSession++;
+                     Array.from(optionsContainer.children).forEach(button => {
+                         button.disabled = true;
+                         if (button.innerHTML === correctAnswer) {
+                             button.classList.add('correct-answer');
+                         }
+                     });
+                     if (selectedButton.innerHTML === correctAnswer) {
+                         score++;
+                         feedbackText.textContent = '✅ 回答正确!';
+                         feedbackText.className = 'text-lg font-semibold mb-2 text-green-600';
+                         selectedButton.classList.add('correct-answer');
+                         triggerConfetti();
+                     } else {
+                         feedbackText.textContent = `❌ 回答错误!`;
+                         feedbackText.className = 'text-lg font-semibold mb-2 text-red-600';
+                         selectedButton.classList.add('wrong-answer');
+                     }
+         
+                     explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`;
+                     feedbackArea.classList.remove('hidden');
+         
+                     updateScoreDisplay();
+                     updateProgressBarAfterAnswer();
+                     nextBtn.classList.remove('hidden');
+                 }
+                 function showNextQuestion() {
+                     currentQuestionIndex++;
+                     if (currentQuestionIndex < shuffledQuestions.length) {
+                         showQuestion();
+                     } else {
+                         endGame();
+                     }
+                 }
+                 function endGame() {
+                     gameArea.classList.add('hidden');
+                     resultsArea.classList.remove('hidden');
+                     requestAnimationFrame(() => {
+                          resultsArea.classList.add('results-enter');
+                          requestAnimationFrame(() => {
+                              resultsArea.classList.add('results-enter-active');
+                         });
+                     });
+         
+                     const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+                     finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+                     let message = '';
+                     if (finalPercentage === 100) {
+                         message = '💯 完美！你简直是 IB Economics HL 大师！知识点掌握得炉火纯青！';
+                         if (myConfettiInstance) {
+                              myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.5 }}); 
+                              myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.7 }}); 
+                         }
+                     } else if (finalPercentage >= 90) {
+                         message = '🌟 太出色了！对经济学基础和微观经济学的理解非常深刻，绝对的学霸！';
+                         if (myConfettiInstance) { myConfettiInstance({particleCount: 150, spread: 100}); }
+                     } else if (finalPercentage >= 80) {
+                         message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
+                     } else if (finalPercentage >= 70) {
+                         message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
+                     } else if (finalPercentage >= 60) {
+                         message = '👍 相当不错！大部分知识点都理解了，继续加油！';
+                     } else if (finalPercentage >= 50) {
+                         message = '😊 不错！掌握了核心内容，可以更有自信！';
+                     } else {
+                         message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
+                     }
+                     resultMessage.textContent = message;
+                 }
+                 nextBtn.addEventListener('click', showNextQuestion);
+                 restartBtn.addEventListener('click', startGame);
+                 startGame();
+             
+      </script>
+   </body>
+</html>
