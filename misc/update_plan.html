@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新企划 - Jason Wang's IB Revision Toys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .content-container {
+            background-color: white; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            opacity: 0;
+            animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+        .page-title {
+            color: #1f2937; 
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: #4f46e5;
+            color: white;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .back-link:hover {
+            background-color: #4338ca;
+        }
+        .back-link .icon {
+            margin-right: 0.5rem;
+        }
+        .content-section h2 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #4c16a3;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+        }
+        .content-section .status-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.45rem 0.5rem;
+            border-radius: 0.45rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        .status-planned { background-color: #dbeafe; color: #1e40af; }
+        .status-inprogress { background-color: #fef3c7; color: #b45309; }
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        .status-onhold { background-color: #e5e7eb; color: #4b5563; }
+
+        .content-section ul {
+            list-style-type: none;
+            padding-left: 0;
+            color: #4b5563;
+        }
+        .content-section li {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            border-left: 3px solid #6366f1;
+            background-color: #f9fafb;
+            border-radius: 0.25rem;
+        }
+        .content-section p {
+            color: #4b5563;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .footer-text {
+            color: #6b7280; 
+        }
+        @keyframes fadeInScaleUp {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+    <div class="content-container p-6 md:p-10 w-full max-w-3xl mx-auto">
+        <div class="mb-2">
+            <a href="/index.html" class="back-link">
+                <span>👈主页</span>
+            </a>
+        </div>
+        <header class="text-center mb-2 md:mb-2">
+            <h1 class="text-3xl font-bold page-title">
+                <i class="fas fa-tasks mr-2 opacity-80"></i>后续企划
+            </h1>
+        </header>
+        <main>
+            <section class="content-section">
+                <h2>短期</h2>
+                <ul>
+                    <li>完善现有科目测验题库，增加题目数量和覆盖范围。<span class="status-badge status-inprogress">进行中</span></li>
+                    <li>优化移动端用户体验，确保所有设备兼容性。<span class="status-badge status-completed">接近完成</span></li>
+                    <li>收集用户反馈，修复已知bug。<span class="status-badge status-inprogress">进行中</span></li>
+                </ul>
+            </section>
+            <section class="content-section">
+                <h2>长期</h2>
+                <ul>
+                    <li>逐步覆盖更多IB科目，如Economics等。<span class="status-badge status-inprogress">进行中</span></li>
+                    <li>引入更多互动学习工具，如抽认卡等。<span class="status-badge status-planned">计划中</span></li>
+                    <li>保持项目对所有用户免费开放。<span class="status-badge status-completed">保持现状</span></li>
+                    <li>多语言界面支持（除中文外）。<span class="status-badge status-onhold">搁置</span></li>
+                </ul>
+            </section>
+        </main>
+
+        <footer class="text-center mt-10 md:mt-12 footer-text text-xs"> 
+            <p>&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+        </footer>
+    </div>
+</body>
+</html>

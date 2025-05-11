@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于项目 - Jason Wang's IB Revision Toys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .content-container {
+            background-color: white; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            opacity: 0;
+            animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+        .page-title {
+            color: #1f2937; 
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: #4f46e5;
+            color: white;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .back-link:hover {
+            background-color: #4338ca;
+        }
+        .back-link .icon {
+            margin-right: 0.5rem;
+        }
+        .content-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #6366f1;
+            display: inline-block;
+        }
+        .content-section p, .content-section ul {
+            color: #374151;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+         .content-section ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .content-section li {
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 0.2rem;
+        }
+        .content-section li::before {
+            content: "✓";
+            color: #4f46e5;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        .highlight {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .footer-text {
+            color: #6b7280; 
+        }
+        @keyframes fadeInScaleUp {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+    <div class="content-container p-6 md:p-10 w-full max-w-3xl mx-auto">
+        <div class="mb-6">
+            <a href="/index.html" class="back-link">
+                <span>👈主页</span>
+            </a>
+        </div>
+        <header class="text-center mb-2 md:mb-8">
+            <h1 class="text-3xl font-bold page-title">
+                <i class="fas fa-info-circle mr-2 opacity-80"></i>关于项目
+            </h1>
+        </header>
+        <main>
+            <section class="content-section">
+                <h2>项目初衷</h2>
+                <p>
+                    IB Revision Toys 是由 Jason Wang 出于帮助自己和同学们更有趣地复习IB难点的目的而创建的一个个人项目。
+                    本项目旨在通过<span class="highlight">互动式的小测验</span>，将复习变得有趣。
+                </p>
+            </section>
+
+            <section class="content-section">
+                <h2>核心特点</h2>
+                <ul>
+                    <li><span class="highlight">互动 - </span>即时反馈，快速检验。</li>
+                    <li><span class="highlight">专注 - </span>AI预测，针对难点。</li>
+                    <li><span class="highlight">界面 - </span>顶级动画，简洁美观。</li>
+                    <li><span class="highlight">开源 - </span>遵循 MIT 许可证。</li>
+                </ul>
+            </section>
+             <section class="content-section">
+                <h2>开发者</h2>
+                <p>
+                    本项目由 <span class="highlight">Jason Wang</span> 独立设计与开发，题库引用内容由 Jason Wang 提供，主题目由 <span class="highlight">Google DeepMind</span> 旗下AI模型生成。
+                </p>
+            </section>
+        </main>
+
+        <footer class="text-center mt-10 md:mt-12 footer-text text-xs"> 
+            <p>&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+        </footer>
+    </div>
+</body>
+</html>
