@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB Economics HL 备考测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         overscroll-behavior-y: none; 
+         animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px); 
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0); 
+         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(30px);
+         transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed; 
+         opacity: 0.7; 
+         }
+         .correct-answer {
+         background-color: #22c55e !important; 
+         color: white !important;
+         border-color: #16a34a !important;
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important; 
+         color: white !important;
+         border-color: #dc2626 !important;
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb; 
+         border-radius: 9999px; 
+         overflow: hidden; 
+         height: 1rem; 
+         margin-bottom: 1.5rem; 
+         }
+         .progress-bar {
+         background-color: #4f46e5; 
+         height: 100%;
+         transition: width 0.3s ease-in-out; 
+         text-align: center;
+         color: white;
+         font-size: 0.75rem; 
+         line-height: 1rem; 
+         font-weight: 500;
+         border-radius: 9999px;
+         }
+         #confetti-canvas {
+         position: fixed; 
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none; 
+         z-index: 9999; 
+         }
+         .explanation {
+         background-color: #f3f4f6; 
+         border-left: 4px solid #4f46e5; 
+         padding: 1rem; 
+         border-radius: 0.375rem; 
+         color: #374151; 
+         font-size: 0.875rem; 
+         margin-top: 1rem; 
+         line-height: 1.5; 
+         }
+         .option-btn, #next-btn, #restart-btn {
+         -webkit-tap-highlight-color: transparent; 
+         }
+         @keyframes fadeInScaleUp { 
+         from { opacity: 0; transform: scale(0.92); }
+         to { opacity: 1; transform: scale(1); }
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
+         <a href="index.html"
+            class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 mb-4">
+         👈 主页
+         </a>
+         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 mt-2">IB Economics HL 备考测验</h1>
+         <p class="text-center text-gray-600 mb-6">测试你对宏观经济学的了解程度！</p>
+         <div id="game-area">
+            <div class="flex justify-between items-center mb-4 text-gray-600">
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 10</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+            </div>
+            <div class="progress-bar-container">
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            <div id="question-container" class="mb-6">
+               <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[4.5em] md:min-h-[3em]">问题文本加载中...</h2>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+            </div>
+            <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
+            </div>
+            <div class="text-center">
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
+            </div>
+         </div>
+         <div id="results-area" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
+            <p id="final-score" class="text-xl text-gray-700 mb-6"></p>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+            重新开始
+            </button>
+         </div>
+         <p class="text-center text-xs text-gray-500 mb-1 mt-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+      </div>
+      <script>
+         const questions = [
+         {
+         question: "在商业周期的哪个阶段，实际GDP通常低于潜在GDP，并伴随着失业率的上升？",
+         options: ["繁荣 (Peak/Boom)", "衰退 (Recession/Contraction)", "复苏 (Recovery/Expansion)", "趋势增长线 (Trend Growth Line)"],
+         answer: "衰退 (Recession/Contraction)",
+         explanation: "在衰退阶段，总需求下降导致生产减少，实际GDP降至潜在GDP以下，企业裁员导致失业率上升。繁荣是经济活动的顶点，复苏是经济开始回升的阶段，趋势增长线代表长期平均增长路径。"
+         },
+         {
+         question: "以下哪项因素最有可能导致总需求(AD)曲线向右移动？",
+         options: ["消费者信心下降 (A decrease in consumer confidence)", "政府增加所得税税率 (An increase in income tax rates by the government)", "利率上升 (An increase in interest rates)", "企业对未来盈利预期改善 (An improvement in business expectations about future profitability)"],
+         answer: "企业对未来盈利预期改善 (An improvement in business expectations about future profitability)",
+         explanation: "企业对未来盈利预期改善会刺激投资支出(I)增加，投资是总需求的组成部分之一 (C+I+G+X-M)，因此AD曲线向右移动。消费者信心下降会减少消费(C)，增税会减少可支配收入从而减少消费(C)或投资(I)，利率上升会抑制消费(C)和投资(I)，这些都会导致AD曲线左移。"
+         },
+         {
+         question: "假设石油价格大幅上涨，这将如何影响短期总供给(SRAS)曲线？",
+         options: ["SRAS曲线向右移动 (SRAS curve shifts to the right)", "SRAS曲线向左移动 (SRAS curve shifts to the left)", "沿着SRAS曲线向上移动 (Movement upwards along the SRAS curve)", "SRAS曲线变为垂直 (SRAS curve becomes vertical)"],
+         answer: "SRAS曲线向左移动 (SRAS curve shifts to the left)",
+         explanation: "石油是许多行业的重要生产投入。石油价格大幅上涨意味着企业生产成本增加，这会导致在任何给定的价格水平下，企业愿意并且能够供给的产出量减少，因此SRAS曲线向左移动。沿着曲线移动是由于整体物价水平变化引起的，而曲线变为垂直通常与LRAS相关。"
+         },
+         {
+         question: "由于经济衰退导致总需求不足，工人失去工作，这属于哪种类型的失业？",
+         options: ["摩擦性失业 (Frictional unemployment)", "结构性失业 (Structural unemployment)", "周期性失业/需求不足型失业 (Cyclical/Demand-deficient unemployment)", "季节性失业 (Seasonal unemployment)"],
+         answer: "周期性失业/需求不足型失业 (Cyclical/Demand-deficient unemployment)",
+         explanation: "周期性失业与商业周期的波动直接相关。在经济衰退期间，总需求下降，导致企业减少生产并裁员。摩擦性失业是工人在转换工作过程中的短期失业。结构性失业是由于经济结构变化或劳动力技能与工作岗位需求不匹配造成的。季节性失业与特定季节的需求变化有关。"
+         },
+         {
+         question: "如果一个经济体的总需求增长速度超过其生产能力的增长速度，最有可能出现哪种类型的通货膨胀？",
+         options: ["成本推动型通货膨胀 (Cost-push inflation)", "需求拉动型通货膨胀 (Demand-pull inflation)", "恶性通货膨胀 (Hyperinflation)", "滞胀 (Stagflation)"],
+         answer: "需求拉动型通货膨胀 (Demand-pull inflation)",
+         explanation: "需求拉动型通货膨胀发生在总需求过度旺盛，‘过多的货币追逐过少的商品’时。当AD曲线持续向右移动，超过了经济体在短期内增加供给的能力时，物价水平就会被拉高。成本推动型通货膨胀是由生产成本上升（如工资或原材料价格上涨）引起的。恶性通货膨胀是极高且失控的通胀。滞胀是高通胀和高失业率并存。"
+         },
+         {
+         question: "洛伦兹曲线 (Lorenz Curve) 越接近45度对角线（完美平等线），代表什么？ (HL Only)",
+         options: ["更高的基尼系数和更不平等的收入分配 (A higher Gini coefficient and more unequal income distribution)", "更低的基尼系数和更平等的收入分配 (A lower Gini coefficient and more equal income distribution)", "更高的国民总收入 (Higher Gross National Income)", "更低的贫困率 (Lower poverty rate)"],
+         answer: "更低的基尼系数和更平等的收入分配 (A lower Gini coefficient and more equal income distribution)",
+         explanation: "45度线代表收入完全平等。洛伦兹曲线显示了收入在人口中的实际分配情况。曲线越贴近45度线，表明收入分配越平等。基尼系数是根据洛伦兹曲线计算的，数值介于0（完全平等）和1（完全不平等）之间。因此，洛伦兹曲线越接近45度线，基尼系数越低，收入分配越平等。这与国民总收入的绝对水平或贫困率不直接等同，尽管它们可能相关。"
+         },
+         {
+         question: "在国民收入循环流程图中，以下哪项被视为对国民收入的“注入 (Injection)”？",
+         options: ["储蓄 (Savings)", "税收 (Taxes)", "进口 (Imports)", "政府购买 (Government Purchases)"],
+         answer: "政府购买 (Government Purchases)",
+         explanation: "注入是指向国民收入循环流程中增加支出的部分，包括政府购买(G)、投资(I)和出口(X)。储蓄、税收和进口是漏出项。"
+         },
+         {
+         question: "如果在一个经济体中，总漏出 (Total Leakages) 大于总注入 (Total Injections)，国民收入最有可能发生什么变化？",
+         options: ["扩张 (Expand)", "收缩 (Contract)", "保持不变 (Remain unchanged)", "波动加剧 (Become more volatile)"],
+         answer: "收缩 (Contract)",
+         explanation: "当总漏出（如储蓄、税收、进口）大于总注入（如投资、政府支出、出口）时，意味着从经济循环中流出的资金多于流入的资金，总需求减少，导致国民收入收缩。"
+         },
+         {
+         question: "国民收入循环流程图中的“漏出 (Leakage)”主要不包括以下哪项？",
+         options: ["家庭储蓄 (Household Savings)", "企业投资 (Business Investment)", "政府税收 (Government Taxes)", "进口支出 (Spending on Imports)"],
+         answer: "企业投资 (Business Investment)",
+         explanation: "漏出是指从收入流中撤出的部分，主要包括储蓄(S)、税收(T)和进口(M)。企业投资(I)是注入项。"
+         },
+         {
+         question: "以下哪种方法不是衡量国内生产总值 (GDP) 的主要方法？",
+         options: ["支出法 (Expenditure Approach)", "收入法 (Income Approach)", "产出法/增加值法 (Output/Value-added Approach)", "利率法 (Interest Rate Approach)"],
+         answer: "利率法 (Interest Rate Approach)",
+         explanation: "衡量GDP的主要方法有三种：支出法、收入法和产出法。利率法不是直接衡量GDP的方法。"
+         },
+         {
+         question: "使用支出法衡量GDP时，其计算公式通常表示为：",
+         options: ["GDP = 工资 + 租金 + 利息 + 利润", "GDP = C + I + G + (X - M)", "GDP = 总产出 - 中间消耗", "GDP = C + S + T"],
+         answer: "GDP = C + I + G + (X - M)",
+         explanation: "支出法计算GDP是将所有最终产品和服务的市场价值加总，包括消费(C)、投资(I)、政府购买(G)以及净出口(X-M)。"
+         },
+         {
+         question: "收入法计算国民收入时，主要加总的是：",
+         options: ["所有企业的总销售额", "所有家庭的总消费支出", "生产要素获得的各种收入", "政府的总税收收入"],
+         answer: "生产要素获得的各种收入",
+         explanation: "收入法是通过加总所有生产要素（劳动、资本、土地、企业家才能）在生产过程中获得的收入（工资、利息、租金、利润）来核算国民收入。"
+         },
+         {
+         question: "名义GDP和实际GDP之间的主要区别在于实际GDP：",
+         options: ["只计算有形商品的价值", "根据人口规模进行了调整", "根据价格水平的变动进行了调整", "只包括国内生产的商品和服务"],
+         answer: "根据价格水平的变动进行了调整",
+         explanation: "名义GDP是按当年市场价格计算的GDP，而实际GDP是按某个基期价格计算的GDP，剔除了价格变动的影响，能更准确地反映产量的变化。"
+         },
+         {
+         question: "如果已知某年的名义GDP和GDP平减指数，实际GDP可以计算为：",
+         options: ["名义GDP × GDP平减指数 / 100", "名义GDP / GDP平减指数 × 100", "名义GDP + GDP平减指数", "名义GDP - GDP平减指数"],
+         answer: "名义GDP / GDP平减指数 × 100",
+         explanation: "实际GDP = (名义GDP / GDP平减指数) * 100。GDP平减指数是衡量物价水平从基年到现期变化的指标。"
+         },
+         {
+         question: "国民总收入 (GNI) 与国内生产总值 (GDP) 的关系是：",
+         options: ["GNI = GDP - 来自国外的净要素收入", "GNI = GDP + 来自国外的净要素收入", "GNI总是大于GDP", "GNI总是小于GDP"],
+         answer: "GNI = GDP + 来自国外的净要素收入",
+         explanation: "GNI衡量的是一国国民（无论居住在何处）在一定时期内获得的要素收入总和。它等于GDP加上来自国外的净要素收入（本国居民从国外获得的要素收入减去外国居民从本国获得的要素收入）。"
+         },
+         {
+         question: "人均GDP通常被用作衡量一个国家：",
+         options: ["收入分配的公平程度", "平均生活水平的近似指标", "环境质量的好坏", "技术进步的速度"],
+         answer: "平均生活水平的近似指标",
+         explanation: "人均GDP（GDP/总人口）是衡量一个国家或地区人民平均经济产出或收入的指标，常用来粗略估计平均生活水平，但它不能反映收入分配、环境等问题。"
+         },
+         {
+         question: "在商业周期的哪个阶段，经济活动达到顶峰，失业率通常处于最低水平？",
+         options: ["衰退 (Recession)", "萧条 (Trough)", "繁荣 (Peak/Boom)", "复苏 (Recovery)"],
+         answer: "繁荣 (Peak/Boom)",
+         explanation: "繁荣是商业周期的顶点，此时经济活动旺盛，就业水平高，失业率低，通货膨胀压力可能开始显现。"
+         },
+         {
+         question: "商业周期中，经济从萧条 (Trough) 开始回升，实际GDP持续增长但尚未达到潜在产出水平的阶段被称为：",
+         options: ["繁荣 (Boom)", "衰退 (Contraction)", "复苏 (Recovery/Expansion)", "趋势增长 (Trend Growth)"],
+         answer: "复苏 (Recovery/Expansion)",
+         explanation: "复苏阶段是经济走出谷底，实际GDP开始增长，失业率逐渐下降，但经济尚未达到充分就业或潜在产出水平。"
+         },
+         {
+         question: "当一个经济体的实际GDP超过其潜在GDP时，形成的产出缺口被称为：",
+         options: ["衰退缺口 (Recessionary Gap)", "通货膨胀缺口 (Inflationary Gap)", "预算缺口 (Budget Gap)", "贸易缺口 (Trade Gap)"],
+         answer: "通货膨胀缺口 (Inflationary Gap)",
+         explanation: "通货膨胀缺口发生在实际产出高于潜在产出（充分就业产出）的水平，此时资源过度利用，通常伴随着较高的通货膨胀压力。"
+         },
+         {
+         question: "以下哪项是使用GDP作为衡量经济福祉指标的一个主要局限性？",
+         options: ["GDP包含了政府支出", "GDP衡量了市场交易的价值", "GDP未充分反映收入分配的公平性", "GDP的计算方法全球统一"],
+         answer: "GDP未充分反映收入分配的公平性",
+         explanation: "GDP总量可能很高，但如果收入分配极不平等，大部分财富集中在少数人手中，那么整体福祉可能并不高。GDP不直接反映收入分配、非市场活动、环境质量、休闲价值等。"
+         },
+         {
+         question: "人类发展指数 (HDI) 主要综合了哪些维度的指标来衡量一个国家的社会经济发展水平？",
+         options: ["经济增长率、通货膨胀率、失业率", "健康长寿的生活、教育水平、体面的生活水平", "政治自由度、环境可持续性、文化多样性", "人均GDP、基尼系数、出口额"],
+         answer: "健康长寿的生活、教育水平、体面的生活水平",
+         explanation: "HDI由联合国开发计划署发布，综合了三个基本维度：健康（用出生时预期寿命衡量）、教育（用平均受教育年限和预期受教育年限衡量）和生活水平（用人均国民总收入GNI衡量）。"
+         },
+         {
+         question: "当物价总水平下降时，消费者持有的货币财富的实际购买力增加，从而刺激消费支出，这被称为总需求曲线向下倾斜的：",
+         options: ["利率效应 (Interest Rate Effect)", "财富效应 (Wealth Effect)", "国际贸易效应 (Net Export Effect)", "替代效应 (Substitution Effect)"],
+         answer: "财富效应 (Wealth Effect)",
+         explanation: "财富效应（或实际余额效应）指出，当物价水平下降时，公众持有的货币及其他名义价值固定的资产的实际价值上升，人们感觉更富有，从而增加消费支出。"
+         },
+         {
+         question: "总需求曲线向下倾斜的利率效应指的是，当物价水平下降时：",
+         options: ["货币需求增加，利率上升，投资和消费减少", "货币需求减少，利率下降，投资和消费增加", "货币供给增加，利率下降，投资和消费增加", "货币供给减少，利率上升，投资和消费减少"],
+         answer: "货币需求减少，利率下降，投资和消费增加",
+         explanation: "物价水平下降导致交易所需的货币量减少，从而货币需求减少。在货币供给不变的情况下，利率会下降，较低的利率会刺激投资和对利率敏感的消费支出增加。"
+         },
+         {
+         question: "国际贸易效应（或净出口效应）解释了当一国物价水平上升时，其净出口会如何变化，从而影响总需求？",
+         options: ["净出口增加，总需求增加", "净出口减少，总需求减少", "净出口不变，总需求不变", "净出口变化不确定"],
+         answer: "净出口减少，总需求减少",
+         explanation: "若一国物价水平上升（相对于外国），其出口商品会变贵，进口商品会相对便宜，导致出口减少、进口增加，从而净出口减少，总需求随之减少。"
+         },
+         {
+         question: "政府大幅增加在教育和医疗上的公共支出，这将最直接导致总需求曲线如何移动？",
+         options: ["向左移动", "向右移动", "沿着曲线向上移动", "沿着曲线向下移动"],
+         answer: "向右移动",
+         explanation: "政府支出(G)是总需求的组成部分之一。政府增加公共支出会直接增加总需求，导致AD曲线向右移动。"
+         },
+         {
+         question: "如果一国的主要贸易伙伴国经济强劲增长，对该国总需求曲线最可能产生的影响是：",
+         options: ["AD曲线向左移动，因为进口增加", "AD曲线向右移动，因为出口增加", "AD曲线不受影响", "SRAS曲线向右移动"],
+         answer: "AD曲线向右移动，因为出口增加",
+         explanation: "主要贸易伙伴国经济增长会增加其对该国商品和服务的需求，从而导致该国出口(X)增加。净出口是总需求的组成部分，因此AD曲线向右移动。"
+         },
+         {
+         question: "短期总供给(SRAS)曲线通常向右上方倾斜，其中一个主要原因是名义工资在短期内具有：",
+         options: ["完全弹性 (Perfect flexibility)", "粘性 (Stickiness)", "向下刚性 (Downward rigidity)", "向上弹性 (Upward flexibility)"],
+         answer: "粘性 (Stickiness)",
+         explanation: "名义工资粘性是指名义工资（如劳动合同中约定的工资）在短期内不能迅速随物价水平的变化而调整。当物价上涨时，实际工资下降，企业愿意雇佣更多工人并增加产量。"
+         },
+         {
+         question: "如果政府大幅提高对企业的征税（如公司所得税），这将最可能如何影响短期总供给(SRAS)曲线？",
+         options: ["SRAS曲线向右移动", "SRAS曲线向左移动", "沿着SRAS曲线向上移动", "SRAS曲线变得更平坦"],
+         answer: "SRAS曲线向左移动",
+         explanation: "对企业征税增加会提高企业的生产成本，在任何给定的价格水平下，企业愿意供给的产出量都会减少，因此SRAS曲线向左移动。"
+         },
+         {
+         question: "技术进步显著提高了劳动生产率，这将对短期总供给(SRAS)曲线和长期总供给(LRAS)曲线产生什么影响？",
+         options: ["SRAS左移，LRAS不变", "SRAS右移，LRAS右移", "SRAS不变，LRAS右移", "SRAS左移，LRAS左移"],
+         answer: "SRAS右移，LRAS右移",
+         explanation: "技术进步提高了生产效率，降低了单位产出的成本，因此SRAS曲线向右移动。同时，技术进步也提高了经济的潜在产出水平，因此LRAS曲线也会向右移动。"
+         },
+         {
+         question: "根据新古典主义/货币主义观点，长期总供给(LRAS)曲线的形状是：",
+         options: ["水平的", "向右上方倾斜的", "向右下方倾斜的", "在充分就业产出水平上垂直的"],
+         answer: "在充分就业产出水平上垂直的",
+         explanation: "新古典主义/货币主义观点认为，在长期内，工资和价格具有完全伸缩性，经济会自动调整到充分就业的产出水平。因此，LRAS曲线是一条位于潜在产出(Yf)的垂直线，不受物价水平影响。"
+         },
+         {
+         question: "在凯恩斯总供给曲线的水平（或近乎水平）阶段，经济通常处于：",
+         options: ["充分就业状态", "通货膨胀压力巨大的状态", "资源严重闲置的萧条状态", "潜在产出水平"],
+         answer: "资源严重闲置的萧条状态",
+         explanation: "凯恩斯AS曲线的水平阶段（凯恩斯区域）代表经济处于严重衰退或萧条时期，存在大量未利用的生产资源（如失业工人和闲置设备）。此时，总需求的增加可以在不引起物价上涨的情况下大幅增加产出。"
+         },
+         {
+         question: "以下哪项因素最有可能导致长期总供给(LRAS)曲线向左移动？",
+         options: ["劳动人口的增加", "资本存量的增加", "持续的自然灾害导致生产能力大规模受损", "政府减少对教育的投资"],
+         answer: "持续的自然灾害导致生产能力大规模受损",
+         explanation: "LRAS曲线的移动反映了经济潜在生产能力的变化。劳动人口增加、资本积累、技术进步通常使LRAS右移。而生产要素数量或质量的永久性减少（如自然灾害破坏、人力资本下降）会导致LRAS左移。政府减少教育投资长期看会影响人力资本，也可能导致LRAS左移或增长放缓。"
+         },
+         {
+         question: "短期宏观经济均衡点是由哪两条曲线的交点决定的，它决定了什么？",
+         options: ["AD和LRAS曲线，决定长期均衡产出和物价", "AD和SRAS曲线，决定短期均衡的实际GDP和物价水平", "货币需求和货币供给曲线，决定利率", "劳动力需求和劳动力供给曲线，决定就业水平"],
+         answer: "AD和SRAS曲线，决定短期均衡的实际GDP和物价水平",
+         explanation: "短期宏观经济均衡发生在总需求曲线(AD)与短期总供给曲线(SRAS)相交之处，该交点决定的产出水平(Ye)和物价水平(PLe)是短期的均衡状态。"
+         },
+         {
+         question: "在新古典模型中，如果经济最初处于通货膨胀缺口（实际产出大于潜在产出），长期来看，经济会自动调整回到充分就业产出的机制主要是：",
+         options: ["政府增加税收", "名义工资上升，导致SRAS曲线左移", "消费者信心下降，导致AD曲线左移", "技术退步，导致LRAS曲线左移"],
+         answer: "名义工资上升，导致SRAS曲线左移",
+         explanation: "在新古典模型中，通货膨胀缺口意味着劳动力市场紧张，名义工资会上升。工资上涨导致生产成本增加，SRAS曲线向左移动，直到经济回到由垂直的LRAS曲线决定的充分就业产出水平，但物价水平会更高。"
+         },
+         {
+         question: "与新古典模型不同，凯恩斯模型认为经济可能在何种情况下达到一种“次优”的长期均衡？",
+         options: ["总是能自动达到充分就业均衡", "可能在低于充分就业的水平上实现均衡，且工资不一定能灵活下调", "只有在政府干预下才能达到充分就业", "物价水平永远不变"],
+         answer: "可能在低于充分就业的水平上实现均衡，且工资不一定能灵活下调",
+         explanation: "凯恩斯模型的一个重要观点是，由于工资和价格的向下刚性，经济可能陷入低于充分就业的均衡状态，即存在持续的衰退缺口和失业，而市场机制本身可能无法自动将其推向充分就业。"
+         },
+         {
+         question: "若由于全球性流行病导致消费者和企业信心极度悲观，在AD/AS模型中，短期内最可能出现的情况是：",
+         options: ["AD曲线大幅右移，产出和物价上升", "AD曲线大幅左移，产出和物价下降", "SRAS曲线大幅左移，产出下降物价上升", "SRAS曲线大幅右移，产出上升物价下降"],
+         answer: "AD曲线大幅左移，产出和物价下降",
+         explanation: "消费者信心下降会导致消费(C)减少，企业信心悲观会导致投资(I)减少。C和I都是总需求的组成部分，因此AD曲线会大幅向左移动，导致短期均衡产出和物价水平均下降。"
+         },
+         {
+         question: "短期经济增长在AD/AS模型中通常表现为：",
+         options: ["LRAS曲线向右移动", "AD曲线向右移动，导致实际产出沿着SRAS曲线增加", "PPC边界向外移动", "自然失业率下降"],
+         answer: "AD曲线向右移动，导致实际产出沿着SRAS曲线增加",
+         explanation: "短期经济增长是指实际GDP的增加，通常是由于总需求的增加（AD曲线右移）或短期总供给的改善（SRAS曲线右移，但产出仍在潜在产出之内或附近），导致经济沿着既有的SRAS或向新的SRAS均衡点移动。"
+         },
+         {
+         question: "长期经济增长在生产可能性边界 (PPC) 图上表现为：",
+         options: ["经济点从PPC内部移动到PPC上", "经济点沿着PPC移动", "PPC本身向外扩展", "PPC本身向内收缩"],
+         answer: "PPC本身向外扩展",
+         explanation: "长期经济增长意味着经济的潜在生产能力增加，这在PPC图上表现为整个边界向外平行移动或非平行扩展，表示在资源充分利用的情况下，经济能生产更多的商品和服务组合。"
+         },
+         {
+         question: "以下哪项通常不被认为是经济增长带来的潜在益处？",
+         options: ["更高的平均生活水平和消费能力", "更多的就业机会", "政府税收收入增加，可用于改善公共服务", "环境质量的自动改善"],
+         answer: "环境质量的自动改善",
+         explanation: "经济增长通常带来更高的生活水平、就业和税收，但它并不一定自动改善环境质量，反而可能因资源消耗和污染增加而导致环境恶化，除非采取了有效的环保措施。"
+         },
+         {
+         question: "快速经济增长可能带来的潜在代价不包括：",
+         options: ["环境污染加剧", "收入差距可能扩大", "自然资源加速枯竭", "通货紧缩的风险增加"],
+         answer: "通货紧缩的风险增加",
+         explanation: "快速经济增长通常伴随着总需求的旺盛，更有可能带来通货膨胀的压力，而不是通货紧缩。环境问题、收入差距和资源枯竭是常见的潜在代价。"
+         },
+         {
+         question: "失业率的定义是：",
+         options: ["失业人数占总人口的百分比", "失业人数占成年人口的百分比", "失业人数占劳动力总数的百分比", "未充分就业人数占劳动力总数的百分比"],
+         answer: "失业人数占劳动力总数的百分比",
+         explanation: "失业率 = (失业人数 / 劳动力总数) × 100%。劳动力总数通常指达到法定年龄、有工作能力且正在工作或积极寻找工作的人口。"
+         },
+         {
+         question: "“灰心丧气的工人 (discouraged workers)”是指那些：",
+         options: ["正在积极寻找工作但尚未找到的人", "自愿选择不工作的人", "想工作但因长期找不到工作而放弃寻找的人", "从事非全日制工作但希望全职工作的人"],
+         answer: "想工作但因长期找不到工作而放弃寻找的人",
+         explanation: "灰心丧气的工人由于认为劳动力市场没有合适的工作机会而停止了寻找工作。在很多国家的失业统计中，他们可能不被计为失业人口，因为他们没有“积极寻找工作”。"
+         },
+         {
+         question: "由于个人在转换工作、进入劳动力市场或在不同地理位置之间流动而产生的短期失业，被称为：",
+         options: ["结构性失业", "周期性失业", "摩擦性失业", "季节性失业"],
+         answer: "摩擦性失业",
+         explanation: "摩擦性失业是劳动力市场正常运作的一部分，源于信息不完全和劳动力流动所需的时间。即使在充分就业的经济中，摩擦性失业也总是存在的。"
+         },
+         {
+         question: "当经济结构发生变化，例如某些行业衰退而新兴行业发展，导致劳动者技能与现有工作岗位需求不匹配时，所产生的失业类型是：",
+         options: ["摩擦性失业", "结构性失业", "周期性失业", "需求不足型失业"],
+         answer: "结构性失业",
+         explanation: "结构性失业是由于经济结构（如技术、产业结构、消费者偏好）的变化，或劳动力市场制度（如最低工资）导致劳动力供给和需求在技能、地域等方面不匹配造成的长期失业。"
+         },
+         {
+         question: "自然失业率 (Natural Rate of Unemployment - NRU) 主要由以下哪两种类型的失业构成？",
+         options: ["摩擦性失业和周期性失业", "结构性失业和周期性失业", "摩擦性失业和结构性失业", "季节性失业和周期性失业"],
+         answer: "摩擦性失业和结构性失业",
+         explanation: "自然失业率是指在没有周期性失业的情况下，经济中仍然存在的失业率，它主要由摩擦性失业和结构性失业组成。这被认为是与充分就业相一致的失业水平。"
+         },
+         {
+         question: "高失业率对经济造成的成本不包括：",
+         options: ["实际产出的损失 (Okun's Law)", "政府财政赤字压力增大 (税收减少，福利支出增加)", "人力资本的侵蚀和浪费", "通货膨胀率的必然大幅上升"],
+         answer: "通货膨胀率的必然大幅上升",
+         explanation: "高失业率通常意味着总需求不足或经济不景气，这往往伴随着较低的通货膨胀压力，甚至通货紧缩。其他选项都是高失业率的典型经济成本。"
+         },
+         {
+         question: "“滞胀 (Stagflation)”描述的是一种怎样的宏观经济状况？",
+         options: ["低通货膨胀和低失业率", "高通货膨胀和低失业率", "高通货膨胀和高失业率，伴随经济停滞", "低通货膨胀和高失业率 (通货紧缩)"],
+         answer: "高通货膨胀和高失业率，伴随经济停滞",
+         explanation: "滞胀是指经济停滞 (Stagnation) 与通货膨胀 (Inflation) 并存的现象，通常表现为经济增长缓慢或负增长、高失业率以及持续的物价上涨。"
+         },
+         {
+         question: "“反通货膨胀 (Disinflation)”指的是：",
+         options: ["物价总水平持续下降", "通货膨胀率下降，但仍为正值", "通货膨胀率急剧上升", "通货膨胀率保持稳定"],
+         answer: "通货膨胀率下降，但仍为正值",
+         explanation: "反通货膨胀是指通货膨胀率有所下降的过程，例如从5%降至3%。物价仍在上涨，但上涨的速度减缓了。这与通货紧缩（物价总水平下降）不同。"
+         },
+         {
+         question: "消费者价格指数 (CPI) 主要用于衡量：",
+         options: ["所有最终产品和服务的平均价格水平", "生产者购买的原材料和中间产品的价格变化", "一篮子代表性消费品和服务的平均价格水平变化", "股票市场的整体价格波动"],
+         answer: "一篮子代表性消费品和服务的平均价格水平变化",
+         explanation: "CPI通过追踪一个固定的“一篮子”城乡居民日常生活所购买的消费品和服务的价格变化，来反映总体消费物价水平的变动情况，是衡量通货膨胀的主要指标之一。"
+         },
+         {
+         question: "成本推动型通货膨胀 (Cost-push inflation) 的主要成因不包括：",
+         options: ["工会力量强大导致工资大幅上涨", "国际原油等关键原材料价格飙升", "政府大幅增加货币供给", "自然灾害导致农产品供应锐减"],
+         answer: "政府大幅增加货币供给",
+         explanation: "成本推动型通货膨胀是由生产成本的普遍上升引起的，例如工资上涨快于生产率增长、重要投入品价格上涨等，导致SRAS曲线左移。政府大幅增加货币供给通常导致需求拉动型通货膨胀。"
+         },
+         {
+         question: "未预期到的高通货膨胀对以下哪类人群最为不利？",
+         options: ["债务人", "持有大量实物资产的人", "固定收入领取者", "政府（作为债务发行者）"],
+         answer: "固定收入领取者",
+         explanation: "未预期到的高通货膨胀会侵蚀货币的购买力。固定收入领取者（如养老金领取者、依赖固定利息收入的人）的实际收入会下降。债务人则受益，因为他们偿还的货币实际价值降低了。"
+         },
+         {
+         question: "为什么说持续的通货紧缩可能比温和的通货膨胀对经济的危害更大？",
+         options: ["因为它会鼓励过度消费和投资", "因为它会增加政府的税收收入", "因为它可能导致消费者延迟消费，企业减少投资，形成债务-通缩螺旋", "因为它会使出口商品更具竞争力"],
+         answer: "因为它可能导致消费者延迟消费，企业减少投资，形成债务-通缩螺旋",
+         explanation: "通货紧缩意味着物价持续下跌，消费者预期未来价格更低而推迟当前消费；企业因预期利润下降而减少投资；债务的实际价值上升，加重债务人负担，可能引发债务-通缩螺旋，使经济陷入深度衰退。"
+         },
+         {
+         question: "(HL Only) 短期菲利普斯曲线 (SRPC) 揭示了在短期内，失业率与通货膨胀率之间通常存在：",
+         options: ["正相关关系", "负相关关系（权衡关系）", "没有关系", "完全对应的关系"],
+         answer: "负相关关系（权衡关系）",
+         explanation: "短期菲利普斯曲线表明，在短期内，较低的失业率通常伴随着较高的通货膨胀率，反之亦然，即两者之间存在一种此消彼长的权衡关系。"
+         },
+         {
+         question: "(HL Only) 长期菲利普斯曲线 (LRPC) 的政策含义是：",
+         options: ["政府可以通过容忍更高的通货膨胀来永久降低失业率", "长期内，失业率与通货膨胀率之间不存在稳定的权衡关系，失业率会回到自然失业率水平", "通货膨胀预期对失业率没有影响", "只有供给侧政策才能影响通货膨胀"],
+         answer: "长期内，失业率与通货膨胀率之间不存在稳定的权衡关系，失业率会回到自然失业率水平",
+         explanation: "长期菲利普斯曲线是一条位于自然失业率的垂直线，表明无论通货膨胀率如何，长期来看失业率都会趋向于自然失业率。这意味着试图通过扩张性需求政策将失业率长期维持在自然失业率以下是无效的，只会导致更高的通货膨胀。"
+         },
+         {
+         question: "(HL Only) 如果公众对未来通货膨胀的预期从2%上升到5%，短期菲利普斯曲线 (SRPC) 将会如何移动？",
+         options: ["向下（或向左）移动", "向上（或向右）移动", "保持不变，只是沿着曲线移动", "变得更平坦"],
+         answer: "向上（或向右）移动",
+         explanation: "通货膨胀预期的上升会导致SRPC向上（或向右）移动。这意味着在任何给定的失业率水平上，实际的通货膨胀率都会更高，因为工人和企业会将更高的预期通胀纳入工资和价格决策中。"
+         },
+         {
+         question: "政府试图通过扩张性的财政政策大幅降低失业率，这最可能引发下列哪两个宏观经济目标之间的冲突？",
+         options: ["经济增长与收入公平", "低失业率与低且稳定的通货膨胀率", "国际收支平衡与经济增长", "低通货膨胀与收入公平"],
+         answer: "低失业率与低且稳定的通货膨胀率",
+         explanation: "扩张性财政政策增加总需求，可能导致失业率下降，但当经济接近或超过潜在产出时，也容易引发需求拉动型通货膨胀，从而在低失业和低通胀这两个目标之间产生冲突（短期菲利普斯曲线所体现的）。"
+         },
+         {
+         question: "收入不平等与财富不平等的主要区别在于：",
+         options: ["收入是存量，财富是流量", "收入是流量，财富是存量", "两者衡量的是同一概念", "收入不平等更容易衡量"],
+         answer: "收入是流量，财富是存量",
+         explanation: "收入是指在一定时期内（如一年）个人或家庭获得的货币或实物所得，是一个流量概念。财富是指在某一特定时点个人或家庭拥有的所有资产的净值（资产减去负债），是一个存量概念。"
+         },
+         {
+         question: "(HL Only) 在洛伦兹曲线图中，代表收入完全平等分配的线是：",
+         options: ["横轴", "纵轴", "一条弯向右下方的曲线", "一条从原点出发的45度对角线"],
+         answer: "一条从原点出发的45度对角线",
+         explanation: "45度对角线（完美平等线）表示收入在人口中完全平均分配，例如，最低20%的人口拥有20%的收入，最低50%的人口拥有50%的收入，以此类推。"
+         },
+         {
+         question: "(HL Only) 如果一个国家的基尼系数从0.5下降到0.4，这通常表明该国的收入分配：",
+         options: ["变得更加不平等", "变得更加平等", "没有变化", "贫困人口增加"],
+         answer: "变得更加平等",
+         explanation: "基尼系数是衡量收入不平等程度的指标，取值在0（完全平等）和1（完全不平等）之间。基尼系数下降意味着洛伦兹曲线更接近45度线，收入分配更加平等。"
+         },
+         {
+         question: "绝对贫困的定义通常基于：",
+         options: ["社会中位数收入的一半", "维持基本生存（如食物、住所、衣物）所需的最低资源水平", "与社会平均生活水平的比较", "个人对自身经济状况的主观感受"],
+         answer: "维持基本生存（如食物、住所、衣物）所需的最低资源水平",
+         explanation: "绝对贫困是指个人或家庭缺乏满足最基本生活需求（如食物、水、住所、衣物、基本医疗）的资源。其标准通常不随社会整体富裕程度变化而变化。"
+         },
+         {
+         question: "相对贫困线通常是如何设定的？",
+         options: ["根据全球统一的每日生活费标准", "根据一个国家中位数或平均收入的一定比例", "根据个人无法参与社会基本活动的能力", "根据历史上的最低生活水平"],
+         answer: "根据一个国家中位数或平均收入的一定比例",
+         explanation: "相对贫困是相对于特定社会中其他成员的生活水平而言的。其贫困线通常设定为该社会中位数收入或平均收入的一个特定百分比（例如50%或60%）。"
+         },
+         {
+         question: "以下哪项不是导致收入不平等的常见原因？",
+         options: ["教育和技能水平的差异", "财富的继承", "针对性的歧视行为", "高度累进的个人所得税制度"],
+         answer: "高度累进的个人所得税制度",
+         explanation: "教育、技能、继承、歧视等都可能导致收入不平等。而高度累进的个人所得税制度旨在通过向高收入者征收更高比例的税来减少税后收入不平等。"
+         },
+         {
+         question: "累进税制 (Progressive Tax) 的主要特点是：",
+         options: ["所有纳税人按相同比例纳税", "高收入者支付的税款占其收入的比例高于低收入者", "低收入者支付的税款占其收入的比例高于高收入者", "税收负担主要由消费者承担"],
+         answer: "高收入者支付的税款占其收入的比例高于低收入者",
+         explanation: "累进税制是指随着纳税人收入的增加，其平均税率（税款占收入的百分比）也随之提高。这种税制旨在实现纵向公平，缩小收入差距。"
+         },
+         {
+         question: "以下哪种税收类型被认为是累退的 (Regressive Tax)，因为它对低收入人群的实际负担相对更重？",
+         options: ["按收入等级划分的个人所得税", "对奢侈品征收的高额消费税", "对所有商品和服务统一征收的销售税（如增值税）", "财产税"],
+         answer: "对所有商品和服务统一征收的销售税（如增值税）",
+         explanation: "统一税率的销售税通常被认为是累退的，因为低收入者将其收入的更大部分用于消费，因此销售税占其收入的比例会高于高收入者。"
+         },
+         {
+         question: "(HL Only) 边际税率 (Marginal Tax Rate) 指的是：",
+         options: ["纳税人总税款占总收入的比例", "对纳税人额外增加的每一单位收入所征收的税率", "对所有收入水平统一征收的税率", "政府规定的最低税率"],
+         answer: "对纳税人额外增加的每一单位收入所征收的税率",
+         explanation: "边际税率是衡量税制累进程度的重要指标，它影响个人工作的激励。例如，如果你的收入增加100元，其中30元需要交税，那么边际税率就是30%。"
+         },
+         {
+         question: "政府提供的失业救济金、老年津贴和对贫困家庭的现金补助属于哪种类型的政策工具，用以改善收入分配和减少贫困？",
+         options: ["间接税", "直接税", "转移支付", "政府购买"],
+         answer: "转移支付",
+         explanation: "转移支付是政府将一部分财政收入（主要来自税收）无偿地、单方面地转移给某些社会成员或组织（如失业者、老年人、贫困家庭），以增加其收入和购买力，是重要的再分配手段。"
+         },
+         {
+         question: "设定最低工资标准（高于市场均衡工资时）对劳动力市场可能产生的双重影响是：",
+         options: ["同时增加就业和提高所有工人工资", "提高在职低薪工人的收入，但可能导致一部分低技能工人失业", "降低所有工人工资，但增加总就业", "对就业和工资均无显著影响"],
+         answer: "提高在职低薪工人的收入，但可能导致一部分低技能工人失业",
+         explanation: "最低工资作为一种价格下限，如果设定在市场均衡工资之上，理论上会使得一部分雇主不愿雇用那么多工人，导致失业增加（特别是对缺乏经验和技能的工人）；但对于那些仍然被雇用的低薪工人来说，他们的工资会提高。"
+         },
+         {
+         question: "中央银行执行货币政策最主要、最常见的核心目标是：",
+         options: ["促进出口增长", "维持物价稳定（控制通货膨胀）", "实现政府预算平衡", "提高股票市场价格"],
+         answer: "维持物价稳定（控制通货膨胀）",
+         explanation: "尽管中央银行也可能关注就业、增长等目标，但维持物价稳定（即保持低而稳定的通货膨胀率）通常是其首要和核心的法定职责。"
+         },
+         {
+         question: "(HL Only) 在货币市场图中，货币需求曲线 (MD) 通常向右下方倾斜，这表明名义利率与货币需求量之间存在：",
+         options: ["正相关关系", "负相关关系", "没有关系", "不确定关系"],
+         answer: "负相关关系",
+         explanation: "名义利率是持有货币的机会成本（因为持有货币意味着放弃了可以赚取利息的资产）。利率越高，持有货币的机会成本越大，因此人们愿意持有的货币数量就越少。"
+         },
+         {
+         question: "(HL Only) 如果中央银行在公开市场上大规模购买政府债券，这将如何影响货币市场的均衡？",
+         options: ["货币供给减少，名义利率上升", "货币供给增加，名义利率下降", "货币需求增加，名义利率上升", "货币需求减少，名义利率下降"],
+         answer: "货币供给增加，名义利率下降",
+         explanation: "中央银行购买政府债券会向市场注入基础货币，从而增加货币供给（MS曲线右移）。在货币需求不变的情况下，货币供给增加会导致名义利率下降。"
+         },
+         {
+         question: "(HL Only) 中央银行降低法定存款准备金率 (Required Reserve Ratio) 会如何影响商业银行的信贷创造能力和整体货币供给？",
+         options: ["削弱信贷创造能力，减少货币供给", "增强信贷创造能力，增加货币供给", "对信贷创造能力和货币供给无影响", "只影响基础货币，不影响广义货币"],
+         answer: "增强信贷创造能力，增加货币供给",
+         explanation: "法定存款准备金率是商业银行必须以准备金形式持有的存款比例。降低该比率意味着银行可以将更大比例的存款用于放贷，从而通过货币乘数效应扩大货币供给。"
+         },
+         {
+         question: "(HL Only) 量化宽松 (Quantitative Easing - QE) 作为一种非常规货币政策工具，其主要操作方式是中央银行：",
+         options: ["直接向公众发放现金", "大幅提高短期政策利率", "大规模购买长期政府债券或其他金融资产以注入流动性", "强制商业银行增加对中小企业的贷款"],
+         answer: "大规模购买长期政府债券或其他金融资产以注入流动性",
+         explanation: "QE通常在传统利率政策空间有限（如利率已接近零）时使用，中央银行通过购买长期资产，旨在压低长期利率，增加市场流动性，并刺激经济活动。"
+         },
+         {
+         question: "当经济面临衰退风险，总需求不足时，中央银行通常会采取何种类型的货币政策？",
+         options: ["紧缩性货币政策", "扩张性货币政策", "中性货币政策", "固定汇率政策"],
+         answer: "扩张性货币政策",
+         explanation: "扩张性（或宽松）货币政策旨在刺激总需求。中央银行通常通过降低利率、增加货币供给等手段来鼓励消费和投资，以应对经济衰退。"
+         },
+         {
+         question: "紧缩性货币政策（例如，中央银行提高政策利率）主要通过以下哪个渠道影响总需求？",
+         options: ["增加政府支出", "减少税收", "提高借贷成本，从而抑制消费和投资支出", "直接补贴出口企业"],
+         answer: "提高借贷成本，从而抑制消费和投资支出",
+         explanation: "提高政策利率会导致市场利率上升，使得企业借款投资的成本和个人借款消费（如购房、购车）的成本增加，从而抑制总需求，导致AD曲线左移。"
+         },
+         {
+         question: "货币政策在应对由总需求过热引起的需求拉动型通货膨胀时通常被认为是有效的，但在应对哪种类型的经济问题时效果可能较为有限？",
+         options: ["经济过热导致的资产泡沫", "由供给冲击（如石油危机）引起的成本推动型通货膨胀", "消费者信心不足导致的衰退", "投资过度引发的经济周期波动"],
+         answer: "由供给冲击（如石油危机）引起的成本推动型通货膨胀",
+         explanation: "成本推动型通货膨胀源于生产成本上升（SRAS左移），导致物价上涨和产出下降（滞胀）。紧缩性货币政策虽然可以抑制通胀，但会进一步加剧产出下降和失业。扩张性货币政策则可能加剧通胀。"
+         },
+         {
+         question: "“流动性陷阱 (Liquidity Trap)”描述了货币政策在什么特定情况下可能失效？",
+         options: ["通货膨胀率极高时", "利率已经降至极低水平（接近于零），进一步增加货币供给也无法有效刺激总需求时", "政府债务规模过大时", "商业银行不愿意放贷时"],
+         answer: "利率已经降至极低水平（接近于零），进一步增加货币供给也无法有效刺激总需求时",
+         explanation: "在流动性陷阱中，由于利率极低，人们预期利率未来可能上升（债券价格下降），因此更愿意持有现金而不是债券。此时，中央银行增加货币供给可能被公众以现金形式持有，而不会转化为有效的投资或消费，使得货币政策刺激经济的效果大打折扣。"
+         },
+         {
+         question: "(HL Only) 商业银行体系创造货币（存款创造）的过程主要依赖于：",
+         options: ["中央银行印刷钞票", "部分准备金制度和贷款的发放与再存入", "政府发行债券", "国际资本的流入"],
+         answer: "部分准备金制度和贷款的发放与再存入",
+         explanation: "在部分准备金制度下，商业银行只需保留一部分存款作为准备金，其余部分可以贷出。贷款会以存款形式进入另一家银行（或同一家银行的不同账户），这家银行又可以保留部分准备金后继续放贷，如此循环，通过货币乘数效应创造出数倍于初始准备金的广义货币。"
+         },
+         {
+         question: "财政政策主要通过调整政府的哪些方面来影响宏观经济活动水平？",
+         options: ["货币供给量和利率", "政府支出和税收水平", "汇率和贸易壁垒", "最低工资和失业救济标准"],
+         answer: "政府支出和税收水平",
+         explanation: "财政政策是政府利用其支出(G)和税收(T)权力来影响经济总需求、资源配置和收入分配的宏观经济政策。"
+         },
+         {
+         question: "当一个国家的政府年度支出总额大于其年度税收总收入时，其政府预算处于：",
+         options: ["预算盈余 (Budget Surplus)", "预算赤字 (Budget Deficit)", "预算平衡 (Balanced Budget)", "结构性赤字 (Structural Deficit)"],
+         answer: "预算赤字 (Budget Deficit)",
+         explanation: "预算赤字是指政府在一个财政年度内的支出超过了其收入（主要是税收）。政府需要通过借贷（如发行债券）来弥补赤字。"
+         },
+         {
+         question: "为了应对严重的经济衰退和高失业率，政府最应该采取以下哪种财政政策组合？",
+         options: ["增加税收，减少政府支出", "减少税收，增加政府支出", "增加税收，增加政府支出", "减少税收，减少政府支出"],
+         answer: "减少税收，增加政府支出",
+         explanation: "扩张性财政政策旨在刺激总需求。减少税收可以增加居民可支配收入和企业利润，从而刺激消费和投资；增加政府支出直接增加总需求。"
+         },
+         {
+         question: "紧缩性财政政策，例如政府大幅削减公共工程开支，最可能导致总需求曲线如何移动？",
+         options: ["向右移动", "向左移动", "保持不变", "变得更陡峭"],
+         answer: "向左移动",
+         explanation: "政府支出是总需求的直接组成部分。削减政府开支会直接减少总需求，导致AD曲线向左移动，有助于抑制经济过热和通货膨胀。"
+         },
+         {
+         question: "(HL Only) 累进所得税制度和失业救济金被认为是“自动稳定器”，因为它们：",
+         options: ["需要政府在每次经济波动时主动调整", "能够在经济波动时自动反向调节总需求，无需政府即时干预", "总是能确保经济处于充分就业状态", "主要目标是调节国际收支"],
+         answer: "能够在经济波动时自动反向调节总需求，无需政府即时干预",
+         explanation: "自动稳定器是指那些嵌入经济体系中，能够自动减缓经济波动的财政机制。例如，经济衰退时，累进税制下税收收入自动减少，失业救济金支出自动增加，从而缓冲总需求的下降。"
+         },
+         {
+         question: "(HL Only) 财政政策的“挤出效应 (Crowding-out Effect)”指的是扩张性财政政策可能导致：",
+         options: ["私人投资因利率上升而被抑制", "出口因本币升值而减少", "储蓄因预期未来税收增加而增加", "消费因政府支出替代而减少"],
+         answer: "私人投资因利率上升而被抑制",
+         explanation: "当政府增加支出并通过借贷融资时，会增加对可贷资金的需求，可能推高利率。利率上升会增加私人部门的借贷成本，从而抑制私人投资，部分抵消了扩张性财政政策对总需求的刺激效果。"
+         },
+         {
+         question: "财政政策在实施过程中可能面临的“认识滞后 (Recognition Lag)”指的是：",
+         options: ["从政策实施到其对经济产生效果所需的时间", "政府内部就采取何种政策达成一致所需的时间", "从经济问题实际发生到决策者意识到问题存在所需的时间", "公众对政策变化做出反应所需的时间"],
+         answer: "从经济问题实际发生到决策者意识到问题存在所需的时间",
+         explanation: "认识滞后是财政政策时间滞后的一种，指的是经济数据收集、分析和问题识别需要时间，导致决策者可能在问题已经发生一段时间后才意识到需要采取行动。"
+         },
+         {
+         question: "(HL Only) 凯恩斯乘数效应表明，政府购买支出的初始增加100亿元，最终会导致国民收入：",
+         options: ["增加少于100亿元", "正好增加100亿元", "增加超过100亿元", "减少100亿元"],
+         answer: "增加超过100亿元",
+         explanation: "凯恩斯乘数效应是指政府支出（或投资、净出口）的初始变动会导致国民收入发生更大倍数的同向变动。这是因为初始支出会变成一部分人的收入，这些人又会将其中的一部分用于消费，形成连锁反应。"
+         },
+         {
+         question: "(HL Only) 假设一个经济体的边际消费倾向 (MPC) 为0.75，那么政府购买乘数是多少？",
+         options: ["0.75", "1.33", "4", "0.25"],
+         answer: "4",
+         explanation: "简单的政府购买乘数公式为 1 / (1 - MPC)。因此，乘数 = 1 / (1 - 0.75) = 1 / 0.25 = 4。"
+         },
+         {
+         question: "供给侧政策的核心目标是：",
+         options: ["在短期内迅速刺激总需求", "通过影响生产成本和生产效率来提高经济的潜在产出水平", "控制货币供给以稳定物价", "调整税率以实现预算平衡"],
+         answer: "通过影响生产成本和生产效率来提高经济的潜在产出水平",
+         explanation: "供给侧政策旨在通过改善劳动力市场、产品市场和资本市场的效率，促进技术进步，从而提高长期总供给(LRAS)，即经济的潜在生产能力。"
+         },
+         {
+         question: "成功的供给侧政策最主要会使得AD/AS模型中的哪条曲线发生显著的向右移动？",
+         options: ["总需求(AD)曲线", "短期总供给(SRAS)曲线", "长期总供给(LRAS)曲线", "货币需求(MD)曲线"],
+         answer: "长期总供给(LRAS)曲线",
+         explanation: "供给侧政策旨在提高经济的生产潜力，因此其成功实施主要表现为LRAS曲线向右移动。SRAS曲线也可能随之右移，因为生产效率提高或成本降低。"
+         },
+         {
+         question: "政府投资于改善国家的基础设施（如交通、通讯网络）和提高教育质量，这属于哪种类型的供给侧政策？",
+         options: ["市场导向的供给侧政策", "干预主义的供给侧政策", "需求侧的财政政策", "需求侧的货币政策"],
+         answer: "干预主义的供给侧政策",
+         explanation: "干预主义的供给侧政策强调政府在改善供给能力方面发挥积极作用，例如通过公共投资于基础设施、教育、研发等，以提高生产力和效率。"
+         },
+         {
+         question: "降低企业所得税税率、放松对行业的管制以及推行私有化改革，这些通常被归类为：",
+         options: ["干预主义的供给侧政策", "市场导向的供给侧政策", "扩张性财政政策", "紧缩性货币政策"],
+         answer: "市场导向的供给侧政策",
+         explanation: "市场导向的供给侧政策侧重于通过减少政府干预，发挥市场机制的作用来激励生产和投资，例如减税、去管制、促进竞争等。"
+         },
+         {
+         question: "与需求侧政策相比，供给侧政策的效果显现通常具有什么特点？",
+         options: ["效果立竿见影，短期内就能大幅提升产出", "通常需要较长的时间才能充分显现其对经济潜在产出的影响", "主要影响短期物价水平，对长期增长影响不大", "更容易受到政治周期的影响而频繁变动"],
+         answer: "通常需要较长的时间才能充分显现其对经济潜在产出的影响",
+         explanation: "供给侧政策，如改善教育、投资研发、改革制度等，其效果往往是渐进的，需要数年甚至更长时间才能对经济的生产能力和效率产生显著的积极影响。"
+         },
+         {
+         question: "市场导向的供给侧政策（例如大幅削减高收入人群的所得税）可能带来的一个潜在的负面社会影响是：",
+         options: ["短期内导致恶性通货膨胀", "可能在短期内加剧收入不平等", "导致政府财政盈余迅速增加", "严重抑制企业的投资意愿"],
+         answer: "可能在短期内加剧收入不平等",
+         explanation: "一些市场导向的供给侧政策，如为企业和高收入者减税，虽然可能旨在激励投资和工作，但也可能使得高收入群体受益更多，从而在短期内扩大收入差距。"
+         }
+         ];
+         
+                const quizContainer = document.getElementById('quiz-container');
+                const gameArea = document.getElementById('game-area');
+                const resultsArea = document.getElementById('results-area');
+                const questionCounter = document.getElementById('question-counter');
+                const scoreDisplay = document.getElementById('score-display');
+                const progressBar = document.getElementById('progress-bar');
+                const questionText = document.getElementById('question-text');
+                const optionsContainer = document.getElementById('options-container');
+                const feedbackArea = document.getElementById('feedback-area');
+                const feedbackText = document.getElementById('feedback-text');
+                const explanationText = document.getElementById('explanation-text');
+                const nextBtn = document.getElementById('next-btn');
+                const finalScore = document.getElementById('final-score');
+                const resultMessage = document.getElementById('result-message');
+                const restartBtn = document.getElementById('restart-btn');
+                const confettiCanvas = document.getElementById('confetti-canvas');
+                let myConfettiInstance = null;
+                if (confettiCanvas && typeof confetti !== 'undefined') {
+                    myConfettiInstance = confetti.create(confettiCanvas, {
+                        resize: true,
+                        useWorker: true
+                    });
+                }
+                let currentQuestionIndex = 0;
+                let score = 0;
+                let questionsAnsweredInSession = 0;
+                let shuffledQuestions = [];
+                function shuffleArray(array) {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                    return array;
+                }
+                function updateScoreDisplay() {
+                    const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
+                    scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
+                }
+                function updateProgressBar() {
+                    const totalQuestionsToDisplay = shuffledQuestions.length;
+                    const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
+                    progressBar.style.width = `${progressPercentage}%`;
+                    progressBar.textContent = `${progressPercentage}%`;
+                }
+                function updateProgressBarAfterAnswer() {
+                    const totalQuestionsToDisplay = shuffledQuestions.length;
+                    const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+                    progressBar.style.width = `${progressPercentage}%`;
+                    progressBar.textContent = `${progressPercentage}%`;
+                }
+                function startGame() {
+                    currentQuestionIndex = 0;
+                    score = 0;
+                    questionsAnsweredInSession = 0;
+                    shuffledQuestions = shuffleArray([...questions]);
+                    updateScoreDisplay();
+                    progressBar.style.width = '0%';
+                    progressBar.textContent = '0%';
+                    resultsArea.classList.add('hidden');
+                    resultsArea.classList.remove('results-enter', 'results-enter-active'); 
+                    gameArea.classList.remove('hidden'); 
+                    nextBtn.classList.add('hidden'); 
+                    feedbackArea.classList.add('hidden'); 
+                    explanationText.innerHTML = ''; 
+                    showQuestion();
+                }
+                function showQuestion() {
+                    updateProgressBar();
+                    optionsContainer.innerHTML = '';
+                    feedbackArea.classList.add('hidden');
+                    feedbackText.textContent = '';
+                    explanationText.innerHTML = '';
+                    feedbackText.className = 'text-lg font-semibold mb-2';
+                    const currentQuestion = shuffledQuestions[currentQuestionIndex];
+                    questionText.innerHTML = currentQuestion.question;
+                    questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+                    const shuffledOptions = shuffleArray([...currentQuestion.options]);
+                    shuffledOptions.forEach(option => {
+                        const button = document.createElement('button');
+                        button.innerHTML = option;
+                        button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                        button.addEventListener('click', selectAnswer);
+                        optionsContainer.appendChild(button);
+                    });
+                    nextBtn.classList.add('hidden');
+                }
+                function triggerConfetti() {
+                    if (myConfettiInstance) {
+                        myConfettiInstance({
+                            particleCount: 120,
+                            spread: 80,
+                            origin: { y: 0.6 },
+                            colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6']
+                        });
+                    }
+                }
+                function selectAnswer(e) {
+                    const selectedButton = e.target.closest('.option-btn');
+                    if (!selectedButton) return;
+                    const currentQuestion = shuffledQuestions[currentQuestionIndex];
+                    const correctAnswer = currentQuestion.answer;
+                    const explanation = currentQuestion.explanation;
+                    questionsAnsweredInSession++;
+                    Array.from(optionsContainer.children).forEach(button => {
+                        button.disabled = true;
+                        if (button.innerHTML === correctAnswer) {
+                            button.classList.add('correct-answer');
+                        }
+                    });
+                    if (selectedButton.innerHTML === correctAnswer) {
+                        score++;
+                        feedbackText.textContent = '✅ 回答正确!';
+                        feedbackText.className = 'text-lg font-semibold mb-2 text-green-600';
+                        selectedButton.classList.add('correct-answer');
+                        triggerConfetti();
+                    } else {
+                        feedbackText.textContent = `❌ 回答错误!`;
+                        feedbackText.className = 'text-lg font-semibold mb-2 text-red-600';
+                        selectedButton.classList.add('wrong-answer');
+                    }
+         
+                    explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`;
+                    feedbackArea.classList.remove('hidden');
+         
+                    updateScoreDisplay();
+                    updateProgressBarAfterAnswer();
+                    nextBtn.classList.remove('hidden');
+                }
+                function showNextQuestion() {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < shuffledQuestions.length) {
+                        showQuestion();
+                    } else {
+                        endGame();
+                    }
+                }
+                function endGame() {
+                    gameArea.classList.add('hidden');
+                    resultsArea.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                         resultsArea.classList.add('results-enter');
+                         requestAnimationFrame(() => {
+                             resultsArea.classList.add('results-enter-active');
+                        });
+                    });
+         
+                    const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+                    finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+                    let message = '';
+                    if (finalPercentage === 100) {
+                        message = '💯 完美！你简直是 IB Economics HL 大师！知识点掌握得炉火纯青！';
+                        if (myConfettiInstance) {
+                             myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.5 }}); 
+                             myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.7 }}); 
+                        }
+                    } else if (finalPercentage >= 90) {
+                        message = '🌟 太出色了！对经济学基础和微观经济学的理解非常深刻，绝对的学霸！';
+                        if (myConfettiInstance) { myConfettiInstance({particleCount: 150, spread: 100}); }
+                    } else if (finalPercentage >= 80) {
+                        message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
+                    } else if (finalPercentage >= 70) {
+                        message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
+                    } else if (finalPercentage >= 60) {
+                        message = '👍 相当不错！大部分知识点都理解了，继续加油！';
+                    } else if (finalPercentage >= 50) {
+                        message = '😊 不错！掌握了核心内容，可以更有自信！';
+                    } else {
+                        message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
+                    }
+                    resultMessage.textContent = message;
+                }
+                nextBtn.addEventListener('click', showNextQuestion);
+                restartBtn.addEventListener('click', startGame);
+                startGame();
+            
+      </script>
+   </body>
+</html>
