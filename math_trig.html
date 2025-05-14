@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB Math AA HL 备考测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         overscroll-behavior-y: none; 
+         animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px); 
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0); 
+         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(30px);
+         transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed; 
+         opacity: 0.7; 
+         }
+         .correct-answer {
+         background-color: #22c55e !important; 
+         color: white !important;
+         border-color: #16a34a !important;
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important; 
+         color: white !important;
+         border-color: #dc2626 !important;
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb; 
+         border-radius: 9999px; 
+         overflow: hidden; 
+         height: 1rem; 
+         margin-bottom: 1.5rem; 
+         }
+         .progress-bar {
+         background-color: #4f46e5; 
+         height: 100%;
+         transition: width 0.3s ease-in-out; 
+         text-align: center;
+         color: white;
+         font-size: 0.75rem; 
+         line-height: 1rem; 
+         font-weight: 500;
+         border-radius: 9999px;
+         }
+         #confetti-canvas {
+         position: fixed; 
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none; 
+         z-index: 9999; 
+         }
+         .explanation {
+         background-color: #f3f4f6; 
+         border-left: 4px solid #4f46e5; 
+         padding: 1rem; 
+         border-radius: 0.375rem; 
+         color: #374151; 
+         font-size: 0.875rem; 
+         margin-top: 1rem; 
+         line-height: 1.5; 
+         }
+         .option-btn, #next-btn, #restart-btn {
+         -webkit-tap-highlight-color: transparent; 
+         }
+         @keyframes fadeInScaleUp { 
+         from { opacity: 0; transform: scale(0.92); }
+         to { opacity: 1; transform: scale(1); }
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
+         <a href="index.html"
+            class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 mb-4">
+         👈 主页
+         </a>
+         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 mt-2">IB Math AA HL备考测验</h1>
+         <p class="text-center text-gray-600 mb-6">测试你对几何与三角学的了解程度！</p>
+         <div id="game-area">
+            <div class="flex justify-between items-center mb-4 text-gray-600">
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 10</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+            </div>
+            <div class="progress-bar-container">
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            <div id="question-container" class="mb-6">
+               <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[4.5em] md:min-h-[3em]">问题文本加载中...</h2>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+            </div>
+            <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
+            </div>
+            <div class="text-center">
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
+            </div>
+         </div>
+         <div id="results-area" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
+            <p id="final-score" class="text-xl text-gray-700 mb-6"></p>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+            重新开始
+            </button>
+         </div>
+         <p class="text-center text-xs text-gray-500 mb-1 mt-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+      </div>
+      <script>
+         const questions = [
+         {
+         question: "当圆的弧长等于其半径时，该弧所对的圆心角是多少弧度？",
+         options: ["pi 弧度", "1 弧度", "180 弧度", "2*pi 弧度"],
+         answer: "1 弧度",
+         explanation: "根据弧度的定义，当弧长等于半径时，圆心角为1弧度。"
+         },
+         {
+         question: "将角度转换为弧度，需要将角度乘以哪个因子？",
+         options: ["180 / pi", "pi / 180", "pi / 360", "360 / pi"],
+         answer: "pi / 180",
+         explanation: "角度转弧度的公式是：radians = degrees * (pi / 180)。"
+         },
+         {
+         question: "将弧度转换为角度，需要将弧度乘以哪个因子？",
+         options: ["180 / pi", "pi / 180", "pi / 360", "360 / pi"],
+         answer: "180 / pi",
+         explanation: "弧度转角度的公式是：degrees = radians * (180 / pi)。"
+         },
+         {
+         question: "90度角等于多少弧度？",
+         options: ["pi 弧度", "pi/2 弧度", "pi/4 弧度", "2*pi 弧度"],
+         answer: "pi/2 弧度",
+         explanation: "90度 = 90 * (pi / 180) = pi/2 弧度。"
+         },
+         {
+         question: "pi 弧度等于多少度？",
+         options: ["90度", "180度", "270度", "360度"],
+         answer: "180度",
+         explanation: "pi 弧度 = pi * (180 / pi) = 180度。"
+         },
+         {
+         question: "在弧长公式 s = r * theta 中，theta 必须使用什么单位？",
+         options: ["度", "弧度", "百分度", "任意角度单位"],
+         answer: "弧度",
+         explanation: "在弧长公式 s = r * theta 中，圆心角 theta 必须以弧度为单位。"
+         },
+         {
+         question: "如果圆的半径加倍，而圆心角（弧度制）保持不变，弧长会怎样变化？",
+         options: ["减半", "不变", "加倍", "变为原来的四倍"],
+         answer: "加倍",
+         explanation: "根据弧长公式 s = r * theta，如果 r 加倍，s 也会加倍。"
+         },
+         {
+         question: "在扇形面积公式 A = (1/2) * r^2 * theta 中，theta 的单位是什么？",
+         options: ["度", "弧度", "平方单位", "无单位"],
+         answer: "弧度",
+         explanation: "在扇形面积公式 A = (1/2) * r^2 * theta 中，圆心角 theta 必须以弧度为单位。"
+         },
+         {
+         question: "如果圆心角（弧度制）加倍，而半径保持不变，扇形面积会怎样变化？",
+         options: ["减半", "不变", "加倍", "变为原来的四倍"],
+         answer: "加倍",
+         explanation: "根据扇形面积公式 A = (1/2) * r^2 * theta，如果 theta 加倍，A 也会加倍。"
+         },
+         {
+         question: "(HL) 弓形面积是如何计算得到的？",
+         options: ["扇形面积 + 三角形面积", "扇形面积 - 三角形面积", "圆面积 - 扇形面积", "圆面积 - 三角形面积"],
+         answer: "扇形面积 - 三角形面积",
+         explanation: "(HL) 弓形面积等于扇形面积减去扇形所对应的三角形的面积：Area_segment = Area_sector - Area_triangle。"
+         },
+         
+         {
+         question: "单位圆的定义是什么？",
+         options: ["半径为1，圆心在任意位置的圆", "半径为任意值，圆心在原点的圆", "半径为1，圆心在原点(0,0)的圆", "直径为1，圆心在原点(0,0)的圆"],
+         answer: "半径为1，圆心在原点(0,0)的圆",
+         explanation: "单位圆是圆心在原点 (0,0)，半径为 1 的圆，其方程为 x^2 + y^2 = 1。"
+         },
+         {
+         question: "在单位圆上，与角 theta 的终边相交的点 P(x, y) 的 y 坐标代表哪个三角比？",
+         options: ["cos(theta)", "sin(theta)", "tan(theta)", "sec(theta)"],
+         answer: "sin(theta)",
+         explanation: "对于单位圆上的点 P(x, y)，sin(theta) = y。"
+         },
+         {
+         question: "在单位圆上，与角 theta 的终边相交的点 P(x, y) 的 x 坐标代表哪个三角比？",
+         options: ["cos(theta)", "sin(theta)", "tan(theta)", "csc(theta)"],
+         answer: "cos(theta)",
+         explanation: "对于单位圆上的点 P(x, y)，cos(theta) = x。"
+         },
+         {
+         question: "tan(theta) 可以用 sin(theta) 和 cos(theta) 如何表示？",
+         options: ["cos(theta) / sin(theta)", "sin(theta) * cos(theta)", "sin(theta) / cos(theta)", "1 / (sin(theta) * cos(theta))"],
+         answer: "sin(theta) / cos(theta)",
+         explanation: "tan(theta) = y/x = sin(theta)/cos(theta)，前提是 cos(theta) != 0。"
+         },
+         {
+         question: "csc(theta) 是哪个三角比的倒数？",
+         options: ["sin(theta)", "cos(theta)", "tan(theta)", "cot(theta)"],
+         answer: "sin(theta)",
+         explanation: "csc(theta) = 1/sin(theta) (cosecant, 余割)。"
+         },
+         {
+         question: "sec(theta) 是哪个三角比的倒数？",
+         options: ["sin(theta)", "cos(theta)", "tan(theta)", "cot(theta)"],
+         answer: "cos(theta)",
+         explanation: "sec(theta) = 1/cos(theta) (secant, 正割)。"
+         },
+         {
+         question: "cot(theta) 是哪个三角比的倒数？",
+         options: ["sin(theta)", "cos(theta)", "tan(theta)", "csc(theta)"],
+         answer: "tan(theta)",
+         explanation: "cot(theta) = 1/tan(theta) (cotangent, 余切)。"
+         },
+         {
+         question: "在哪个象限所有的基本三角比 (sin, cos, tan) 都是正值？",
+         options: ["第一象限", "第二象限", "第三象限", "第四象限"],
+         answer: "第一象限",
+         explanation: "在第一象限 (0 < theta < pi/2)，sin(theta), cos(theta), 和 tan(theta) 均为正值。"
+         },
+         {
+         question: "在第二象限，哪个基本三角比是正值？",
+         options: ["sin(theta)", "cos(theta)", "tan(theta)", "以上都不是"],
+         answer: "sin(theta)",
+         explanation: "在第二象限 (pi/2 < theta < pi)，只有 sin(theta) 是正值。"
+         },
+         {
+         question: "在第三象限，哪个基本三角比是正值？",
+         options: ["sin(theta)", "cos(theta)", "tan(theta)", "以上都不是"],
+         answer: "tan(theta)",
+         explanation: "在第三象限 (pi < theta < 3*pi/2)，只有 tan(theta) 是正值。"
+         },
+         {
+         question: "在第四象限，哪个基本三角比是正值？",
+         options: ["sin(theta)", "cos(theta)", "tan(theta)", "以上都不是"],
+         answer: "cos(theta)",
+         explanation: "在第四象限 (3*pi/2 < theta < 2*pi)，只有 cos(theta) 是正值。"
+         },
+         {
+         question: "cos(pi/3) 的精确值是多少？",
+         options: ["1/2", "sqrt(3)/2", "sqrt(2)/2", "1"],
+         answer: "1/2",
+         explanation: "cos(60度) = cos(pi/3) = 1/2。"
+         },
+         {
+         question: "sin(pi/4) 的精确值是多少？",
+         options: ["1/2", "sqrt(3)/2", "sqrt(2)/2", "1"],
+         answer: "sqrt(2)/2",
+         explanation: "sin(45度) = sin(pi/4) = sqrt(2)/2。"
+         },
+         {
+         question: "tan(pi) 的精确值是多少？",
+         options: ["0", "1", "-1", "未定义"],
+         answer: "0",
+         explanation: "tan(180度) = tan(pi) = 0。"
+         },
+         {
+         question: "cos(theta) 函数的周期是多少？",
+         options: ["pi/2", "pi", "2*pi", "4*pi"],
+         answer: "2*pi",
+         explanation: "cos(theta + 2*pi*k) = cos(theta)，所以 cos(theta) 的周期是 2*pi。"
+         },
+         {
+         question: "tan(theta) 函数的周期是多少？",
+         options: ["pi/2", "pi", "2*pi", "4*pi"],
+         answer: "pi",
+         explanation: "tan(theta + pi*k) = tan(theta)，所以 tan(theta) 的周期是 pi。"
+         },
+         {
+         question: "sin(-theta) 等于什么？",
+         options: ["sin(theta)", "-sin(theta)", "cos(theta)", "-cos(theta)"],
+         answer: "-sin(theta)",
+         explanation: "sin(theta) 是一个奇函数，所以 sin(-theta) = -sin(theta)。"
+         },
+         {
+         question: "cos(-theta) 等于什么？",
+         options: ["cos(theta)", "-cos(theta)", "sin(theta)", "-sin(theta)"],
+         answer: "cos(theta)",
+         explanation: "cos(theta) 是一个偶函数，所以 cos(-theta) = cos(theta)。"
+         },
+         {
+         question: "根据互余关系，sin(pi/2 - theta) 等于什么？",
+         options: ["sin(theta)", "cos(theta)", "-sin(theta)", "-cos(theta)"],
+         answer: "cos(theta)",
+         explanation: "互余关系指出 sin(pi/2 - theta) = cos(theta)。"
+         },
+         {
+         question: "cos(pi - theta) 等于什么？",
+         options: ["cos(theta)", "-cos(theta)", "sin(theta)", "-sin(theta)"],
+         answer: "-cos(theta)",
+         explanation: "根据对称性，cos(pi - theta) = -cos(theta)。"
+         },
+         
+         {
+         question: "哪个是基本的勾股恒等式？",
+         options: ["sin(theta) + cos(theta) = 1", "sin^2(theta) + cos^2(theta) = 1", "sin(theta) - cos(theta) = 1", "sin^2(theta) - cos^2(theta) = 1"],
+         answer: "sin^2(theta) + cos^2(theta) = 1",
+         explanation: "最基本的勾股恒等式是 sin^2(theta) + cos^2(theta) = 1。"
+         },
+         {
+         question: "恒等式 1 + tan^2(theta) 等于什么？",
+         options: ["cot^2(theta)", "sec^2(theta)", "csc^2(theta)", "cos^2(theta)"],
+         answer: "sec^2(theta)",
+         explanation: "根据勾股恒等式的变形，1 + tan^2(theta) = sec^2(theta)。"
+         },
+         {
+         question: "恒等式 1 + cot^2(theta) 等于什么？",
+         options: ["tan^2(theta)", "sec^2(theta)", "csc^2(theta)", "sin^2(theta)"],
+         answer: "csc^2(theta)",
+         explanation: "根据勾股恒等式的变形，1 + cot^2(theta) = csc^2(theta)。"
+         },
+         {
+         question: "(HL) 复角公式 sin(A + B) 的展开式是什么？",
+         options: ["sin(A)cos(B) - cos(A)sin(B)", "cos(A)cos(B) + sin(A)sin(B)", "sin(A)cos(B) + cos(A)sin(B)", "cos(A)cos(B) - sin(A)sin(B)"],
+         answer: "sin(A)cos(B) + cos(A)sin(B)",
+         explanation: "(HL) sin(A + B) = sin(A)cos(B) + cos(A)sin(B)。"
+         },
+         {
+         question: "(HL) 复角公式 cos(A - B) 的展开式是什么？",
+         options: ["sin(A)cos(B) - cos(A)sin(B)", "cos(A)cos(B) + sin(A)sin(B)", "sin(A)cos(B) + cos(A)sin(B)", "cos(A)cos(B) - sin(A)sin(B)"],
+         answer: "cos(A)cos(B) + sin(A)sin(B)",
+         explanation: "(HL) cos(A - B) = cos(A)cos(B) + sin(A)sin(B)。"
+         },
+         {
+         question: "二倍角公式 sin(2*theta) 等于什么？",
+         options: ["cos^2(theta) - sin^2(theta)", "2*sin(theta)*cos(theta)", "1 - 2*sin^2(theta)", "2*cos^2(theta) - 1"],
+         answer: "2*sin(theta)*cos(theta)",
+         explanation: "sin(2*theta) = 2*sin(theta)*cos(theta)。"
+         },
+         {
+         question: "cos(2*theta) 的哪个表达式是不正确的？",
+         options: ["cos^2(theta) - sin^2(theta)", "2*cos^2(theta) - 1", "1 - 2*sin^2(theta)", "1 + 2*sin^2(theta)"],
+         answer: "1 + 2*sin^2(theta)",
+         explanation: "cos(2*theta) 可以表示为 cos^2(theta) - sin^2(theta)，2*cos^2(theta) - 1，或 1 - 2*sin^2(theta)。"
+         },
+         {
+         question: "(HL) 形式为 a*sin(x) + b*cos(x) 的表达式可以转换为 R*sin(x + alpha) 的形式，其中 R 代表什么？",
+         options: ["a + b", "a*b", "sqrt(a^2 + b^2)", "sqrt(a^2 - b^2)"],
+         answer: "sqrt(a^2 + b^2)",
+         explanation: "(HL) 在 a*sin(x) + b*cos(x) = R*sin(x + alpha) 的转换中，R = sqrt(a^2 + b^2)，代表振幅。"
+         },
+         {
+         question: "(HL) 和差化积公式的主要用途是什么？",
+         options: ["将三角函数的和或差转换为乘积形式", "将三角函数的乘积转换为和或差形式", "简化单个三角函数", "求解二次三角方程"],
+         answer: "将三角函数的和或差转换为乘积形式",
+         explanation: "(HL) 和差化积公式用于将两个三角函数的和或差表示为它们的乘积形式，常用于解方程或化简。"
+         },
+         {
+         question: "(HL) sin^2(theta/2) 的半角公式是什么？",
+         options: ["(1 + cos(theta)) / 2", "(1 - cos(theta)) / 2", "(1 - sin(theta)) / 2", "(1 + sin(theta)) / 2"],
+         answer: "(1 - cos(theta)) / 2",
+         explanation: "(HL) 半角公式为 sin^2(theta/2) = (1 - cos(theta)) / 2。"
+         },
+         
+         {
+         question: "y = sin(x) 函数的振幅是多少？",
+         options: ["1", "2", "pi", "2*pi"],
+         answer: "1",
+         explanation: "y = sin(x) 函数的振幅是1。"
+         },
+         {
+         question: "y = cos(x) 函数的值域是什么？",
+         options: ["(-infinity, +infinity)", "[0, 1]", "[-1, 1]", "[-pi, pi]"],
+         answer: "[-1, 1]",
+         explanation: "y = cos(x) 函数的值域是 [-1, 1]。"
+         },
+         {
+         question: "y = tan(x) 函数的周期是多少？",
+         options: ["pi/2", "pi", "2*pi", "无周期"],
+         answer: "pi",
+         explanation: "y = tan(x) 函数的周期是 pi。"
+         },
+         {
+         question: "y = tan(x) 函数的图像在哪些 x 值处有垂直渐近线？",
+         options: ["x = n*pi", "x = (pi/2) + n*pi", "x = 2*n*pi", "x = (pi/4) + n*pi"],
+         answer: "x = (pi/2) + n*pi",
+         explanation: "y = tan(x) 函数在 x = (pi/2) + n*pi (n 为整数) 处有垂直渐近线，因为这些点 cos(x) = 0。"
+         },
+         {
+         question: "对于函数 y = A*sin(B*(x - C)) + D，哪个参数影响函数的振幅？",
+         options: ["A", "B", "C", "D"],
+         answer: "A",
+         explanation: "在 y = A*sin(B*(x - C)) + D 中，abs(A) 代表振幅。"
+         },
+         {
+         question: "对于函数 y = A*sin(B*(x - C)) + D，哪个参数决定主轴（或垂直位移）？",
+         options: ["A", "B", "C", "D"],
+         answer: "D",
+         explanation: "在 y = A*sin(B*(x - C)) + D 中，D 代表垂直位移，主轴是 y = D。"
+         },
+         {
+         question: "对于函数 y = A*cos(B*x)，周期是如何计算的？",
+         options: ["2*pi / abs(A)", "abs(B) / (2*pi)", "2*pi / abs(B)", "abs(A) / (2*pi)"],
+         answer: "2*pi / abs(B)",
+         explanation: "对于 y = A*cos(B*x)，周期是 2*pi / abs(B)。"
+         },
+         {
+         question: "对于函数 y = A*tan(B*x)，周期是如何计算的？",
+         options: ["pi / abs(A)", "abs(B) / pi", "pi / abs(B)", "abs(A) / pi"],
+         answer: "pi / abs(B)",
+         explanation: "对于 y = A*tan(B*x)，周期是 pi / abs(B)。"
+         },
+         {
+         question: "函数 y = A*sin(B*(x - C)) + D 中的 C 代表什么变换？",
+         options: ["振幅变化", "周期变化", "垂直位移", "相位移（水平位移）"],
+         answer: "相位移（水平位移）",
+         explanation: "C 代表相位移或水平位移。"
+         },
+         {
+         question: "(HL) y = csc(x) 的图像的垂直渐近线与哪个函数的零点相对应？",
+         options: ["y = sin(x)", "y = cos(x)", "y = tan(x)", "y = cot(x)"],
+         answer: "y = sin(x)",
+         explanation: "(HL) 因为 csc(x) = 1/sin(x)，所以当 sin(x) = 0 时，y = csc(x) 有垂直渐近线。"
+         },
+         {
+         question: "(HL) y = sec(x) 的图像的垂直渐近线在哪些 x 值处？",
+         options: ["x = n*pi", "x = (pi/2) + n*pi", "x = 2*n*pi", "x = (pi/4) + n*pi"],
+         answer: "x = (pi/2) + n*pi",
+         explanation: "(HL) 因为 sec(x) = 1/cos(x)，所以当 cos(x) = 0 时，y = sec(x) 有垂直渐近线。这些点是 x = (pi/2) + n*pi。"
+         },
+         
+         {
+         question: "正弦定理主要用于解决哪种类型的三角形问题？",
+         options: ["已知三边 (SSS)", "已知两边夹角 (SAS)", "已知两角一边 (AAS 或 ASA)", "以上都是"],
+         answer: "已知两角一边 (AAS 或 ASA)",
+         explanation: "正弦定理 a/sin(A) = b/sin(B) = c/sin(C) 主要用于已知两角一边 (AAS, ASA) 或两边及其中一边的对角 (SSA) 的情况。"
+         },
+         {
+         question: "余弦定理 a^2 = b^2 + c^2 - 2*b*c*cos(A) 主要用于解决哪种类型的三角形问题？",
+         options: ["已知两角一边 (AAS)", "已知两边夹角 (SAS)", "已知一角和其对边 (ASA)", "仅用于直角三角形"],
+         answer: "已知两边夹角 (SAS)",
+         explanation: "余弦定理主要用于已知三边 (SSS) 或两边及其夹角 (SAS) 的情况来求解三角形。"
+         },
+         {
+         question: "三角形面积公式 Area = (1/2) * a * b * sin(C) 中的 C 代表什么？",
+         options: ["任意一个角", "边 a 和边 b 的夹角", "最大的角", "最小的角"],
+         answer: "边 a 和边 b 的夹角",
+         explanation: "在三角形面积公式 Area = (1/2) * a * b * sin(C) 中，C 是边 a 和边 b 之间的夹角。"
+         },
+         {
+         question: "(HL) 海伦公式 Area = sqrt(s*(s-a)*(s-b)*(s-c)) 中的 s 代表什么？",
+         options: ["三角形的任意一边", "三角形的周长", "三角形的半周长", "三角形的高"],
+         answer: "三角形的半周长",
+         explanation: "(HL) 在海伦公式中，s = (a+b+c)/2，代表三角形的半周长。"
+         },
+         {
+         question: "在使用正弦定理解三角形时，哪种已知条件可能导致“模糊情况”（Ambiguous Case）？",
+         options: ["SSS (三条边)", "SAS (两边夹角)", "ASA (两角夹边)", "SSA (两边及其中一边的对角)"],
+         answer: "SSA (两边及其中一边的对角)",
+         explanation: "当已知两边和非夹角时 (SSA)，使用正弦定理可能存在0个、1个或2个三角形解，这被称为模糊情况。"
+         },
+         {
+         question: "在正弦定理的模糊情况 (SSA) 分析中，如果已知角 A、其对边 a 和另一边 b，且 a < b*sin(A)，那么三角形的解有多少个？",
+         options: ["0 个", "1 个", "2 个", "无法确定"],
+         answer: "0 个",
+         explanation: "在 SSA情况下，设高 h = b*sin(A)。如果 a < h，则边 a 太短，无法构成三角形，所以无解。"
+         },
+         {
+         question: "在正弦定理的模糊情况 (SSA) 分析中，如果已知角 A、其对边 a 和另一边 b，且 a = b*sin(A)，那么三角形的解有多少个？",
+         options: ["0 个", "1 个 (直角三角形)", "2 个", "无法确定"],
+         answer: "1 个 (直角三角形)",
+         explanation: "在 SSA情况下，设高 h = b*sin(A)。如果 a = h，则恰好构成一个直角三角形。"
+         },
+         {
+         question: "在正弦定理的模糊情况 (SSA) 分析中，如果已知角 A、其对边 a 和另一边 b，且 b*sin(A) < a < b，那么三角形的解有多少个？",
+         options: ["0 个", "1 个", "2 个", "无法确定"],
+         answer: "2 个",
+         explanation: "在 SSA情况下，设高 h = b*sin(A)。如果 h < a < b，则存在两个可能的三角形解。"
+         },
+         
+         {
+         question: "解三角方程 sin(X) = k 的第一步通常是找到什么？",
+         options: ["所有解", "周期", "主值/基本解 (Principal Value / Basic Angle)", "振幅"],
+         answer: "主值/基本解 (Principal Value / Basic Angle)",
+         explanation: "解三角方程如 sin(X) = k 时，首先利用反三角函数（如 arcsin）找到一个主值或基本解。"
+         },
+         {
+         question: "如果 alpha 是方程 cos(X) = c 的一个解，那么在 [0, 2*pi) 区间内的另一个通解形式是什么（假设 alpha 不等于 0 或 pi）？",
+         options: ["pi - alpha", "pi + alpha", "2*pi - alpha (或 -alpha)", "alpha + pi/2"],
+         answer: "2*pi - alpha (或 -alpha)",
+         explanation: "由于余弦函数的对称性 (cos(X) = cos(-X) 或 cos(X) = cos(2*pi - X))，如果 alpha 是一个解，则 -alpha (或 2*pi - alpha) 也是一个解（在考虑周期性之前）。"
+         },
+         {
+         question: "方程 tan(X) = t 的通解形式是什么（其中 alpha 是一个特解）？",
+         options: ["X = alpha + 2*n*pi", "X = alpha + n*pi", "X = alpha + n*pi/2", "X = n*pi - alpha"],
+         answer: "X = alpha + n*pi",
+         explanation: "正切函数的周期是 pi，所以如果 alpha 是一个解，则 X = alpha + n*pi (n 为整数) 是通解。"
+         },
+         {
+         question: "解方程 2*sin^2(x) - sin(x) = 0 时，常用的第一步技巧是什么？",
+         options: ["使用倍角公式", "因式分解", "两边平方", "使用和差化积"],
+         answer: "因式分解",
+         explanation: "该方程可以通过提取公因式 sin(x) 来进行因式分解：sin(x)*(2*sin(x) - 1) = 0。"
+         },
+         {
+         question: "解形如 2*cos^2(x) + cos(x) - 1 = 0 的三角方程时，可以将其看作关于哪个表达式的二次方程？",
+         options: ["sin(x)", "cos(x)", "tan(x)", "x"],
+         answer: "cos(x)",
+         explanation: "可以令 u = cos(x)，则方程变为 2*u^2 + u - 1 = 0，这是一个关于 u (即 cos(x)) 的二次方程。"
+         },
+         {
+         question: "(HL) 使用 R*sin(x + alpha) 的形式求解 a*sin(x) + b*cos(x) = c 这类方程的优点是什么？",
+         options: ["总是能得到整数解", "将方程化为单一三角函数的形式", "避免使用反三角函数", "只适用于小角度"],
+         answer: "将方程化为单一三角函数的形式",
+         explanation: "(HL) 将 a*sin(x) + b*cos(x) 转换为 R*sin(x + alpha) 或 R*cos(x - beta) 的形式，可以将原方程简化为只含一个三角函数的形式，如 sin(x + alpha) = c/R，从而更易求解。"
+         },
+         {
+         question: "在解三角方程时，为什么检查解是否在给定区间内很重要？",
+         options: ["因为三角函数有周期性，可能产生无穷多解", "因为反三角函数只给出一个主值", "题目通常会指定解的范围", "以上所有原因"],
+         answer: "以上所有原因",
+         explanation: "三角函数的周期性导致有无穷解，反函数只给主值，而题目常限定范围，因此必须筛选符合区间的解。"
+         },
+         
+         {
+         question: "(HL) 标量和向量的主要区别是什么？",
+         options: ["标量有单位，向量没有", "标量只有大小，向量既有大小又有方向", "向量可以为负，标量不能", "标量用于物理，向量用于数学"],
+         answer: "标量只有大小，向量既有大小又有方向",
+         explanation: "(HL) 标量是只有大小的量（如温度、质量），而向量是既有大小（模）又有方向的量（如力、速度）。"
+         },
+         {
+         question: "(HL) 如果点 A 的位置向量是 OA，点 B 的位置向量是 OB，那么向量 AB 如何表示？",
+         options: ["OA + OB", "OA - OB", "OB - OA", "OB / OA"],
+         answer: "OB - OA",
+         explanation: "(HL) 从点 A 指向点 B 的向量 AB 等于终点 B 的位置向量减去起点 A 的位置向量，即 AB = OB - OA。"
+         },
+         {
+         question: "(HL) 向量 v = <a, b, c> 的模（大小）是如何计算的？",
+         options: ["a + b + c", "sqrt(a^2 + b^2 + c^2)", "abs(a) + abs(b) + abs(c)", "a*b*c"],
+         answer: "sqrt(a^2 + b^2 + c^2)",
+         explanation: "(HL) 三维向量 v = <a, b, c> 的模 ||v|| = sqrt(a^2 + b^2 + c^2)。"
+         },
+         {
+         question: "(HL) 如何获得与非零向量 v 同方向的单位向量？",
+         options: ["v * ||v||", "v / ||v||", "||v|| / v", "v + <1,1,1>"],
+         answer: "v / ||v||",
+         explanation: "(HL) 与向量 v 同方向的单位向量 u_v 是通过将向量 v 除以其自身的模 ||v|| 得到的。"
+         },
+         {
+         question: "(HL) 两个非零向量 u 和 v 的数量积（点积）u . v = 0 意味着什么？",
+         options: ["u 和 v 平行", "u 和 v 垂直（正交）", "u 和 v 大小相等", "u 和 v 方向相同"],
+         answer: "u 和 v 垂直（正交）",
+         explanation: "(HL) 如果 u . v = 0，则 cos(theta) = 0 (theta 是夹角)，这意味着 u 和 v 相互垂直（正交）。"
+         },
+         {
+         question: "(HL) 数量积 u . v 的计算公式除了 abs(u)*abs(v)*cos(theta) 之外，分量形式是什么？ (对于 u=<u1,u2,u3>, v=<v1,v2,v3>)",
+         options: ["u1*v2 + u2*v3 + u3*v1", "u1*v1 + u2*v2 + u3*v3", "(u1+v1)*(u2+v2)*(u3+v3)", "u1/v1 + u2/v2 + u3/v3"],
+         answer: "u1*v1 + u2*v2 + u3*v3",
+         explanation: "(HL) 数量积的分量形式为 u . v = u1*v1 + u2*v2 + u3*v3。"
+         },
+         {
+         question: "(HL) 向量 u 在向量 v 方向上的标量投影的公式是什么？",
+         options: ["(u . v) / ||u||", "(u . v) / ||v||", "(u x v) / ||v||", "||v|| / (u . v)"],
+         answer: "(u . v) / ||v||",
+         explanation: "(HL) 向量 u 在向量 v 方向上的标量投影是 comp_v(u) = (u . v) / ||v||。"
+         },
+         {
+         question: "(HL) 两个三维向量 u 和 v 的向量积（叉积）u x v 的结果是什么类型的量？",
+         options: ["一个标量", "一个与 u 和 v 都平行的向量", "一个与 u 和 v 都垂直的向量", "一个与 u 平行但与 v 垂直的向量"],
+         answer: "一个与 u 和 v 都垂直的向量",
+         explanation: "(HL) 向量积 u x v 的结果是一个新的向量，它同时垂直于向量 u 和向量 v。"
+         },
+         {
+         question: "(HL) 向量积的模 ||u x v|| 的几何意义是什么？",
+         options: ["由 u 和 v 张成的三角形的面积", "由 u 和 v 张成的平行四边形的面积", "u 和 v 的长度之和", "u 和 v 的夹角的余弦值"],
+         answer: "由 u 和 v 张成的平行四边形的面积",
+         explanation: "(HL) ||u x v|| = ||u|| * ||v|| * sin(theta)，其几何意义是由向量 u 和 v 作为邻边所构成的平行四边形的面积。"
+         },
+         {
+         question: "(HL) 如果两个非零向量 u 和 v 平行，它们的向量积 u x v 是什么？",
+         options: ["一个单位向量", "零向量 (0)", "一个模为 ||u||*||v|| 的向量", "未定义"],
+         answer: "零向量 (0)",
+         explanation: "(HL) 如果 u 和 v 平行，则它们之间的夹角 theta 为 0 或 pi。因为 sin(0) = sin(pi) = 0，所以 u x v = 0 (零向量)。"
+         },
+         {
+         question: "(HL) 标量三重积 u . (v x w) 的绝对值的几何意义是什么？",
+         options: ["由 u, v, w 张成的三角形的面积", "由 u, v, w 张成的平行六面体的体积", "由 u, v, w 张成的平行四边形的周长", "u, v, w 向量的模的乘积"],
+         answer: "由 u, v, w 张成的平行六面体的体积",
+         explanation: "(HL) |u . (v x w)| 代表由向量 u, v, w 作为相邻边所构成的平行六面体的体积。"
+         },
+         {
+         question: "(HL) 如果三个向量 u, v, w 的标量三重积 u . (v x w) = 0，这说明了这三个向量的什么几何关系？",
+         options: ["它们互相垂直", "它们大小相等", "它们共面 (coplanar)", "它们构成一个正方体"],
+         answer: "它们共面 (coplanar)",
+         explanation: "(HL) 如果标量三重积为零，意味着由这三个向量构成的平行六面体的体积为零，因此这三个向量位于同一个平面内（共面）。"
+         },
+         {
+         question: "(HL) 向量积 u x v 与 v x u 的关系是什么？",
+         options: ["u x v = v x u", "u x v = - (v x u)", "u x v = 2 * (v x u)", "u x v = (v x u) / 2"],
+         answer: "u x v = - (v x u)",
+         explanation: "(HL) 向量积不满足交换律，而是满足反交换律：u x v = -(v x u)。它们大小相等，方向相反。"
+         },
+         
+         {
+         question: "(HL) 空间直线 r = a + t*d 的向量方程中，d 代表什么？",
+         options: ["直线上一点的位置向量", "直线的方向向量", "直线的法向量", "参数"],
+         answer: "直线的方向向量",
+         explanation: "(HL) 在直线 r = a + t*d 的向量方程中，a 是直线上某已知点的位置向量，d 是直线的方向向量，t 是参数。"
+         },
+         {
+         question: "(HL) 空间平面 A*x + B*y + C*z = D 的笛卡尔方程中，向量 <A, B, C> 代表什么？",
+         options: ["平面上一点的位置向量", "平面的方向向量", "平面的法向量", "平面内的一个向量"],
+         answer: "平面的法向量",
+         explanation: "(HL) 在平面 A*x + B*y + C*z = D 的笛卡尔方程中，系数 A, B, C 构成了平面的法向量 n = <A, B, C>，该向量垂直于平面。"
+         },
+         {
+         question: "(HL) 如果两条直线 r1 = a1 + t*d1 和 r2 = a2 + s*d2 平行但不重合，它们的条件是什么？",
+         options: ["d1 = k*d2 且 a1 在 r2 上", "d1 . d2 = 0", "d1 = k*d2 且 a1 不在 r2 上", "d1 x d2 = 0 且 a1 不在 r2 上"],
+         answer: "d1 = k*d2 且 a1 不在 r2 上",
+         explanation: "(HL) 两直线平行意味着它们的方向向量 d1 和 d2 平行 (d1 = k*d2 for some scalar k)。如果不重合，则其中一条直线上的点 (如 a1) 不在另一条直线上。"
+         },
+         {
+         question: "(HL) 两条直线 r1 = a1 + t*d1 和 r2 = a2 + s*d2 相交的条件是什么？",
+         options: ["d1 与 d2 平行", "d1 与 d2 不平行，且方程组 a1 + t*d1 = a2 + s*d2 有唯一解 (s,t)", "d1 与 d2 不平行，且方程组 a1 + t*d1 = a2 + s*d2 无解", "d1 . d2 = 0"],
+         answer: "d1 与 d2 不平行，且方程组 a1 + t*d1 = a2 + s*d2 有唯一解 (s,t)",
+         explanation: "(HL) 两直线相交，首先它们的方向向量不平行，其次它们必须有一个公共点，即参数方程组 a1 + t*d1 = a2 + s*d2 有唯一的 s 和 t 值。"
+         },
+         {
+         question: "(HL) 如果一条直线 r = a + t*d 与一个平面 r . n = P 平行且不包含在平面内，那么 d 和 n 的关系以及 a . n 与 P 的关系是什么？",
+         options: ["d . n != 0 且 a . n = P", "d . n = 0 且 a . n = P", "d . n = 0 且 a . n != P", "d . n != 0 且 a . n != P"],
+         answer: "d . n = 0 且 a . n != P",
+         explanation: "(HL) 直线与平面平行意味着直线的方向向量 d 与平面的法向量 n 垂直 (d . n = 0)。如果直线不在平面内，则直线上任一点 a 代入平面方程不成立 (a . n != P)。"
+         },
+         {
+         question: "(HL) 如果两个平面 r . n1 = P1 和 r . n2 = P2 相交，它们的交线方向向量如何确定？",
+         options: ["n1 + n2", "n1 - n2", "n1 . n2", "n1 x n2"],
+         answer: "n1 x n2",
+         explanation: "(HL) 两个相交平面的交线同时垂直于两个平面的法向量 n1 和 n2。因此，交线的方向向量平行于 n1 x n2。"
+         },
+         {
+         question: "(HL) 计算点 X 到直线 r = a + t*d 的距离的公式中，分子涉及到哪个向量运算？",
+         options: ["(X-a) . d", "||(X-a) x d||", "||(X-a) . d||", "X . d"],
+         answer: "||(X-a) x d||",
+         explanation: "(HL) 点 X 到直线 r = a + t*d 的距离公式为 Distance = ||AX x d|| / ||d||，其中 AX = X - a。分子是向量 AX 和 d 的叉积的模。"
+         },
+         {
+         question: "(HL) 点 (x0, y0, z0) 到平面 Ax + By + Cz + D = 0 的距离公式的分母是什么？",
+         options: ["sqrt(A^2 + B^2 + C^2)", "A + B + C", "sqrt(x0^2 + y0^2 + z0^2)", "abs(D)"],
+         answer: "sqrt(A^2 + B^2 + C^2)",
+         explanation: "(HL) 点 (x0, y0, z0) 到平面 Ax + By + Cz + D = 0 的距离公式为 abs(A*x0 + B*y0 + C*z0 + D) / sqrt(A^2 + B^2 + C^2)。分母是法向量 <A,B,C> 的模。"
+         },
+         {
+         question: "(HL) 两条异面直线 r1 = a1 + t*d1 和 r2 = a2 + s*d2 之间的最短距离公式的分母是什么？",
+         options: ["||d1 . d2||", "||d1 x d2||", "||a2 - a1||", "||d1|| * ||d2||"],
+         answer: "||d1 x d2||",
+         explanation: "(HL) 两异面直线间的最短距离公式为 Distance = |(a2 - a1) . (d1 x d2)| / ||d1 x d2||。分母是两直线方向向量的叉积的模。"
+         },
+         {
+         question: "(HL) 两条直线方向向量分别为 d1 和 d2，它们之间的夹角 theta 如何通过点积计算？",
+         options: ["cos(theta) = (d1 . d2) / (||d1|| * ||d2||)", "sin(theta) = (d1 . d2) / (||d1|| * ||d2||)", "cos(theta) = ||d1 x d2|| / (||d1|| * ||d2||)", "tan(theta) = (d1 . d2) / ||d1 x d2||"],
+         answer: "cos(theta) = (d1 . d2) / (||d1|| * ||d2||)",
+         explanation: "(HL) 两直线夹角的余弦值由 cos(theta) = |d1 . d2| / (||d1|| * ||d2||) 给出（通常取绝对值得到锐角）。"
+         },
+         {
+         question: "(HL) 直线与平面间的夹角 theta 与直线方向向量 d 和平面法向量 n 之间的夹角 phi 有何关系？",
+         options: ["theta = phi", "theta = pi - phi", "theta = pi/2 - phi", "theta = phi - pi/2"],
+         answer: "theta = pi/2 - phi",
+         explanation: "(HL) 如果 phi 是直线方向向量 d 与平面法向量 n 的夹角，则直线与平面本身的夹角 theta 是 pi/2 - phi。因此 sin(theta) = cos(phi)。"
+         },
+         {
+         question: "(HL) 两平面间的夹角是如何定义的？",
+         options: ["它们平面内两条相交直线的夹角", "它们法向量之间的夹角", "一个平面上的点到另一个平面的最短距离", "它们交线的方向向量与法向量的夹角"],
+         answer: "它们法向量之间的夹角",
+         explanation: "(HL) 两平面之间的夹角（二面角）定义为它们各自法向量 n1 和 n2 之间的夹角。"
+         },
+         {
+         question: "360度等于多少弧度？",
+         options: ["pi 弧度", "2*pi 弧度", "pi/2 弧度", "4*pi 弧度"],
+         answer: "2*pi 弧度",
+         explanation: "360度 = 360 * (pi / 180) = 2*pi 弧度。"
+         },
+         {
+         question: "在弧长公式 s = r * theta 中，如果弧长 s 和半径 r 已知，如何求圆心角 theta (以弧度为单位)？",
+         options: ["theta = s * r", "theta = r / s", "theta = s / r", "theta = s^2 / r"],
+         answer: "theta = s / r",
+         explanation: "由 s = r * theta 可得 theta = s / r。"
+         },
+         {
+         question: "tan(theta) 在哪些角度（用弧度表示，k为整数）是未定义的？",
+         options: ["k*pi", "k*pi + pi/2", "2*k*pi", "k*pi + pi/4"],
+         answer: "k*pi + pi/2",
+         explanation: "tan(theta) = sin(theta)/cos(theta)。当 cos(theta) = 0 时，tan(theta) 未定义。cos(theta) = 0 发生在 theta = pi/2, 3*pi/2, ... 即 k*pi + pi/2。"
+         },
+         {
+         question: "sin(pi + theta) 等于什么？",
+         options: ["sin(theta)", "-sin(theta)", "cos(theta)", "-cos(theta)"],
+         answer: "-sin(theta)",
+         explanation: "根据单位圆的对称性，sin(pi + theta) = -sin(theta)。角 pi + theta 的终边在第三象限（若 theta 在第一象限），其正弦值为负。"
+         },
+         {
+         question: "tan(pi - theta) 等于什么？",
+         options: ["tan(theta)", "-tan(theta)", "cot(theta)", "-cot(theta)"],
+         answer: "-tan(theta)",
+         explanation: "根据单位圆的对称性，tan(pi - theta) = -tan(theta)。角 pi - theta 的终边在第二象限（若 theta 在第一象限），其正切值为负。"
+         },
+         {
+         question: "(HL) tan(A + B) 的展开式中，分母是什么？",
+         options: ["1 + tan(A)tan(B)", "1 - tan(A)tan(B)", "tan(A) - tan(B)", "tan(A) + tan(B)"],
+         answer: "1 - tan(A)tan(B)",
+         explanation: "(HL) tan(A + B) = (tan(A) + tan(B)) / (1 - tan(A)tan(B))。"
+         },
+         {
+         question: "函数 y = 3*cos(2x - pi) + 5 的振幅是多少？",
+         options: ["2", "3", "pi", "5"],
+         answer: "3",
+         explanation: "对于 y = A*cos(B*(x - C)) + D 的形式，振幅是 |A|。这里 A=3，所以振幅是3。"
+         },
+         {
+         question: "函数 y = sin(x/2) 的周期是多少？",
+         options: ["pi", "2*pi", "4*pi", "pi/2"],
+         answer: "4*pi",
+         explanation: "对于 y = sin(Bx)，周期是 2*pi/|B|。这里 B = 1/2，所以周期是 2*pi / (1/2) = 4*pi。"
+         },
+         {
+         question: "正弦定理 a/sinA = b/sinB = c/sinC = 2R 中的 R 代表什么？",
+         options: ["三角形的内切圆半径", "三角形的外接圆半径", "三角形的周长", "三角形的面积"],
+         answer: "三角形的外接圆半径",
+         explanation: "在正弦定理中，2R 是比例常数，其中 R 是三角形外接圆的半径。"
+         },
+         {
+         question: "如果已知三角形的三条边长，应优先使用哪个定理来求解角度？",
+         options: ["正弦定理", "余弦定理", "勾股定理", "面积公式"],
+         answer: "余弦定理",
+         explanation: "当已知三角形的三条边 (SSS) 时，应使用余弦定理来求解角度，例如 cos(A) = (b^2 + c^2 - a^2) / (2*b*c)。"
+         },
+         {
+         question: "解三角方程时，如果得到 sin(x) = 1.5，这意味着什么？",
+         options: ["x 有一个解", "x 有两个解", "x 有无穷多解", "x 无实数解"],
+         answer: "x 无实数解",
+         explanation: "正弦函数 sin(x) 的值域是 [-1, 1]。由于 1.5 超出了这个范围，所以方程 sin(x) = 1.5 没有实数解。"
+         },
+         {
+         question: "(HL) 向量的零向量有什么特性？",
+         options: ["模为1，方向任意", "模为0，方向确定", "模为0，方向任意", "模为任意，方向为零"],
+         answer: "模为0，方向任意",
+         explanation: "(HL) 零向量的模（长度）为0，其方向被认为是任意的或未定义的。"
+         },
+         {
+         question: "(HL) 若向量 u 和 v 满足 u . v = ||u|| * ||v||，则 u 和 v 之间的夹角是多少？",
+         options: ["0 度 (或 0 弧度)", "90 度 (或 pi/2 弧度)", "180 度 (或 pi 弧度)", "45 度 (或 pi/4 弧度)"],
+         answer: "0 度 (或 0 弧度)",
+         explanation: "(HL) 因为 u . v = ||u|| * ||v|| * cos(theta)，如果 u . v = ||u|| * ||v|| (且u,v非零向量)，则 cos(theta) = 1，所以夹角 theta = 0。这意味着向量同向。"
+         },
+         {
+         question: "(HL) 向量 u 在向量 v 方向上的向量投影的公式是什么？",
+         options: ["((u . v) / ||v||^2) * v", "((u . v) / ||u||^2) * u", "((u x v) / ||v||^2) * v", "(u . v) * v"],
+         answer: "((u . v) / ||v||^2) * v",
+         explanation: "(HL) 向量 u 在向量 v 方向上的向量投影是 proj_v(u) = ((u . v) / ||v||^2) * v。"
+         },
+         {
+         question: "(HL) 空间直线方程 (x - x0)/l = (y - y0)/m = (z - z0)/n 被称为什么形式？",
+         options: ["向量方程", "参数方程", "笛卡尔方程/对称方程", "法向量方程"],
+         answer: "笛卡尔方程/对称方程",
+         explanation: "(HL) 这是空间直线的笛卡尔方程或对称方程形式，其中 <l, m, n> 是方向向量，(x0, y0, z0) 是直线上一点。"
+         },
+         {
+         question: "(HL) 如果一个平面的法向量是 n，平面上一点的位置向量是 a，那么该平面的向量方程可以表示为什么？",
+         options: ["r = a + t*n", "r . a = n . a", "r . n = a . n", "r x n = a x n"],
+         answer: "r . n = a . n",
+         explanation: "(HL) 平面的向量方程可以表示为 r . n = a . n (或 r . n = D)，其中 r 是平面上任意一点的位置向量，n 是法向量，a 是平面上某已知点的位置向量。"
+         },
+         {
+         question: "(HL) 两条直线异面（Skew Lines）的定义是什么？",
+         options: ["它们平行但不重合", "它们在同一点相交", "它们既不平行也不相交", "它们重合"],
+         answer: "它们既不平行也不相交",
+         explanation: "(HL) 异面直线是指在三维空间中，两条直线既不相互平行，也不在任何一点相交。"
+         },
+         {
+         question: "(HL) 判断直线 r = a + td 是否在平面 r . n = P 内的充分必要条件是什么？",
+         options: ["d . n != 0 且 a . n = P", "d . n = 0 且 a . n = P", "d . n = 0 且 a . n != P", "d . n != 0 且 a . n != P"],
+         answer: "d . n = 0 且 a . n = P",
+         explanation: "(HL) 直线在平面内，意味着直线的方向向量 d 必须与平面的法向量 n 垂直 (即 d . n = 0)，并且直线上至少有一点 (例如点 a) 必须在平面上 (即 a . n = P)。"
+         }
+         ];
+         
+           const quizContainer = document.getElementById('quiz-container');
+           const gameArea = document.getElementById('game-area');
+           const resultsArea = document.getElementById('results-area');
+           const questionCounter = document.getElementById('question-counter');
+           const scoreDisplay = document.getElementById('score-display');
+           const progressBar = document.getElementById('progress-bar');
+           const questionText = document.getElementById('question-text');
+           const optionsContainer = document.getElementById('options-container');
+           const feedbackArea = document.getElementById('feedback-area');
+           const feedbackText = document.getElementById('feedback-text');
+           const explanationText = document.getElementById('explanation-text');
+           const nextBtn = document.getElementById('next-btn');
+           const finalScore = document.getElementById('final-score');
+           const resultMessage = document.getElementById('result-message');
+           const restartBtn = document.getElementById('restart-btn');
+           const confettiCanvas = document.getElementById('confetti-canvas');
+           let myConfettiInstance = null;
+           if (confettiCanvas && typeof confetti !== 'undefined') {
+               myConfettiInstance = confetti.create(confettiCanvas, {
+                   resize: true,
+                   useWorker: true
+               });
+           }
+           let currentQuestionIndex = 0;
+           let score = 0;
+           let questionsAnsweredInSession = 0;
+           let shuffledQuestions = [];
+           function shuffleArray(array) {
+               for (let i = array.length - 1; i > 0; i--) {
+                   const j = Math.floor(Math.random() * (i + 1));
+                   [array[i], array[j]] = [array[j], array[i]];
+               }
+               return array;
+           }
+           function updateScoreDisplay() {
+               const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
+               scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
+           }
+           function updateProgressBar() {
+               const totalQuestionsToDisplay = shuffledQuestions.length;
+               const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
+               progressBar.style.width = `${progressPercentage}%`;
+               progressBar.textContent = `${progressPercentage}%`;
+           }
+           function updateProgressBarAfterAnswer() {
+               const totalQuestionsToDisplay = shuffledQuestions.length;
+               const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+               progressBar.style.width = `${progressPercentage}%`;
+               progressBar.textContent = `${progressPercentage}%`;
+           }
+           function startGame() {
+               currentQuestionIndex = 0;
+               score = 0;
+               questionsAnsweredInSession = 0;
+               shuffledQuestions = shuffleArray([...questions]);
+               updateScoreDisplay();
+               progressBar.style.width = '0%';
+               progressBar.textContent = '0%';
+               resultsArea.classList.add('hidden');
+               resultsArea.classList.remove('results-enter', 'results-enter-active'); 
+               gameArea.classList.remove('hidden'); 
+               nextBtn.classList.add('hidden'); 
+               feedbackArea.classList.add('hidden'); 
+               explanationText.innerHTML = ''; 
+               showQuestion();
+           }
+           function showQuestion() {
+               updateProgressBar();
+               optionsContainer.innerHTML = '';
+               feedbackArea.classList.add('hidden');
+               feedbackText.textContent = '';
+               explanationText.innerHTML = '';
+               feedbackText.className = 'text-lg font-semibold mb-2';
+               const currentQuestion = shuffledQuestions[currentQuestionIndex];
+               questionText.innerHTML = currentQuestion.question;
+               questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+               const shuffledOptions = shuffleArray([...currentQuestion.options]);
+               shuffledOptions.forEach(option => {
+                   const button = document.createElement('button');
+                   button.innerHTML = option;
+                   button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                   button.addEventListener('click', selectAnswer);
+                   optionsContainer.appendChild(button);
+               });
+               nextBtn.classList.add('hidden');
+           }
+           function triggerConfetti() {
+               if (myConfettiInstance) {
+                   myConfettiInstance({
+                       particleCount: 120,
+                       spread: 80,
+                       origin: { y: 0.6 },
+                       colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6']
+                   });
+               }
+           }
+           function selectAnswer(e) {
+               const selectedButton = e.target.closest('.option-btn');
+               if (!selectedButton) return;
+               const currentQuestion = shuffledQuestions[currentQuestionIndex];
+               const correctAnswer = currentQuestion.answer;
+               const explanation = currentQuestion.explanation;
+               questionsAnsweredInSession++;
+               Array.from(optionsContainer.children).forEach(button => {
+                   button.disabled = true;
+                   if (button.innerHTML === correctAnswer) {
+                       button.classList.add('correct-answer');
+                   }
+               });
+               if (selectedButton.innerHTML === correctAnswer) {
+                   score++;
+                   feedbackText.textContent = '✅ 回答正确!';
+                   feedbackText.className = 'text-lg font-semibold mb-2 text-green-600';
+                   selectedButton.classList.add('correct-answer');
+                   triggerConfetti();
+               } else {
+                   feedbackText.textContent = `❌ 回答错误!`;
+                   feedbackText.className = 'text-lg font-semibold mb-2 text-red-600';
+                   selectedButton.classList.add('wrong-answer');
+               }
+         
+               explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`;
+               feedbackArea.classList.remove('hidden');
+         
+               updateScoreDisplay();
+               updateProgressBarAfterAnswer();
+               nextBtn.classList.remove('hidden');
+           }
+           function showNextQuestion() {
+               currentQuestionIndex++;
+               if (currentQuestionIndex < shuffledQuestions.length) {
+                   showQuestion();
+               } else {
+                   endGame();
+               }
+           }
+           function endGame() {
+               gameArea.classList.add('hidden');
+               resultsArea.classList.remove('hidden');
+               requestAnimationFrame(() => {
+                    resultsArea.classList.add('results-enter');
+                    requestAnimationFrame(() => {
+                        resultsArea.classList.add('results-enter-active');
+                   });
+               });
+         
+               const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+               finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+               let message = '';
+               if (finalPercentage === 100) {
+                   message = '💯 完美！你简直是 IB Math AA HL 大师！知识点掌握得炉火纯青！';
+                   if (myConfettiInstance) {
+                        myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.5 }}); 
+                        myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.7 }}); 
+                   }
+               } else if (finalPercentage >= 90) {
+                   message = '🌟 太出色了！对数学的理解非常深刻，绝对的学霸！';
+                   if (myConfettiInstance) { myConfettiInstance({particleCount: 150, spread: 100}); }
+               } else if (finalPercentage >= 80) {
+                   message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
+               } else if (finalPercentage >= 70) {
+                   message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
+               } else if (finalPercentage >= 60) {
+                   message = '👍 相当不错！大部分知识点都理解了，继续加油！';
+               } else if (finalPercentage >= 50) {
+                   message = '😊 不错！掌握了核心内容，可以更有自信！';
+               } else {
+                   message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
+               }
+               resultMessage.textContent = message;
+           }
+           nextBtn.addEventListener('click', showNextQuestion);
+           restartBtn.addEventListener('click', startGame);
+           startGame();
+         
+      </script>
+   </body>
+</html>

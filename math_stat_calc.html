@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>IB Math AA HL 备考测验 - By Jason Wang</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+      <style>
+         body {
+         font-family: 'Inter', sans-serif;
+         overscroll-behavior-y: none; 
+         animation: fadeInScaleUp 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
+         }
+         .option-btn:not([disabled]):hover {
+         transform: translateY(-2px); 
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+         }
+         .option-btn:not([disabled]):active {
+         transform: translateY(0); 
+         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+         }
+         .results-enter {
+         opacity: 0;
+         transform: translateY(30px);
+         transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+         }
+         .results-enter-active {
+         opacity: 1;
+         transform: translateY(0);
+         }
+         .option-btn:disabled {
+         cursor: not-allowed; 
+         opacity: 0.7; 
+         }
+         .correct-answer {
+         background-color: #22c55e !important; 
+         color: white !important;
+         border-color: #16a34a !important;
+         }
+         .wrong-answer {
+         background-color: #ef4444 !important; 
+         color: white !important;
+         border-color: #dc2626 !important;
+         }
+         .progress-bar-container {
+         background-color: #e5e7eb; 
+         border-radius: 9999px; 
+         overflow: hidden; 
+         height: 1rem; 
+         margin-bottom: 1.5rem; 
+         }
+         .progress-bar {
+         background-color: #4f46e5; 
+         height: 100%;
+         transition: width 0.3s ease-in-out; 
+         text-align: center;
+         color: white;
+         font-size: 0.75rem; 
+         line-height: 1rem; 
+         font-weight: 500;
+         border-radius: 9999px;
+         }
+         #confetti-canvas {
+         position: fixed; 
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none; 
+         z-index: 9999; 
+         }
+         .explanation {
+         background-color: #f3f4f6; 
+         border-left: 4px solid #4f46e5; 
+         padding: 1rem; 
+         border-radius: 0.375rem; 
+         color: #374151; 
+         font-size: 0.875rem; 
+         margin-top: 1rem; 
+         line-height: 1.5; 
+         }
+         .option-btn, #next-btn, #restart-btn {
+         -webkit-tap-highlight-color: transparent; 
+         }
+         @keyframes fadeInScaleUp { 
+         from { opacity: 0; transform: scale(0.92); }
+         to { opacity: 1; transform: scale(1); }
+         }
+      </style>
+   </head>
+   <body class="bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4 relative">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="quiz-container" class="bg-white rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-4xl relative z-10">
+         <a href="index.html"
+            class="inline-block text-center justify-center items-center bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50 mb-4">
+         👈 主页
+         </a>
+         <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 mt-2">IB Math AA HL备考测验</h1>
+         <p class="text-center text-gray-600 mb-6">测试你对统计与微积分的了解程度！</p>
+         <div id="game-area">
+            <div class="flex justify-between items-center mb-4 text-gray-600">
+               <span id="question-counter" class="text-sm md:text-base font-medium">问题 1 / 10</span>
+               <span id="score-display" class="text-sm md:text-base font-medium">得分: 0 / 0 (0%)</span>
+            </div>
+            <div class="progress-bar-container">
+               <div id="progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            <div id="question-container" class="mb-6">
+               <h2 id="question-text" class="text-lg md:text-xl font-semibold text-gray-700 leading-relaxed min-h-[4.5em] md:min-h-[3em]">问题文本加载中...</h2>
+            </div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6">
+            </div>
+            <div id="feedback-area" class="text-center h-auto mb-4 text-base font-medium hidden">
+               <div id="feedback-text" class="text-lg font-semibold mb-2"></div>
+               <div id="explanation-text" class="explanation text-left"></div>
+            </div>
+            <div class="text-center">
+               <button id="next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hidden">
+               下一题
+               </button>
+            </div>
+         </div>
+         <div id="results-area" class="hidden text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 测验完成! 🎉</h2>
+            <p id="final-score" class="text-xl text-gray-700 mb-6"></p>
+            <p id="result-message" class="text-lg text-gray-600 mb-8"></p>
+            <button id="restart-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition duration-300 ease-in-out">
+            重新开始
+            </button>
+         </div>
+         <p class="text-center text-xs text-gray-500 mb-1 mt-6">&copy; 2024-2025 IB Revision Toys. Design & Made with Love by Jason Wang.</p>
+      </div>
+      <script>
+         const questions = [
+         {
+         question: "下列哪项数据属于定性数据？",
+         options: ["学生的考试分数", "汽车的颜色", "每分钟的心跳次数", "树木的高度"],
+         answer: "汽车的颜色",
+         explanation: "定性数据（或分类数据）描述的是特性或类别，例如颜色、性别等，而不是数值度量。"
+         },
+         {
+         question: "“一个班级中男生的人数”属于哪种类型的定量数据？",
+         options: ["连续数据", "离散数据", "定性数据", "名义数据"],
+         answer: "离散数据",
+         explanation: "离散数据是可以计数的值，例如学生人数、错误次数。男生人数是可数的整数。"
+         },
+         {
+         question: "在频数表中，“组中值”的主要用途是什么？",
+         options: ["表示该组的精确最大值", "表示该组的精确最小值", "作为该组数据的代表值进行近似计算", "确定该组的频数"],
+         answer: "作为该组数据的代表值进行近似计算",
+         explanation: "组中值（Class midpoint）是组上限和组下限的平均数，在处理分组数据时常用于近似计算平均数等统计量。"
+         },
+         {
+         question: "条形图和直方图的主要区别是什么？",
+         options: ["条形图用于定量数据，直方图用于定性数据", "条形图的条形之间有间隙，直方图的条形之间无间隙", "条形图的高度表示频数密度，直方图的高度表示频数", "两者没有本质区别"],
+         answer: "条形图的条形之间有间隙，直方图的条形之间无间隙",
+         explanation: "条形图通常用于定性数据或离散数据，条形之间有间隙。直方图通常用于连续数据（或分组离散数据），条形之间无间隙，条形宽度代表组距。"
+         },
+         {
+         question: "在饼图中，代表某个类别的扇形角度是如何计算的？",
+         options: ["(该类别频数 / 总频数) * 180 度", "(该类别频数 / 总频数) * 360 度", "该类别频数 * 360 度", "总频数 / 该类别频数 * 360 度"],
+         answer: "(该类别频数 / 总频数) * 360 度",
+         explanation: "饼图中，每个扇形的大小（角度）与其代表的类别的频数占总频数的比例成正比，计算公式为 (frequency / total_frequency) * 360 degrees。"
+         },
+         {
+         question: "累积频数图（Ogive）主要用于估计下列哪个统计量？",
+         options: ["平均数", "众数", "标准差", "中位数和四分位数"],
+         answer: "中位数和四分位数",
+         explanation: "累积频数图的横轴为数据值上限，纵轴为累积频数，常用于估计中位数、四分位数和百分位数。"
+         },
+         {
+         question: "茎叶图相比于频数表的一个主要优点是什么？",
+         options: ["计算更简单", "更适合展示定性数据", "保留了原始数据信息", "只能用于小数据集"],
+         answer: "保留了原始数据信息",
+         explanation: "茎叶图在显示数据分布的同时，能够保留原始数据信息，而频数表（尤其是分组频数表）会丢失部分原始信息。"
+         },
+         {
+         question: "对于一组数据：1, 2, 2, 3, 4, 5, 100。哪个集中趋势的度量受极端值“100”的影响最大？",
+         options: ["中位数", "众数", "平均数", "极差"],
+         answer: "平均数",
+         explanation: "平均数会受到数据集中每个值的影响，特别是极端值。中位数和众数对极端值的敏感性较低。"
+         },
+         {
+         question: "如果一组数据有多个众数，这意味着什么？",
+         options: ["数据分布是完全对称的", "数据中没有重复的值", "数据中有多个值出现的频数相同且最高", "计算平均数时会出现错误"],
+         answer: "数据中有多个值出现的频数相同且最高",
+         explanation: "众数是出现频数最高的数据值。一组数据可能没有众数，也可能有一个或多个众数。"
+         },
+         {
+         question: "下列哪个离散程度的度量对异常值（outliers）最不敏感？",
+         options: ["极差 (Range)", "方差 (Variance)", "标准差 (Standard Deviation)", "四分位差 (Interquartile Range, IQR)"],
+         answer: "四分位差 (Interquartile Range, IQR)",
+         explanation: "四分位差 (IQR = Q3 - Q1) 是基于数据中间50%的部分计算的，因此它对极端值或异常值的敏感性远低于极差、方差和标准差。"
+         },
+         {
+         question: "如果一组数据的方差为0，这意味着什么？",
+         options: ["所有数据点都等于0", "所有数据点都相同", "数据分布非常分散", "数据集中至少有一半是0"],
+         answer: "所有数据点都相同",
+         explanation: "方差度量数据点与其平均数的离散程度。方差为0意味着所有数据点都没有偏离平均数，即所有数据点都等于平均数，因此它们都相同。"
+         },
+         {
+         question: "箱线图（Box and Whisker Plot）不能直接显示下列哪个统计量？",
+         options: ["中位数 (Median)", "上四分位数 (Q3)", "平均数 (Mean)", "最小值 (Minimum value)"],
+         answer: "平均数 (Mean)",
+         explanation: "箱线图直接显示五个关键统计量：最小值、Q1（下四分位数）、中位数（Q2）、Q3（上四分位数）和最大值。平均数通常不直接在箱线图上标出。"
+         },
+         {
+         question: "根据常用的异常值判断标准，一个数据点如果小于 Q1 - 1.5 * IQR，它被称为什么？",
+         options: ["正常值", "最大值", "异常值 (Outlier)", "中位数"],
+         answer: "异常值 (Outlier)",
+         explanation: "常用的异常值判断标准之一是：数据点小于 Q1 - 1.5 * IQR 或大于 Q3 + 1.5 * IQR。这样的数据点被认为是异常值。"
+         },
+         {
+         question: "在直方图中，如果组距不同，通常用什么来表示条形的高度以确保面积代表频数？",
+         options: ["频数", "累积频数", "频数密度 (frequency density)", "相对频数"],
+         answer: "频数密度 (frequency density)",
+         explanation: "当直方图的组距不同时，为了使条形的面积与频数成正比，条形的高度应表示频数密度 (频数/组距)。"
+         },
+         {
+         question: "如果将一组数据中的每个数据点都加上一个常数5，那么这组新数据的标准差会如何变化？",
+         options: ["增加5", "减少5", "变为原来的5倍", "保持不变"],
+         answer: "保持不变",
+         explanation: "标准差是衡量数据离散程度的指标。当所有数据点都加上一个相同的常数时，数据的集中趋势会改变，但离散程度（即数据点之间的相对差异）保持不变。"
+         },
+         {
+         question: "散点图（Scatter Diagram）主要用于展示什么？",
+         options: ["单个变量的频数分布", "两个定量变量之间的关系", "两个定性变量之间的关系", "时间序列数据的趋势"],
+         answer: "两个定量变量之间的关系",
+         explanation: "散点图通过在二维坐标系中描点来显示两个定量变量之间的潜在关系模式。"
+         },
+         {
+         question: "如果散点图中的点大致从左下向右上分布，这表明两个变量之间可能存在什么关系？",
+         options: ["正相关", "负相关", "无相关", "非线性相关"],
+         answer: "正相关",
+         explanation: "正相关意味着当一个变量增加时，另一个变量也倾向于增加，散点图上的点会呈现从左下到右上的趋势。"
+         },
+         {
+         question: "皮尔逊积矩相关系数 (PMCC, r) 的取值范围是什么？",
+         options: ["0 到 1", "-1 到 1", "负无穷到正无穷", "-1 到 0"],
+         answer: "-1 到 1",
+         explanation: "皮尔逊相关系数 r 的值介于 -1 和 +1 之间，包括 -1 和 +1。它度量线性相关的强度和方向。"
+         },
+         {
+         question: "如果两个变量的皮尔逊相关系数 r = 0，这一定意味着它们之间没有任何关系吗？",
+         options: ["是的，它们之间完全没有关系", "不是，它们之间可能存在非线性关系", "是的，它们是相互独立的", "不是，它们之间一定是负相关"],
+         answer: "不是，它们之间可能存在非线性关系",
+         explanation: "r = 0 表示两个变量之间没有线性相关性。然而，它们之间仍可能存在某种非线性关系（例如抛物线关系）。"
+         },
+         {
+         question: "“相关性不代表因果关系” 这句话的含义是什么？",
+         options: ["如果两个变量相关，那么一个一定是另一个的原因", "如果两个变量相关，那么它们之间一定没有因果关系", "即使两个变量显示出强相关，也不能断定一个变量的变化是由另一个变量引起的", "相关性只适用于定性数据，因果关系只适用于定量数据"],
+         answer: "即使两个变量显示出强相关，也不能断定一个变量的变化是由另一个变量引起的",
+         explanation: "相关性表明两个变量倾向于一起变动，但这可能是由于第三个潜变量的影响，或者纯属巧合，并不足以证明一个变量导致另一个变量发生变化。"
+         },
+         {
+         question: "回归直线方程 y = ax + b 中的 'a' 代表什么？",
+         options: ["y轴截距", "x轴截距", "回归直线的斜率", "相关系数"],
+         answer: "回归直线的斜率",
+         explanation: "在回归直线方程 y = ax + b 中，'a' 是直线的斜率，表示自变量 x 每增加一个单位时，因变量 y 的平均变化量。"
+         },
+         {
+         question: "最小二乘法回归线的一个重要特性是它必定通过哪个点？",
+         options: ["(0,0)", "(最小值x, 最小值y)", "(最大值x, 最大值y)", "(x的平均数, y的平均数)"],
+         answer: "(x的平均数, y的平均数)",
+         explanation: "最小二乘法回归直线的一个数学特性是它总是通过点 (x_bar, y_bar)，即两个变量各自平均值所构成的点。"
+         },
+         {
+         question: "使用回归直线进行“外推”（extrapolation）时需要注意什么？",
+         options: ["外推的结果总是准确的", "外推比内插更可靠", "外推可能导致不可靠的预测，因为超出了原始数据的范围", "外推只适用于正相关的情况"],
+         answer: "外推可能导致不可靠的预测，因为超出了原始数据的范围",
+         explanation: "外推是指在原始数据范围之外进行预测。由于变量间的关系可能在数据范围外发生改变，外推的预测结果通常不如内插可靠，需要谨慎对待。"
+         },
+         {
+         question: "(HL) 决定系数 R² = 0.64 意味着什么？",
+         options: ["因变量 y 的 64% 的变异可以由自变量 x 解释", "自变量 x 的 64% 的变异可以由因变量 y 解释", "两个变量之间的相关系数是 0.64", "模型中有 64% 的数据点完全落在回归线上"],
+         answer: "因变量 y 的 64% 的变异可以由自变量 x 解释",
+         explanation: "决定系数 R² (r的平方) 表示因变量 y 的总变异中，可以通过回归模型（即自变量 x）来解释的百分比。R² = 0.64 意味着 y 的 64% 的变异可以用 x 的线性回归来解释。"
+         },
+         {
+         question: "(HL) 斯皮尔曼等级相关系数主要用于什么情况？",
+         options: ["当两个变量都是连续的且服从正态分布时", "当需要精确预测一个变量的值时", "当数据是定序变量（等级数据）或两个变量间的关系是非线性时", "当样本量非常大时"],
+         answer: "当数据是定序变量（等级数据）或两个变量间的关系是非线性时",
+         explanation: "斯皮尔曼等级相关系数用于度量两个定序变量之间的相关性，或者当数据不满足皮尔逊相关系数的假设（如线性关系、正态性）时，它基于数据的等级进行计算。"
+         },
+         {
+         question: "在一个标准的六面骰子掷一次的试验中，样本空间是什么？",
+         options: ["{1, 6}", "{偶数, 奇数}", "{1, 2, 3, 4, 5, 6}", "{出现1}"],
+         answer: "{1, 2, 3, 4, 5, 6}",
+         explanation: "样本空间是试验所有可能结果的集合。对于掷一个标准六面骰子，可能的结果是1, 2, 3, 4, 5, 或 6。"
+         },
+         {
+         question: "如果事件A是不可能事件，那么P(A)等于多少？",
+         options: ["1", "0", "0.5", "无法确定"],
+         answer: "0",
+         explanation: "不可能事件是指在任何情况下都不会发生的事件，其概率为0。"
+         },
+         {
+         question: "“明天太阳从西边升起”的概率最接近于下列哪个值，属于哪种概率类型？",
+         options: ["1，理论概率", "0，实验概率", "0，主观概率（或基于常识的理论概率）", "0.5，主观概率"],
+         answer: "0，主观概率（或基于常识的理论概率）",
+         explanation: "根据我们对世界运作方式的理解，太阳从西边升起是一个不可能发生的事件，其概率为0。这可以被认为是基于广泛接受的科学事实的理论判断，或一种极端的主观概率。"
+         },
+         {
+         question: "在维恩图中，两个事件A和B的交集 (A ∩ B) 代表什么？",
+         options: ["事件A发生或事件B发生", "事件A发生且事件B也发生", "事件A发生但事件B不发生", "事件A不发生"],
+         answer: "事件A发生且事件B也发生",
+         explanation: "事件A和B的交集 (A ∩ B 或 A and B) 表示两个事件同时发生的情况。"
+         },
+         {
+         question: "如果事件A和事件B是互斥事件，那么 P(A ∪ B) 等于多少？",
+         options: ["P(A) + P(B) - P(A ∩ B)", "P(A) + P(B)", "P(A) * P(B)", "P(A | B)"],
+         answer: "P(A) + P(B)",
+         explanation: "互斥事件是指不能同时发生的事件，即 P(A ∩ B) = 0。因此，加法法则 P(A ∪ B) = P(A) + P(B) - P(A ∩ B) 简化为 P(A ∪ B) = P(A) + P(B)。"
+         },
+         {
+         question: "条件概率 P(A | B) 的正确含义是什么？",
+         options: ["事件A和事件B同时发生的概率", "在事件A已发生的条件下，事件B发生的概率", "在事件B已发生的条件下，事件A发生的概率", "事件A或事件B发生的概率"],
+         answer: "在事件B已发生的条件下，事件A发生的概率",
+         explanation: "P(A | B) 读作“在B发生的条件下A发生的概率”，它衡量的是当已知事件B已经发生时，事件A发生的可能性。"
+         },
+         {
+         question: "如果事件A和事件B是独立事件，下列哪个等式一定成立？",
+         options: ["P(A | B) = P(B)", "P(A ∩ B) = P(A) + P(B)", "P(A ∩ B) = P(A) * P(B)", "P(A ∪ B) = P(A) * P(B)"],
+         answer: "P(A ∩ B) = P(A) * P(B)",
+         explanation: "对于独立事件，一个事件的发生不影响另一个事件发生的概率。其关键性质是 P(A ∩ B) = P(A) * P(B)。同时，P(A | B) = P(A) 且 P(B | A) = P(B)。"
+         },
+         {
+         question: "概率树图主要用于解决什么类型的概率问题？",
+         options: ["单阶段试验的概率问题", "涉及条件概率和多阶段试验的概率问题", "只涉及互斥事件的概率问题", "只涉及独立事件的概率问题"],
+         answer: "涉及条件概率和多阶段试验的概率问题",
+         explanation: "概率树图对于可视化和计算多阶段试验的概率非常有用，尤其当试验结果之间存在条件依赖时。沿着路径的概率相乘，平行路径的概率相加。"
+         },
+         {
+         question: "补集 A' 的概率 P(A') 与 P(A) 之间的关系是什么？",
+         options: ["P(A') = P(A)", "P(A') = 1 + P(A)", "P(A') = 1 - P(A)", "P(A') = 1 / P(A)"],
+         answer: "P(A') = 1 - P(A)",
+         explanation: "事件A的补集 A' 指事件A不发生。由于事件A发生或不发生的总概率为1，所以 P(A') = 1 - P(A)。"
+         },
+         {
+         question: "(HL) 贝叶斯定理的主要应用场景是什么？",
+         options: ["计算简单事件的初始概率", "在获得新证据后更新事件的先验概率", "判断两个事件是否独立", "计算一系列试验中成功次数的概率"],
+         answer: "在获得新证据后更新事件的先验概率",
+         explanation: "贝叶斯定理提供了一种方法，可以根据新的观测数据或证据来更新我们对某个事件发生可能性的初始信念（先验概率），从而得到后验概率。"
+         },
+         {
+         question: "(HL) 全概率公式 P(B) = P(B | A) * P(A) + P(B | A') * P(A') 的前提条件是什么？",
+         options: ["A 和 B 必须是独立事件", "A 和 B 必须是互斥事件", "A 和 A' 构成样本空间的一个划分 (A ∪ A' = S, A ∩ A' = ∅)", "P(A) 必须等于 P(B)"],
+         answer: "A 和 A' 构成样本空间的一个划分 (A ∪ A' = S, A ∩ A' = ∅)",
+         explanation: "全概率公式用于计算事件B的概率，通过考虑事件B在不同条件下（如A发生或A不发生）发生的概率进行加权平均。这里A和A'是互斥且穷尽的事件，即它们构成了样本空间的一个划分。"
+         },
+         {
+         question: "离散随机变量的概率分布必须满足的一个重要条件是什么？",
+         options: ["所有可能取值的概率之和大于1", "所有可能取值的概率之和等于1", "每个可能取值的概率都相同", "随机变量只能取正值"],
+         answer: "所有可能取值的概率之和等于1",
+         explanation: "对于一个离散随机变量的概率分布，所有可能取值 x 对应的概率 P(X=x) 必须满足两个条件：0 <= P(X=x) <= 1，且所有 P(X=x) 的总和为1。"
+         },
+         {
+         question: "离散随机变量的期望值 E(X) 代表什么？",
+         options: ["随机变量最可能取的值", "随机变量取值的算术平均数", "随机变量取值的加权平均，权重是其概率", "随机变量取值的最大值与最小值的平均"],
+         answer: "随机变量取值的加权平均，权重是其概率",
+         explanation: "期望值 E(X) 或 μ，是随机变量所有可能取值 x 与其对应概率 P(X=x) 乘积的总和。它代表了随机变量在大量重复试验中的长期平均值。"
+         },
+         {
+         question: "如果 E(X) 是随机变量 X 的期望值，那么 E(aX + b) 等于多少（a, b 是常数）？",
+         options: ["aE(X) + b", "E(X) + b", "aE(X)", "a²E(X) + b"],
+         answer: "aE(X) + b",
+         explanation: "期望值具有线性性质：E(aX + b) = aE(X) + E(b) = aE(X) + b。"
+         },
+         {
+         question: "(HL) 离散随机变量的方差 Var(X) 度量的是什么？",
+         options: ["随机变量的平均取值", "随机变量取值相对于其期望值的离散程度", "随机变量最常见的取值", "随机变量取值的范围"],
+         answer: "随机变量取值相对于其期望值的离散程度",
+         explanation: "方差 Var(X) 或 σ²，度量的是随机变量的各个取值偏离其期望值（均值）的平均平方距离，反映了数据分布的离散程度或波动性。"
+         },
+         {
+         question: "(HL) 如果 Var(X) 是随机变量 X 的方差，那么 Var(aX + b) 等于多少（a, b 是常数）？",
+         options: ["aVar(X) + b", "aVar(X)", "a²Var(X)", "a²Var(X) + b²"],
+         answer: "a²Var(X)",
+         explanation: "方差的性质之一是 Var(aX + b) = a²Var(X)。常数 b 不影响方差，因为方差衡量的是离散程度，整体平移数据不改变其离散程度。系数 a 会使离散程度平方倍变化。"
+         },
+         {
+         question: "(HL) 如果X和Y是两个独立的离散随机变量，那么Var(X - Y)等于多少？",
+         options: ["Var(X) - Var(Y)", "Var(X) + Var(Y)", "|Var(X) - Var(Y)|", "无法确定，除非知道X和Y的具体分布"],
+         answer: "Var(X) + Var(Y)",
+         explanation: "当X和Y是独立随机变量时，Var(X + Y) = Var(X) + Var(Y) 且 Var(X - Y) = Var(X) + Var(Y)。注意减法情况下方差也是相加的。"
+         },
+         {
+         question: "下列哪个不是二项分布实验必须满足的条件？",
+         options: ["每次试验只有两种可能的结果（成功/失败）", "各次试验的结果相互独立", "试验次数 n 是固定的", "每次试验成功的概率 p 必须随试验次数变化"],
+         answer: "每次试验成功的概率 p 必须随试验次数变化",
+         explanation: "二项分布的条件（BINS）包括：Binary outcomes (两种结果), Independent trials (独立试验), Number of trials is fixed (固定试验次数 n), Same probability of success (每次成功概率 p 相同)。"
+         },
+         {
+         question: "在二项分布 X ~ B(n, p) 中，参数 'n' 代表什么？",
+         options: ["每次试验成功的概率", "试验的总次数", "成功的次数", "失败的概率"],
+         answer: "试验的总次数",
+         explanation: "在二项分布 B(n, p) 中，'n' 是固定进行的试验总次数。"
+         },
+         {
+         question: "二项分布 X ~ B(n, p) 的期望值 E(X) 是多少？",
+         options: ["np(1-p)", "np", "n/p", "p/n"],
+         answer: "np",
+         explanation: "二项分布的期望值（平均成功次数）计算公式为 E(X) = n * p。"
+         },
+         {
+         question: "二项分布 X ~ B(n, p) 的方差 Var(X) 是多少？",
+         options: ["np", "sqrt(np(1-p))", "np(1-p)", "n²p²"],
+         answer: "np(1-p)",
+         explanation: "二项分布的方差计算公式为 Var(X) = n * p * (1-p)，也常写为 npq，其中 q = 1-p。"
+         },
+         {
+         question: "如果一个随机变量X表示在10次独立的伯努利试验中成功的次数，每次试验成功的概率为0.3，那么X服从什么分布？",
+         options: ["正态分布", "泊松分布", "二项分布", "均匀分布"],
+         answer: "二项分布",
+         explanation: "这个问题描述了二项分布的所有条件：固定的试验次数 (n=10)，每次试验独立，每次试验只有两种结果（成功/失败），且每次成功的概率相同 (p=0.3)。因此X服从B(10, 0.3)。"
+         },
+         {
+         question: "正态分布曲线的形状由哪两个参数完全确定？",
+         options: ["样本大小和极差", "均值 (μ) 和标准差 (σ)", "中位数和众数", "偏度和峰度"],
+         answer: "均值 (μ) 和标准差 (σ)",
+         explanation: "正态分布由其均值 μ (决定曲线中心位置) 和标准差 σ (或方差 σ²，决定曲线的展平程度) 完全定义。"
+         },
+         {
+         question: "关于正态分布的性质，下列哪项描述是错误的？",
+         options: ["曲线关于均值对称", "均值、中位数和众数相等", "曲线下的总面积等于1", "标准差越大，曲线越尖峭"],
+         answer: "标准差越大，曲线越尖峭",
+         explanation: "正态分布的均值、中位数和众数相等，曲线关于均值对称，曲线下总面积为1。标准差 σ 越大，数据越分散，曲线越平展（扁平）；σ 越小，数据越集中，曲线越尖峭。"
+         },
+         {
+         question: "根据正态分布的经验法则（68-95-99.7法则），大约有多少百分比的数据落在距离均值一个标准差的范围内 (μ ± σ)？",
+         options: ["34%", "68%", "95%", "99.7%"],
+         answer: "68%",
+         explanation: "经验法则指出，对于正态分布，大约68%的数据值落在均值的一个标准差范围内 (μ - σ, μ + σ)。"
+         },
+         {
+         question: "将一个服从任意正态分布 X ~ N(μ, σ²) 的随机变量转换为标准正态分布 Z ~ N(0, 1) 的公式是什么？",
+         options: ["Z = (X - σ) / μ", "Z = (X - μ) / σ", "Z = X / μ - σ", "Z = (μ - X) / σ"],
+         answer: "Z = (X - μ) / σ",
+         explanation: "Z分数（Z-score）的计算公式是 Z = (X - μ) / σ。它表示原始数据点 X 距离其均值 μ 有多少个标准差。"
+         },
+         {
+         question: "一个Z分数为-2.0意味着原始数据点X位于何处？",
+         options: ["比均值高2个标准差", "比均值低2个标准差", "等于均值", "比均值低2个单位（不是标准差）"],
+         answer: "比均值低2个标准差",
+         explanation: "Z分数表示数据点与均值之间的距离（以标准差为单位）。负的Z分数表示数据点低于均值，正的Z分数表示数据点高于均值。Z=-2.0意味着数据点比均值低2个标准差。"
+         },
+         {
+         question: "在标准正态分布中，曲线下的总面积是多少？",
+         options: ["0", "0.5", "1", "取决于均值和标准差"],
+         answer: "1",
+         explanation: "任何概率密度函数（包括标准正态分布）下方的总面积都等于1，这代表了所有可能结果的总概率。"
+         },
+         {
+         question: "如果需要找到使得 P(X < k) = 0.8 的 k 值 (X服从正态分布)，这属于什么类型的计算？",
+         options: ["计算概率", "计算Z分数", "反向正态查找 (Inverse Normal Calculation)", "计算期望值"],
+         answer: "反向正态查找 (Inverse Normal Calculation)",
+         explanation: "当已知概率（或面积）并需要找到对应的随机变量值 k 时，这被称为反向正态查找。计算器或统计软件通常提供此类功能。"
+         },
+         {
+         question: "(HL) 对于连续随机变量X，其概率密度函数 (PDF) f(x) 必须满足的主要条件之一是什么？",
+         options: ["f(x) 必须始终小于1", "f(x) 在其定义域内从负无穷到正无穷的积分等于0", "f(x) 必须始终为非负数 (f(x) >= 0)", "f(x) 必须是对称的"],
+         answer: "f(x) 必须始终为非负数 (f(x) >= 0)",
+         explanation: "概率密度函数 f(x) 的两个主要条件是：1) f(x) >= 0 对于所有 x (非负性)；2) f(x) 在其整个定义域上的积分为1 (曲线下总面积为1)。"
+         },
+         {
+         question: "(HL) 对于一个连续随机变量X，P(X = a) 的值是多少 (a是某个特定常数)？",
+         options: ["等于 f(a)", "等于1", "等于0", "取决于a的值"],
+         answer: "等于0",
+         explanation: "对于连续随机变量，其在任何单个精确点上取值的概率为0。概率是通过对概率密度函数在一个区间上积分来计算的，即 P(c < X < d) = integral from c to d of f(x)dx。"
+         },
+         {
+         question: "(HL) 连续随机变量的众数 (Mode) 是如何定义的？",
+         options: ["使累积分布函数等于0.5的值", "概率密度函数 (PDF) f(x) 取最大值时的 x 值", "期望值 E(X)", "标准差 σ"],
+         answer: "概率密度函数 (PDF) f(x) 取最大值时的 x 值",
+         explanation: "连续随机变量的众数是其概率密度函数 f(x) 达到峰值（最高点）的 x 值。"
+         },
+         {
+         question: "(HL) 连续随机变量X的中位数 m 满足哪个条件？",
+         options: ["P(X ≤ m) = 0.5", "f(m) = 0.5", "E(X) = m", "m 是 f(x) 的最大值点"],
+         answer: "P(X ≤ m) = 0.5",
+         explanation: "中位数 m 是将概率分布分成面积相等的两部分的值，即 P(X ≤ m) = integral from -infinity to m of f(x)dx = 0.5。"
+         },
+         {
+         question: "(HL) 连续随机变量的期望值 E(X) 是如何通过其概率密度函数 f(x) 计算的？",
+         options: ["integral(f(x) dx from -inf to +inf)", "integral(x * f(x) dx from -inf to +inf)", "integral(x^2 * f(x) dx from -inf to +inf)", "d/dx [integral(f(x) dx)]"],
+         answer: "integral(x * f(x) dx from -inf to +inf)",
+         explanation: "连续随机变量的期望值（均值）μ 定义为 E(X) = integral of (x * f(x)) dx over its entire range."
+         },
+         {
+         question: "(HL) 泊松分布通常用于模拟什么类型的事件？",
+         options: ["在一系列固定试验中成功的次数", "在固定时间间隔或空间区域内，某个稀有事件发生的次数", "从总体中抽取样本的均值分布", "两个连续变量之间的关系强度"],
+         answer: "在固定时间间隔或空间区域内，某个稀有事件发生的次数",
+         explanation: "泊松分布用于模拟在给定的连续时间间隔或空间区域内，独立且以恒定平均速率发生的事件的次数。例如，一小时内到达服务台的顾客数，一页书中印刷错误的数量等。"
+         },
+         {
+         question: "(HL) 在泊松分布 X ~ Po(m) 中，参数 'm' 代表什么？",
+         options: ["试验的总次数", "每次试验成功的概率", "在给定间隔/区域内事件发生的平均次数（率）", "事件发生次数的标准差"],
+         answer: "在给定间隔/区域内事件发生的平均次数（率）",
+         explanation: "参数 m (或 λ) 是泊松分布中事件在指定区间内发生的平均次数或平均速率。"
+         },
+         {
+         question: "(HL) 泊松分布的一个显著特点是其均值与方差之间的关系是什么？",
+         options: ["均值总是大于方差", "均值总是小于方差", "均值等于方差", "均值与方差无关"],
+         answer: "均值等于方差",
+         explanation: "对于泊松分布 X ~ Po(m)，其期望值 E(X) = m，方差 Var(X) = m。即均值和方差相等。"
+         },
+         {
+         question: "(HL) 在什么条件下，二项分布 B(n, p) 可以用泊松分布 Po(m) 来近似？",
+         options: ["n 很大且 p 很大", "n 很小且 p 很小", "n 很大且 p 很小", "n 很小且 p 很大"],
+         answer: "n 很大且 p 很小",
+         explanation: "当二项分布的试验次数 n 非常大，而每次试验成功的概率 p 非常小时，可以用泊松分布进行近似，其中泊松参数 m = np。通常要求 n ≥ 50 且 p ≤ 0.1 (或 np < 5 或 np < 10，不同标准略有差异)。"
+         },
+         {
+         question: "(HL) 如果X ~ Po(m1) 和 Y ~ Po(m2) 是两个独立的泊松随机变量，那么 X + Y 服从什么分布？",
+         options: ["Po(m1 * m2)", "Po(m1 + m2)", "Po(|m1 - m2|)", "不一定是泊松分布"],
+         answer: "Po(m1 + m2)",
+         explanation: "泊松分布具有可加性：如果 X 和 Y 是独立的泊松随机变量，其参数分别为 m1 和 m2，那么它们的和 X + Y 也服从泊松分布，参数为 m1 + m2。"
+         },
+         {
+         question: "极限 lim (f(x) as x -> c) = L 的直观含义是什么？",
+         options: ["当 x 等于 c 时，f(x) 等于 L", "当 x 无限接近 c (但不等于 c) 时，f(x) 的值无限接近 L", "f(c) 必须等于 L", "函数 f(x) 在 x=c 处必须有定义"],
+         answer: "当 x 无限接近 c (但不等于 c) 时，f(x) 的值无限接近 L",
+         explanation: "极限描述的是函数在某点附近的趋势，而不是在该点本身的值。L是当x任意靠近c时，f(x)趋向的值。"
+         },
+         {
+         question: "函数 f(x) 在点 x=c 处极限存在的充分必要条件是什么？",
+         options: ["函数在 x=c 处有定义", "左极限等于右极限", "函数在 x=c 处连续", "函数的导数在 x=c 处存在"],
+         answer: "左极限等于右极限",
+         explanation: "函数在一点的极限存在的条件是：从左侧接近该点的极限（左极限）和从右侧接近该点的极限（右极限）都存在并且相等。"
+         },
+         {
+         question: "(HL) 函数 f(x) 在点 x=c 处连续的三个条件不包括下列哪项？",
+         options: ["f(c) 有定义", "lim (f(x) as x -> c) 存在", "lim (f(x) as x -> c) = f(c)", "f'(c) 存在"],
+         answer: "f'(c) 存在",
+         explanation: "函数在点c连续的条件是：1. f(c)有定义；2. lim (f(x) as x->c) 存在；3. lim (f(x) as x->c) = f(c)。可导性 (f'(c)存在) 是比连续性更强的条件。"
+         },
+         {
+         question: "(HL) 如果函数在某点存在跳跃间断点，那么在该点：",
+         options: ["左极限等于右极限，但不等于函数值", "左极限和右极限都存在但不相等", "左极限或右极限至少一个不存在（趋于无穷）", "可以通过重新定义该点的函数值使其连续"],
+         answer: "左极限和右极限都存在但不相等",
+         explanation: "跳跃间断点是指函数在该点的左极限和右极限都存在，但是它们不相等，导致函数图像在该点出现“跳跃”。"
+         },
+         {
+         question: "(HL) 洛必达法则主要用于解决哪种类型的极限问题？",
+         options: ["0/0 型或 ∞/∞ 型不定式极限", "求函数的精确值", "判断函数的单调性", "计算定积分"],
+         answer: "0/0 型或 ∞/∞ 型不定式极限",
+         explanation: "洛必达法则是一种在计算形如 0/0 或 ∞/∞ 的不定式极限时，通过对分子分母分别求导来求解极限的方法。"
+         },
+         {
+         question: "(HL) lim (sin(x)/x as x -> 0) 的值是多少？这是一个重要的已知极限。",
+         options: ["0", "1", "∞", "不存在"],
+         answer: "1",
+         explanation: "lim (sin(x)/x as x -> 0) = 1 是微积分中一个非常重要的基本极限，可以通过洛必达法则或几何方法证明。"
+         },
+         {
+         question: "函数 f(x) 在点 x=a 处的导数 f'(a) 的几何意义是什么？",
+         options: ["曲线 y=f(x) 在点 (a, f(a)) 处的y坐标值", "曲线 y=f(x) 在点 (a, f(a)) 处切线的斜率", "曲线 y=f(x) 与x轴交点的横坐标", "曲线 y=f(x) 下方的面积"],
+         answer: "曲线 y=f(x) 在点 (a, f(a)) 处切线的斜率",
+         explanation: "导数的几何意义是函数图像在该点处切线的斜率，它表示函数在该点附近的瞬时变化率。"
+         },
+         {
+         question: "如果一个函数在某点可导，那么它在该点一定如何？",
+         options: ["不连续", "连续", "有极值", "有拐点"],
+         answer: "连续",
+         explanation: "可导性是比连续性更强的条件。如果一个函数在某点可导，那么它在该点必然是连续的。但反之不一定成立（例如 y=|x| 在x=0处连续但不可导）。"
+         },
+         {
+         question: "幂法则 d/dx (x^n) 等于什么？",
+         options: ["nx^(n-1)", "x^(n-1)", "n*x^n", "(n-1)x^n"],
+         answer: "nx^(n-1)",
+         explanation: "幂法则表明，x的n次方的导数是n乘以x的(n-1)次方，其中n是任意实数。"
+         },
+         {
+         question: "链式法则主要用于计算哪类函数的导数？",
+         options: ["两个函数之和的导数", "两个函数之积的导数", "复合函数的导数", "两个函数之商的导数"],
+         answer: "复合函数的导数",
+         explanation: "链式法则是求复合函数导数的基本方法。如果 y = f(g(x))，则 dy/dx = f'(g(x)) * g'(x)。"
+         },
+         {
+         question: "函数 f(x) 的二阶导数 f''(x) 描述了原函数 f(x) 的什么性质？",
+         options: ["单调性", "极值点的位置", "凹凸性和拐点", "切线的斜率"],
+         answer: "凹凸性和拐点",
+         explanation: "二阶导数 f''(x) 提供了关于原函数 f(x) 图像凹凸性的信息。f''(x) > 0 表示凹向上，f''(x) < 0 表示凹向下。f''(x) 变号的点可能是拐点。"
+         },
+         {
+         question: "如果函数 f(x) 在点 x=c 处有局部最大值，且 f'(c) 存在，那么 f'(c) 的值是多少？",
+         options: ["大于0", "小于0", "等于0", "无法确定"],
+         answer: "等于0",
+         explanation: "如果函数在某点取得局部极值（最大值或最小值），并且在该点可导，那么该点的导数（即切线斜率）必定为0。这样的点称为驻点。"
+         },
+         {
+         question: "一阶导数检验法判断局部最小值点的条件是什么？",
+         options: ["导数在驻点左侧为正，右侧为负 (+ -> -)", "导数在驻点左侧为负，右侧为正 (- -> +)", "导数在驻点两侧符号不变", "二阶导数在该点为负"],
+         answer: "导数在驻点左侧为负，右侧为正 (- -> +)",
+         explanation: "根据一阶导数检验法，如果函数的一阶导数 f'(x) 在驻点 c 的左侧为负（函数递减），在右侧为正（函数递增），则点 c 是一个局部最小值点。"
+         },
+         {
+         question: "(HL) 二阶导数检验法中，如果 f'(c) = 0 且 f''(c) > 0，那么点 c 是什么点？",
+         options: ["局部最大值点", "局部最小值点", "拐点", "检验失效"],
+         answer: "局部最小值点",
+         explanation: "根据二阶导数检验法，若 f'(c) = 0 (c是驻点) 且 f''(c) > 0 (在该点凹向上)，则 c 是一个局部最小值点。"
+         },
+         {
+         question: "函数图像的拐点 (Point of Inflection) 是指什么发生改变的点？",
+         options: ["函数的单调性", "函数的凹凸性", "函数的连续性", "函数的定义域"],
+         answer: "函数的凹凸性",
+         explanation: "拐点是函数图像上凹凸性发生改变的点。在拐点处，二阶导数 f''(x) 通常为0或不存在，并且在其两侧变号。"
+         },
+         {
+         question: "在运动学中，位移函数 s(t) 对时间 t 的一阶导数 s'(t) 代表什么？",
+         options: ["加速度", "瞬时速度", "平均速度", "路程"],
+         answer: "瞬时速度",
+         explanation: "速度是位移随时间变化的率。瞬时速度 v(t) 是位移函数 s(t) 对时间 t 的导数，即 v(t) = ds/dt。"
+         },
+         {
+         question: "(HL) 隐函数微分主要适用于什么情况？",
+         options: ["当函数形式非常简单时", "当 y 不能显式地表示为 x 的函数时 (如 x² + y² = 25)", "当需要求高阶导数时", "当函数不连续时"],
+         answer: "当 y 不能显式地表示为 x 的函数时 (如 x² + y² = 25)",
+         explanation: "当变量 x 和 y 之间的关系由一个不能轻易解出 y (或 x) 的方程给出时，使用隐函数微分法来求 dy/dx。此时，将 y 视为 x 的函数，并对方程两边关于 x 求导。"
+         },
+         {
+         question: "(HL) d/dx (arctan(x)) 等于什么？",
+         options: ["1 / sqrt(1 - x²)", "-1 / sqrt(1 - x²)", "1 / (1 + x²)", "sec²(x)"],
+         answer: "1 / (1 + x²)",
+         explanation: "反三角函数 arctan(x) 的导数是 1 / (1 + x²)。"
+         },
+         {
+         question: "不定积分 integral(f(x) dx) 的结果中为何要加上一个常数 C？",
+         options: ["为了使结果为正", "因为常数的导数为0，所以反导数有无穷多个，相差一个常数", "为了简化计算", "这只是一个约定，没有实际意义"],
+         answer: "因为常数的导数为0，所以反导数有无穷多个，相差一个常数",
+         explanation: "由于任何常数的导数都是0，所以一个函数 f(x) 的反导数不是唯一的，而是相差一个任意常数 C 的一族函数。这个 C 称为积分常数。"
+         },
+         {
+         question: "定积分 integral(f(x) dx from a to b) 的几何意义是什么（假设f(x) >= 0）？",
+         options: ["曲线 y=f(x) 在 [a,b] 上的平均值", "曲线 y=f(x) 在 x=b 处的切线斜率", "由曲线 y=f(x)、x轴以及直线 x=a 和 x=b 所围成的区域的面积", "曲线 y=f(x) 在 [a,b] 上的弧长"],
+         answer: "由曲线 y=f(x)、x轴以及直线 x=a 和 x=b 所围成的区域的面积",
+         explanation: "当 f(x) ≥ 0 时，定积分表示函数图像与x轴之间，在区间 [a,b] 上所围成的平面区域的面积。如果f(x)可正可负，则表示有向面积。"
+         },
+         {
+         question: "微积分基本定理 (Part 2) integral(f(x) dx from a to b) = F(b) - F(a) 中，F(x) 是什么？",
+         options: ["f(x) 的导数", "f(x) 的任意一个反导数（原函数）", "f(x) 在 x=a 处的值", "f(x) 在 x=b 处的值"],
+         answer: "f(x) 的任意一个反导数（原函数）",
+         explanation: "微积分基本定理的第二部分指出，如果 F(x) 是 f(x) 的一个反导数（即 F'(x) = f(x)），那么 f(x) 从 a 到 b 的定积分等于 F(b) - F(a)。"
+         },
+         {
+         question: "integral(1/x dx) 等于什么？",
+         options: ["ln(x) + C", "ln(abs(x)) + C", "-1/x² + C", "x^(-2)/(-2) + C"],
+         answer: "ln(abs(x)) + C",
+         explanation: "1/x 的不定积分是 ln(|x|) + C。需要绝对值是因为对数函数的定义域是正实数，而 1/x 的定义域不包括0但包括负数。"
+         },
+         {
+         question: "定积分的性质 integral(f(x) dx from a to a) 等于多少？",
+         options: ["f(a)", "0", "1", "无法确定"],
+         answer: "0",
+         explanation: "当定积分的上限和下限相同时，积分区间长度为0，所围成的“面积”也为0。"
+         },
+         {
+         question: "换元积分法（u-Substitution）是基于哪个微分法则的逆运算？",
+         options: ["乘法法则", "除法法则", "链式法则", "幂法则"],
+         answer: "链式法则",
+         explanation: "换元积分法是链式求导法则的逆过程。它通过引入一个新变量 u = g(x) 来简化被积函数。"
+         },
+         {
+         question: "(HL) 分部积分法 integral(u dv) = uv - integral(v du) 是基于哪个微分法则的逆运算？",
+         options: ["乘法法则", "除法法则", "链式法则", "和差法则"],
+         answer: "乘法法则",
+         explanation: "分部积分法是乘积求导法则 (d(uv) = u dv + v du) 的逆向应用，用于计算两个函数乘积的积分。"
+         },
+         {
+         question: "计算由两条曲线 y=f(x) 和 y=g(x) 在区间 [a,b] 上所围成的面积，且在该区间 f(x) ≥ g(x)，其公式是什么？",
+         options: ["integral((f(x) + g(x)) dx from a to b)", "integral((f(x) * g(x)) dx from a to b)", "integral((f(x) - g(x)) dx from a to b)", "integral((g(x) - f(x)) dx from a to b)"],
+         answer: "integral((f(x) - g(x)) dx from a to b)",
+         explanation: "如果在一个区间 [a,b] 上，曲线 y=f(x) 始终位于曲线 y=g(x) 的上方，则它们之间围成的面积是 integral of (上曲线 - 下曲线) dx，即 integral(f(x) - g(x) dx from a to b)。"
+         },
+         {
+         question: "(HL) 将由曲线 y=f(x)、x轴、x=a、x=b 所围成的区域绕x轴旋转一周得到的旋转体体积公式（圆盘法）是什么？",
+         options: ["pi * integral(f(x) dx from a to b)", "pi * integral((f(x))² dx from a to b)", "2*pi * integral(x*f(x) dx from a to b)", "integral((f(x))² dx from a to b)"],
+         answer: "pi * integral((f(x))² dx from a to b)",
+         explanation: "使用圆盘法计算绕x轴旋转体的体积，公式为 V = π ∫[a,b] (f(x))² dx，其中 f(x) 是旋转半径。"
+         },
+         {
+         question: "(HL) 反常积分 integral(f(x) dx from a to +infinity) 收敛的含义是什么？",
+         options: ["被积函数 f(x) 趋向于0", "积分的极限值是一个有限的数", "积分的极限值是无穷大", "积分区间是有限的"],
+         answer: "积分的极限值是一个有限的数",
+         explanation: "当反常积分的积分限之一或两者为无穷，或者被积函数在积分区间内有无界点时，如果通过取极限计算得到的积分值是一个确定的有限数，则称该反常积分收敛；否则称其发散。"
+         },
+         {
+         question: "(HL) 一阶微分方程的“通解”通常包含什么？",
+         options: ["一个具体的数值", "一个任意常数 C", "只有x和y的项", "一个三角函数"],
+         answer: "一个任意常数 C",
+         explanation: "一阶微分方程的通解是满足该方程的一族函数，它包含一个任意常数（通常表示为 C）。这个常数的值可以通过初始条件来确定，从而得到特解。"
+         },
+         {
+         question: "(HL) 形如 dy/dx = g(x)h(y) 的微分方程被称为哪种类型？",
+         options: ["线性微分方程", "齐次微分方程", "可分离变量的微分方程", "精确微分方程"],
+         answer: "可分离变量的微分方程",
+         explanation: "如果一个微分方程可以写成 dy/dx = g(x)h(y) 的形式，即可以将包含y的项和dy移到一边，包含x的项和dx移到另一边，那么它就是可分离变量的微分方程。"
+         },
+         {
+         question: "(HL) 求解一阶线性微分方程 dy/dx + P(x)y = Q(x) 时，积分因子 I(x) 的计算公式是什么？",
+         options: ["e^(integral(Q(x) dx))", "e^(integral(P(x) dx))", "integral(P(x) dx)", "integral(Q(x) dx)"],
+         answer: "e^(integral(P(x) dx))",
+         explanation: "对于标准形式的一阶线性微分方程 dy/dx + P(x)y = Q(x)，其积分因子 I(x) 定义为 e 的 integral(P(x) dx) 次方。"
+         },
+         {
+         question: "(HL) 斜率场（Slope Field）在微分方程中的主要作用是什么？",
+         options: ["直接给出微分方程的精确解", "可视化微分方程解曲线的大致形状和走向", "判断微分方程是否可解", "计算特定点的斜率值"],
+         answer: "可视化微分方程解曲线的大致形状和走向",
+         explanation: "斜率场是在xy平面上许多点处画出与微分方程 dy/dx = f(x,y) 相对应的小线段（表示该点处的斜率）。通过观察这些线段的排列，可以大致了解解曲线（积分曲线）的形状和行为。"
+         },
+         {
+         question: "(HL) 欧拉方法 (Euler's Method) y_(n+1) = y_n + h * f(x_n, y_n) 是用来做什么的？",
+         options: ["精确求解微分方程", "近似求解微分方程的特解", "判断微分方程的稳定性", "求微分方程的通解"],
+         answer: "近似求解微分方程的特解",
+         explanation: "欧拉方法是一种数值方法，用于在给定初始条件 y(x0)=y0 和步长 h 的情况下，逐步近似计算微分方程 dy/dx = f(x,y) 的特解。它通过沿着每一点的切线方向前进一小步来逼近解曲线。"
+         },
+         {
+         question: "(HL) 麦克劳林级数是泰勒级数在哪一点的特殊情况？",
+         options: ["x = 1", "x = -1", "x = 0", "x = a (任意点)"],
+         answer: "x = 0",
+         explanation: "麦克劳林级数是函数 f(x) 在 x=0 点的泰勒级数展开。泰勒级数可以在任意点 a 展开。"
+         },
+         {
+         question: "(HL) 函数 e^x 的麦克劳林级数展开式的前几项是什么？",
+         options: ["1 + x + x²/2 + x³/6 + ...", "x - x³/6 + x⁵/120 - ...", "1 - x²/2 + x⁴/24 - ...", "1 + x + x² + x³ + ..."],
+         answer: "1 + x + x²/2 + x³/6 + ...",
+         explanation: "e^x 的麦克劳林级数是 1 + x + x²/2! + x³/3! + ... = sum(x^n/n! for n from 0 to infinity)。其中 2! = 2, 3! = 6。"
+         },
+         {
+         question: "(HL) 利用已知函数的麦克劳林级数推导新函数的级数时，常用的方法不包括：",
+         options: ["代换 (Substitution)", "逐项微分 (Differentiation)", "逐项积分 (Integration)", "直接求解微分方程"],
+         answer: "直接求解微分方程",
+         explanation: "从已知的麦克劳林级数得到新的级数，常用的技巧有代换（如用x²替换x）、逐项微分、逐项积分以及级数的加减乘运算。直接求解微分方程是另一种获得函数解的方法，但不是从已知级数推导新级数的方法。"
+         },
+         {
+         question: "(HL) 麦克劳林级数的一个重要应用是什么？",
+         options: ["确定函数的定义域", "近似计算函数在某点的值或定积分", "判断函数的奇偶性", "寻找函数的垂直渐近线"],
+         answer: "近似计算函数在某点的值或定积分",
+         explanation: "麦克劳林级数（或泰勒级数）可以将复杂的函数表示为多项式（或其极限），这使得在x=0附近对函数值、导数值或积分值进行近似计算成为可能，尤其当函数难以直接计算时。"
+         },
+         {
+         question: "(HL) 几何级数 1 + x + x² + x³ + ... (即 1/(1-x) 的麦克劳林级数) 的收敛条件是什么？",
+         options: ["abs(x) > 1", "abs(x) < 1", "x > 1", "x < -1"],
+         answer: "abs(x) < 1",
+         explanation: "几何级数 1 + x + x² + x³ + ... 收敛当且仅当公比 x 的绝对值小于 1，即 |x| < 1。其和为 1/(1-x)。"
+         }
+         ];
+         
+         
+           const quizContainer = document.getElementById('quiz-container');
+           const gameArea = document.getElementById('game-area');
+           const resultsArea = document.getElementById('results-area');
+           const questionCounter = document.getElementById('question-counter');
+           const scoreDisplay = document.getElementById('score-display');
+           const progressBar = document.getElementById('progress-bar');
+           const questionText = document.getElementById('question-text');
+           const optionsContainer = document.getElementById('options-container');
+           const feedbackArea = document.getElementById('feedback-area');
+           const feedbackText = document.getElementById('feedback-text');
+           const explanationText = document.getElementById('explanation-text');
+           const nextBtn = document.getElementById('next-btn');
+           const finalScore = document.getElementById('final-score');
+           const resultMessage = document.getElementById('result-message');
+           const restartBtn = document.getElementById('restart-btn');
+           const confettiCanvas = document.getElementById('confetti-canvas');
+           let myConfettiInstance = null;
+           if (confettiCanvas && typeof confetti !== 'undefined') {
+               myConfettiInstance = confetti.create(confettiCanvas, {
+                   resize: true,
+                   useWorker: true
+               });
+           }
+           let currentQuestionIndex = 0;
+           let score = 0;
+           let questionsAnsweredInSession = 0;
+           let shuffledQuestions = [];
+           function shuffleArray(array) {
+               for (let i = array.length - 1; i > 0; i--) {
+                   const j = Math.floor(Math.random() * (i + 1));
+                   [array[i], array[j]] = [array[j], array[i]];
+               }
+               return array;
+           }
+           function updateScoreDisplay() {
+               const percentage = questionsAnsweredInSession === 0 ? 0 : Math.round((score / questionsAnsweredInSession) * 100);
+               scoreDisplay.textContent = `得分: ${score} / ${questionsAnsweredInSession} (${percentage}%)`;
+           }
+           function updateProgressBar() {
+               const totalQuestionsToDisplay = shuffledQuestions.length;
+               const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex) / totalQuestionsToDisplay) * 100);
+               progressBar.style.width = `${progressPercentage}%`;
+               progressBar.textContent = `${progressPercentage}%`;
+           }
+           function updateProgressBarAfterAnswer() {
+               const totalQuestionsToDisplay = shuffledQuestions.length;
+               const progressPercentage = totalQuestionsToDisplay === 0 ? 0 : Math.round(((currentQuestionIndex + 1) / totalQuestionsToDisplay) * 100);
+               progressBar.style.width = `${progressPercentage}%`;
+               progressBar.textContent = `${progressPercentage}%`;
+           }
+           function startGame() {
+               currentQuestionIndex = 0;
+               score = 0;
+               questionsAnsweredInSession = 0;
+               shuffledQuestions = shuffleArray([...questions]);
+               updateScoreDisplay();
+               progressBar.style.width = '0%';
+               progressBar.textContent = '0%';
+               resultsArea.classList.add('hidden');
+               resultsArea.classList.remove('results-enter', 'results-enter-active'); 
+               gameArea.classList.remove('hidden'); 
+               nextBtn.classList.add('hidden'); 
+               feedbackArea.classList.add('hidden'); 
+               explanationText.innerHTML = ''; 
+               showQuestion();
+           }
+           function showQuestion() {
+               updateProgressBar();
+               optionsContainer.innerHTML = '';
+               feedbackArea.classList.add('hidden');
+               feedbackText.textContent = '';
+               explanationText.innerHTML = '';
+               feedbackText.className = 'text-lg font-semibold mb-2';
+               const currentQuestion = shuffledQuestions[currentQuestionIndex];
+               questionText.innerHTML = currentQuestion.question;
+               questionCounter.textContent = `问题 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+               const shuffledOptions = shuffleArray([...currentQuestion.options]);
+               shuffledOptions.forEach(option => {
+                   const button = document.createElement('button');
+                   button.innerHTML = option;
+                   button.className = 'option-btn bg-white hover:bg-gray-100 text-gray-700 font-medium py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition duration-200 ease-in-out w-full text-left';
+                   button.addEventListener('click', selectAnswer);
+                   optionsContainer.appendChild(button);
+               });
+               nextBtn.classList.add('hidden');
+           }
+           function triggerConfetti() {
+               if (myConfettiInstance) {
+                   myConfettiInstance({
+                       particleCount: 120,
+                       spread: 80,
+                       origin: { y: 0.6 },
+                       colors: ['#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#3b82f6']
+                   });
+               }
+           }
+           function selectAnswer(e) {
+               const selectedButton = e.target.closest('.option-btn');
+               if (!selectedButton) return;
+               const currentQuestion = shuffledQuestions[currentQuestionIndex];
+               const correctAnswer = currentQuestion.answer;
+               const explanation = currentQuestion.explanation;
+               questionsAnsweredInSession++;
+               Array.from(optionsContainer.children).forEach(button => {
+                   button.disabled = true;
+                   if (button.innerHTML === correctAnswer) {
+                       button.classList.add('correct-answer');
+                   }
+               });
+               if (selectedButton.innerHTML === correctAnswer) {
+                   score++;
+                   feedbackText.textContent = '✅ 回答正确!';
+                   feedbackText.className = 'text-lg font-semibold mb-2 text-green-600';
+                   selectedButton.classList.add('correct-answer');
+                   triggerConfetti();
+               } else {
+                   feedbackText.textContent = `❌ 回答错误!`;
+                   feedbackText.className = 'text-lg font-semibold mb-2 text-red-600';
+                   selectedButton.classList.add('wrong-answer');
+               }
+         
+               explanationText.innerHTML = `<strong>解析:</strong> ${explanation}`;
+               feedbackArea.classList.remove('hidden');
+         
+               updateScoreDisplay();
+               updateProgressBarAfterAnswer();
+               nextBtn.classList.remove('hidden');
+           }
+           function showNextQuestion() {
+               currentQuestionIndex++;
+               if (currentQuestionIndex < shuffledQuestions.length) {
+                   showQuestion();
+               } else {
+                   endGame();
+               }
+           }
+           function endGame() {
+               gameArea.classList.add('hidden');
+               resultsArea.classList.remove('hidden');
+               requestAnimationFrame(() => {
+                    resultsArea.classList.add('results-enter');
+                    requestAnimationFrame(() => {
+                        resultsArea.classList.add('results-enter-active');
+                   });
+               });
+         
+               const finalPercentage = shuffledQuestions.length === 0 ? 0 : Math.round((score / shuffledQuestions.length) * 100);
+               finalScore.textContent = `你的最终得分是: ${score} / ${shuffledQuestions.length} (${finalPercentage}%)`;
+               let message = '';
+               if (finalPercentage === 100) {
+                   message = '💯 完美！你简直是 IB Math AA HL 大师！知识点掌握得炉火纯青！';
+                   if (myConfettiInstance) {
+                        myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.5 }}); 
+                        myConfettiInstance({ particleCount: 200, spread: 160, origin: { y: 0.7 }}); 
+                   }
+               } else if (finalPercentage >= 90) {
+                   message = '🌟 太出色了！对数学的理解非常深刻，绝对的学霸！';
+                   if (myConfettiInstance) { myConfettiInstance({particleCount: 150, spread: 100}); }
+               } else if (finalPercentage >= 80) {
+                   message = '🏆 非常棒！知识掌握得很扎实，向着7分前进！';
+               } else if (finalPercentage >= 70) {
+                   message = '🎉 很厉害！展现了良好的理解，继续努力，7分在望！';
+               } else if (finalPercentage >= 60) {
+                   message = '👍 相当不错！大部分知识点都理解了，继续加油！';
+               } else if (finalPercentage >= 50) {
+                   message = '😊 不错！掌握了核心内容，可以更有自信！';
+               } else {
+                   message = '💪 不要灰心！从错误中学习，梳理知识点，下次一定能进步！';
+               }
+               resultMessage.textContent = message;
+           }
+           nextBtn.addEventListener('click', showNextQuestion);
+           restartBtn.addEventListener('click', startGame);
+           startGame();
+         
+      </script>
+   </body>
+</html>
